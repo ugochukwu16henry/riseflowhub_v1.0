@@ -73,13 +73,26 @@
 
 ---
 
-## Agreements (skeleton — admin only)
+## Agreements
 
 | Method | Endpoint | Purpose | Auth |
 |--------|----------|---------|------|
-| GET | `/agreements` | List all agreement templates | Super Admin / PM / Finance Admin |
+| POST | `/agreements` | Create agreement template | Super Admin |
+| GET | `/agreements` | List all templates | Super Admin / PM / Finance Admin |
+| GET | `/agreements/assigned` | List agreements assigned to current user | JWT |
+| GET | `/agreements/assignments` | List all assigned agreements (admin table) | Super Admin / PM / Finance Admin |
+| GET | `/agreements/:id` | Get agreement details | Super Admin / PM / Finance Admin |
+| PUT | `/agreements/:id` | Update template | Super Admin |
+| DELETE | `/agreements/:id` | Delete template | Super Admin |
+| POST | `/agreements/:id/assign` | Assign agreement to user(s) | Super Admin |
+| GET | `/agreements/:id/view` | View agreement (logs "viewed") | JWT (assigned user only) |
+| POST | `/agreements/:id/sign` | Sign agreement | JWT (assigned user only) |
+| GET | `/agreements/:id/status` | Assignment status for agreement | Super Admin / PM / Finance Admin |
+| GET | `/agreements/:id/logs` | Audit logs (viewed/signed, IP, timestamp) | Super Admin |
 
-*Agreement signing (assign, view, sign) will be added in the next module.*
+**Create body:** `{ "title", "type" (NDA | MOU | CoFounder | Terms), "templateUrl?" }`  
+**Assign body:** `{ "userId" or "userIds" (array), "deadline?" }`  
+**Sign body:** `{ "signatureText?" (typed name), "signatureUrl?" }`
 
 ---
 

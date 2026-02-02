@@ -37,6 +37,21 @@ async function main() {
     console.log(`Seeded user: ${email} (${role})`);
   }
 
+  // Super Admin account (ugochukwuhenry16@gmail.com)
+  const superAdminPassword = '1995Mobuchi@.';
+  const superAdminHash = await bcrypt.hash(superAdminPassword, 10);
+  await prisma.user.upsert({
+    where: { email: 'ugochukwuhenry16@gmail.com' },
+    update: { name: 'Super Admin', role: 'super_admin', passwordHash: superAdminHash },
+    create: {
+      email: 'ugochukwuhenry16@gmail.com',
+      name: 'Super Admin',
+      passwordHash: superAdminHash,
+      role: 'super_admin',
+    },
+  });
+  console.log('Seeded Super Admin: ugochukwuhenry16@gmail.com');
+
   console.log('\nSeed complete. Test users (password for all):', TEST_PASSWORD);
 }
 
