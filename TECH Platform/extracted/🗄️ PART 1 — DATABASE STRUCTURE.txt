@@ -1,0 +1,148 @@
+🗄️ PART 1 — DATABASE STRUCTURE
+You are building a multi-client project management platform.
+Best fit: PostgreSQL (structured & scalable)
+👤 1. Users Table
+Stores everyone.
+Field
+Type
+Description
+id
+UUID
+Unique user ID
+name
+String
+Full name
+email
+String
+Login email
+password_hash
+String
+Encrypted password
+role
+Enum
+client / developer / marketer / admin
+created_at
+Timestamp
+Account creation
+🏢 2. Clients Table
+Extra data for entrepreneurs.
+Field
+Type
+Description
+id
+UUID
+user_id
+FK → Users
+business_name
+String
+industry
+String
+idea_summary
+Text
+budget_range
+String
+📁 3. Projects Table
+Each client can have projects.
+Field
+Type
+Description
+id
+UUID
+client_id
+FK → Clients
+project_name
+String
+description
+Text
+stage
+Enum (Planning, Dev, Testing, Live)
+progress_percent
+Integer
+start_date
+Date
+deadline
+Date
+🧩 4. Tasks Table
+Work items inside projects.
+Field
+Type
+Description
+id
+UUID
+project_id
+FK → Projects
+assigned_to
+FK → Users
+title
+String
+description
+Text
+status
+Enum (Todo, In Progress, Done, Blocked)
+due_date
+Date
+💬 5. Messages Table
+Client ↔ Team communication.
+Field
+Type
+id
+UUID
+project_id
+FK
+sender_id
+FK → Users
+message
+Text
+created_at
+Timestamp
+📁 6. Files Table
+Uploads from both sides.
+Field
+Type
+id
+UUID
+project_id
+FK
+uploaded_by
+FK → Users
+file_url
+String
+file_type
+String
+💰 7. Payments Table
+Field
+Type
+id
+UUID
+project_id
+FK
+amount
+Decimal
+status
+Paid / Pending
+due_date
+Date
+📈 8. Marketing Reports Table
+Field
+Type
+id
+UUID
+project_id
+FK
+metric_type
+String
+value
+String
+date
+Date
+🔧 9. Maintenance Logs Table
+Field
+Type
+id
+UUID
+project_id
+FK
+activity
+Text
+date
+Date

@@ -1,0 +1,53 @@
+🖥️ PART 2 — UI WIREFRAME LAYOUT (Dashboard Screens)
+🏠 CLIENT DASHBOARD HOME
+Top section:
+Welcome message
+Business name
+Main cards:
+Card
+Content
+Project Stage
+Planning / Dev / Live
+Progress Bar
+% completion
+Next Milestone
+Upcoming task
+Team Assigned
+Dev, marketer
+Sidebar: Dashboard Project Tasks Files Messages Payments Reports
+📁 PROJECT DETAILS PAGE
+Layout:
+Top: Project title + stage badge Left: Description & timeline Right: Progress tracker
+Below: Feature list being built.
+🧩 TASKS PAGE
+Kanban style:
+| To Do | In Progress | Done |
+Each task card:
+Title
+Due date
+Assigned person
+💬 MESSAGES PAGE
+Left: Conversation list Right: Chat window
+📁 FILES PAGE
+Grid or list view:
+File name
+Type
+Upload date
+Download button
+💰 PAYMENTS PAGE
+Cards showing:
+Total cost
+Paid
+Remaining
+Invoice history table below.
+📈 MARKETING REPORTS PAGE
+Charts:
+Traffic
+Leads
+Posts created
+🏢 ADMIN / TEAM DASHBOARD
+Extra panels:
+All projects overview
+Task assignments
+Revenue summary
+Alerts (late payments, delays)

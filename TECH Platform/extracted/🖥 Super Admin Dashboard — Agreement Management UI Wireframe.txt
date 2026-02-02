@@ -1,0 +1,66 @@
+🖥 Super Admin Dashboard — Agreement Management UI Wireframe
+Header
+[Platform Logo]      [Dashboard] [Projects] [Users] [Agreements] [Reports] [Settings] [Profile Icon]
+Section: Agreements Overview
+Search Bar: 🔍 Search by User / Agreement / Status
+Filters:
+Status: Pending / Signed / Overdue
+Agreement Type: NDA / MOU / Co-founder / Terms
+Date Range
+Table: Assigned Agreements
+Agreement Title
+Assigned To
+Type
+Status
+Signed On
+Actions
+NDA - Client 1
+John Doe
+NDA
+Pending
+—
+View / Resend / Delete
+Co-Founder 1
+Jane Doe
+Co-founder
+Signed
+02 Feb 2026
+View / Download
+MOU - Partner A
+Alice K.
+MOU
+Overdue
+—
+View / Resend / Delete
+Terms of Use
+All Clients
+Terms
+Signed
+28 Jan 2026
+View / Download
+Status Indicators:
+Pending → ⚪ Grey
+Signed → 🟢 Green
+Overdue → 🔴 Red
+Action Buttons
+Add New Agreement → Opens Modal: Upload Template + Title + Type
+Assign Agreement → Opens Modal: Select Users / Agreement / Deadline
+Bulk Resend → Remind users with Pending / Overdue agreements
+Download Signed Docs → Select multiple → download zip
+Modal: Read & Sign Preview (For Super Admin Viewing)
+Shows PDF or HTML preview
+Shows User Signature & Date if signed
+Button: Download Signed Version
+Button: Reassign / Edit
+Notifications / Alerts
+“3 agreements pending signature” → show on top banner
+“Overdue agreements for John Doe” → red alert badge
+Automated email triggers integrated with status
+Audit Trail Panel (Optional Tab)
+Table: User | Agreement | Action | Timestamp | IP Address
+Actions: Export CSV / View Details
+UI Design Notes
+Color Palette: ⚪ Gray (pending) 🟢 Green (signed) 🔴 Red (overdue)
+Use responsive table for mobile/desktop
+Buttons: Consistent primary color (brand color)
+Pagination / Sorting by Signed On, Status, User

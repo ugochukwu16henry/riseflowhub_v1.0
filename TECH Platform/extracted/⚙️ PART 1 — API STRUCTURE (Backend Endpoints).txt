@@ -1,0 +1,104 @@
+⚙️ PART 1 — API STRUCTURE (Backend Endpoints)
+Base URL example:
+/api/v1/
+🔐 AUTHENTICATION
+Method
+Endpoint
+Purpose
+POST
+/auth/register
+Create account
+POST
+/auth/login
+Login
+GET
+/auth/me
+Get current user
+POST
+/auth/logout
+Logout
+👤 USERS
+Method
+Endpoint
+GET
+/users/:id
+PUT
+/users/:id
+GET
+/users?role=developer
+🏢 CLIENTS
+Method
+Endpoint
+POST
+/clients
+GET
+/clients/:id
+PUT
+/clients/:id
+GET
+/clients
+📁 PROJECTS
+Method
+Endpoint
+Description
+POST
+/projects
+Create project
+GET
+/projects
+All projects
+GET
+/projects/:id
+Project details
+PUT
+/projects/:id
+Update project
+DELETE
+/projects/:id
+Remove project
+🧩 TASKS
+Method
+Endpoint
+POST
+/projects/:id/tasks
+GET
+/projects/:id/tasks
+PUT
+/tasks/:taskId
+DELETE
+/tasks/:taskId
+💬 MESSAGES
+Method
+Endpoint
+GET
+/projects/:id/messages
+POST
+/projects/:id/messages
+📁 FILES
+Method
+Endpoint
+POST
+/projects/:id/files
+GET
+/projects/:id/files
+💰 PAYMENTS
+Method
+Endpoint
+POST
+/projects/:id/payments
+GET
+/projects/:id/payments
+📈 MARKETING REPORTS
+Method
+Endpoint
+POST
+/projects/:id/reports
+GET
+/projects/:id/reports
+🔧 MAINTENANCE
+Method
+Endpoint
+POST
+/projects/:id/maintenance
+GET
+/projects/:id/maintenance

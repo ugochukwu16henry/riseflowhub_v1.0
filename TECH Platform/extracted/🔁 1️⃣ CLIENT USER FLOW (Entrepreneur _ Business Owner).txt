@@ -1,0 +1,131 @@
+🔁 1️⃣ CLIENT USER FLOW (Entrepreneur / Business Owner)
+Goal: Turn idea → active project → launched business
+Landing Page
+   ↓
+Sign Up / Login
+   ↓
+Onboarding Wizard
+   → Enter personal info
+   → Describe business idea
+   → Choose service (Website / App / Branding / Full Launch)
+   ↓
+Client Dashboard (Home)
+   ↓
+Submit Project Brief
+   → Business goals
+   → Target audience
+   → Features needed
+   → Budget range
+   ↓
+System Notifies Internal Team
+   ↓
+Proposal Sent to Client
+   → Timeline
+   → Deliverables
+   → Price
+   ↓
+Client Approves & Pays Deposit
+   ↓
+Project Status = "In Progress"
+   ↓
+Client Dashboard Functions:
+   → View progress tracker
+   → Upload files
+   → Chat with team
+   → View milestones
+   → Approve design/dev stages
+   ↓
+Milestone Completed
+   → Client notified
+   → Feedback submitted
+   ↓
+Project Completed
+   ↓
+Delivery
+   → Website/App live
+   → Files & credentials shared
+   ↓
+Post-Launch Support Area
+   → Maintenance plan
+   → Marketing services
+   → Growth consultation
+🧑‍💼 2️⃣ INTERNAL TEAM USER FLOW
+Goal: Receive project → execute efficiently → deliver
+Team Member Login
+   ↓
+Internal Dashboard
+   ↓
+New Project Alert
+   ↓
+View Project Details
+   → Client brief
+   → Scope
+   → Timeline
+   ↓
+Project Manager Assigns Roles
+   → Designer
+   → Developer
+   → Marketer
+   ↓
+Task Board (Kanban Style)
+   → To Do
+   → In Progress
+   → Review
+   → Done
+   ↓
+Team Works on Assigned Tasks
+   ↓
+Upload Deliverables
+   ↓
+Project Manager Reviews
+   ↓
+Send Milestone to Client
+   ↓
+Client Feedback Received
+   ↓
+Revisions (if needed)
+   ↓
+Project Marked Complete
+💳 3️⃣ PAYMENT FLOW
+Client Approves Proposal
+   ↓
+Invoice Generated Automatically
+   ↓
+Client Chooses Payment Method
+   → Card
+   → Bank Transfer
+   → Wallet
+   ↓
+Payment Confirmation
+   ↓
+System Updates Project Status
+   → "Paid"
+   → "Active"
+   ↓
+Milestone-based payments triggered later
+💬 4️⃣ COMMUNICATION FLOW
+Client sends message
+   ↓
+System tags project
+   ↓
+Relevant team members notified
+   ↓
+Team replies
+   ↓
+All conversations stored in project history
+🚀 5️⃣ INVESTOR / ADMIN FLOW
+Admin Login
+   ↓
+Admin Control Panel
+   ↓
+View Platform Metrics
+   → Active projects
+   → Revenue
+   → Client growth
+   → Team productivity
+   ↓
+Approve featured startups
+   ↓
+Manage users
+   ↓
+Financial reports

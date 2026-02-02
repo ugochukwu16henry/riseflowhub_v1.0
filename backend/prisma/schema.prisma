@@ -1,0 +1,203 @@
+// AfriLaunch Hub - Database Schema (PostgreSQL)
+// Matches specs: Users, Clients, Projects, Tasks, Messages, Files, Payments, Reports, Maintenance, Agreements
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  client
+  developer
+  designer
+  marketer
+  project_manager
+  finance_admin
+  super_admin
+  investor
+}
+
+enum ProjectStage {
+  Planning
+  Development
+  Testing
+  Live
+}
+
+enum TaskStatus {
+  Todo
+  InProgress
+  Done
+  Blocked
+}
+
+enum PaymentStatus {
+  Paid
+  Pending
+}
+
+enum AgreementType {
+  NDA
+  MOU
+  CoFounder
+  Terms
+}
+
+enum AssignedAgreementStatus {
+  Pending
+  Signed
+  Overdue
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          UserRole  @default(client)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  client            Client?
+  assignedTasks     Task[]           @relation("AssignedTasks")
+  sentMessages      Message[]        @relation("SentMessages")
+  uploadedFiles     File[]           @relation("UploadedFiles")
+  assignedAgreements AssignedAgreement[]
+}
+
+model Client {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  businessName  String   @map("business_name")
+  industry      String?
+  ideaSummary   String?  @map("idea_summary") @db.Text
+  budgetRange   String?  @map("budget_range")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+}
+
+model Project {
+  id              String        @id @default(uuid())
+  clientId        String        @map("client_id")
+  projectName     String        @map("project_name")
+  description     String?       @db.Text
+  stage           ProjectStage  @default(Planning)
+  progressPercent Int           @default(0) @map("progress_percent")
+  startDate       DateTime?     @map("start_date") @db.Date
+  deadline        DateTime?     @map("deadline") @db.Date
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  client     Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+  messages   Message[]
+  files      File[]
+  payments   Payment[]
+  reports    MarketingReport[]
+  maintenance MaintenanceLog[]
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  projectId   String     @map("project_id")
+  assignedToId String?   @map("assigned_to_id")
+  title       String
+  description String?    @db.Text
+  status      TaskStatus @default(Todo)
+  dueDate     DateTime?  @map("due_date") @db.Date
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo User?    @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  senderId  String   @map("sender_id")
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender  User    @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model File {
+  id         String   @id @default(uuid())
+  projectId  String   @map("project_id")
+  uploadedById String @map("uploaded_by_id")
+  fileUrl    String   @map("file_url")
+  fileType   String?  @map("file_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation("UploadedFiles", fields: [uploadedById], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  projectId String       @map("project_id")
+  amount    Decimal      @db.Decimal(12, 2)
+  status    PaymentStatus @default(Pending)
+  dueDate   DateTime?    @map("due_date") @db.Date
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model MarketingReport {
+  id         String   @id @default(uuid())
+  projectId  String   @map("project_id")
+  metricType String   @map("metric_type")
+  value      String
+  date       DateTime @db.Date
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model MaintenanceLog {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  activity  String   @db.Text
+  date      DateTime @db.Date
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// Agreement Signing Feature
+model Agreement {
+  id          String   @id @default(uuid())
+  title       String
+  type        AgreementType
+  templateUrl String?  @map("template_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  assignedAgreements AssignedAgreement[]
+}
+
+model AssignedAgreement {
+  id          String                 @id @default(uuid())
+  agreementId String                 @map("agreement_id")
+  userId      String                 @map("user_id")
+  status      AssignedAgreementStatus @default(Pending)
+  signedAt    DateTime?              @map("signed_at")
+  signatureUrl String?              @map("signature_url")
+  ipAddress  String?                @map("ip_address")
+  deadline   DateTime?              @map("deadline") @db.Date
+  createdAt  DateTime               @default(now()) @map("created_at")
+  updatedAt  DateTime               @updatedAt @map("updated_at")
+
+  agreement Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

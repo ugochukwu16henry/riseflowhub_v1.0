@@ -1,0 +1,157 @@
+⚖️ 1️⃣ LEGAL & OWNERSHIP STRUCTURE
+You are building a startup studio / tech venture builder, not just an agency.
+🔹 Step 1: Register the Company
+Best structure:
+Private Limited Company (Ltd) Why:
+Professional
+Can bring investors
+Can give shares
+Limits liability
+You can register in:
+Nigeria (CAC) for operations
+Later add U.S./UK entity for global payments & investors
+🔹 Step 2: Ownership Structure (Early Stage)
+Since you are founder + tech brain:
+Role
+Equity (Example)
+Henry (Founder & Tech Lead)
+50–60%
+Co-founder (Operations/Business)
+10–20%
+Marketing Lead
+5–10%
+Product/Design Lead
+5–10%
+Future Employee Pool (ESOP)
+10–15% reserved
+💡 You don’t give all at once. Use vesting.
+🔹 Step 3: Vesting Rule (Very Important)
+To avoid people leaving with shares:
+4-year vesting with 1-year cliff
+Meaning:
+If someone leaves before 1 year → gets nothing
+Shares unlock gradually over 4 years
+🔹 Step 4: Legal Documents You Need
+Document
+Purpose
+Founder Agreement
+Defines ownership & roles
+NDA
+Protects ideas
+Service Agreement
+For clients
+Terms of Use
+Platform protection
+Privacy Policy
+Data protection law
+Equity Vesting Agreement
+For co-founders
+👥 2️⃣ TEAM HIRING ROADMAP
+You don’t hire randomly. You hire in stages.
+🟢 PHASE 1 — Foundation Team (0–6 months)
+Goal: Build platform + get first clients
+Role
+Type
+Why
+You (Henry)
+Founder/CTO
+Tech, product, strategy
+Full-stack Developer
+Equity/Low pay
+Build system
+UI/UX Designer
+Part-time
+Dashboard, platform UI
+Business Consultant
+Commission
+Helps client ideas
+Digital Marketer
+Performance-based
+Client acquisition
+Small team. High sacrifice. Big vision.
+🟡 PHASE 2 — Growth Team
+When revenue starts coming:
+Role
+Focus
+Project Manager
+Manage client projects
+Sales Lead
+Close deals
+Content & Branding Team
+Marketing for clients
+Customer Support
+Handle users
+🔵 PHASE 3 — Scale Team
+Role
+Focus
+AI Engineer
+Smart tools
+DevOps Engineer
+Infrastructure
+Finance Manager
+Revenue tracking
+Legal Advisor
+Contracts & compliance
+📊 3️⃣ INVESTOR PITCH DECK SLIDES
+This is the story investors want.
+Slide 1 — Title
+Company Name + Slogan “Turning African Ideas into Global Businesses”
+Slide 2 — Problem
+Millions of African entrepreneurs have ideas but lack:
+Technical teams
+Business structure
+Marketing systems
+Funding access
+Result → Ideas die.
+Slide 3 — Solution
+A Tech Startup Launch Platform that provides:
+Product development
+Business consulting
+Marketing systems
+AI-powered tools
+Investor visibility
+Slide 4 — Market Opportunity
+Millions of SMEs in Africa
+Rapid digital adoption
+Growing startup ecosystem Huge untapped demand.
+Slide 5 — Product
+Show:
+Client dashboard
+Project tracking
+AI proposal system
+Idea scoring
+Investor discovery section
+Slide 6 — Business Model
+Revenue from:
+Development fees
+Subscriptions
+Commissions
+AI tools
+Investor access
+Multiple income streams = strong company.
+Slide 7 — Traction (When you start)
+Number of clients
+Revenue
+Partnerships
+Case studies
+Slide 8 — Competitive Advantage
+Others are:
+Agencies OR incubators
+You are: Platform + Tech + Consulting + AI + Marketing
+Slide 9 — Vision
+To become Africa’s leading startup creation engine.
+Slide 10 — Team
+Show:
+You (Tech + Strategy + Digital)
+Key co-founders
+Slide 11 — Funding Ask
+Example:
+Seeking $100,000 to:
+Build platform
+Hire team
+Marketing
+AI integration
+Slide 12 — Exit Potential
+Acquisition by tech companies
+SaaS valuation
+Startup portfolio growth
