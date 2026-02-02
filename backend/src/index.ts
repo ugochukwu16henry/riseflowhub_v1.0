@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { clientRoutes } from './routes/clients';
@@ -24,7 +25,8 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
-app.use(express.json());
+app.use(compression({ level: 6, threshold: 512 }));
+app.use(express.json({ limit: '256kb' }));
 
 // API v1 base
 app.use('/api/v1/auth', authRoutes);
@@ -47,7 +49,10 @@ app.use('/api/v1/leads', leadRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/tenants', tenantRoutes);
 
-app.get('/api/v1/health', (_, res) => res.json({ status: 'ok', service: 'afrilaunch-api' }));
+app.get('/api/v1/health', (_, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=10');
+  res.json({ status: 'ok', service: 'afrilaunch-api' });
+});
 
 app.listen(PORT, () => {
   console.log(`AfriLaunch API running at http://localhost:${PORT}`);

@@ -51,8 +51,12 @@ export function setStoredToken(token: string) {
 }
 
 export function clearStoredToken() {
+  meCache = null;
   if (typeof window !== 'undefined') localStorage.removeItem('afrilaunch_token');
 }
+
+let meCache: { token: string; user: User; at: number } | null = null;
+const ME_CACHE_MS = 8000;
 
 async function request<T>(
   path: string,
@@ -87,7 +91,13 @@ export const api = {
         body: JSON.stringify(body),
         ...(tenantDomain && { headers: { 'X-Tenant-Domain': tenantDomain } as HeadersInit }),
       }),
-    me: (token: string) => request<User>('/api/v1/auth/me', { token }),
+    me: (token: string) => {
+      if (meCache && meCache.token === token && Date.now() - meCache.at < ME_CACHE_MS) return Promise.resolve(meCache.user);
+      return request<User>('/api/v1/auth/me', { token }).then((user) => {
+        meCache = { token, user, at: Date.now() };
+        return user;
+      });
+    },
     logout: (token: string) => request<{ message: string }>('/api/v1/auth/logout', { method: 'POST', token }),
   },
   tenants: {
@@ -139,6 +149,19 @@ export const api = {
       request<AIProjectInsightsResponse>('/api/v1/ai/project-insights', { method: 'POST', body: JSON.stringify(body), token }),
     marketingSuggestions: (body: { projectId?: string; traffic?: number; conversions?: number; cac?: number; roi?: number; byPlatform?: Record<string, unknown> }, token: string) =>
       request<AIMarketingSuggestionsResponse>('/api/v1/ai/marketing-suggestions', { method: 'POST', body: JSON.stringify(body), token }),
+    // AI Startup Mentor
+    startupCofounder: (body: { idea: string; currentRole?: string; skillsYouHave?: string[]; skillsNeeded?: string[] }, token: string) =>
+      request<AIStartupCofounderResponse>('/api/v1/ai/startup-cofounder', { method: 'POST', body: JSON.stringify(body), token }),
+    businessPlan: (body: { idea: string; industry?: string; targetMarket?: string; businessModel?: string }, token: string) =>
+      request<AIBusinessPlanResponse>('/api/v1/ai/business-plan', { method: 'POST', body: JSON.stringify(body), token }),
+    marketAnalysis: (body: { idea: string; region?: string; industry?: string }, token: string) =>
+      request<AIMarketAnalysisResponse>('/api/v1/ai/market-analysis', { method: 'POST', body: JSON.stringify(body), token }),
+    riskAnalysis: (body: { idea: string; projectId?: string; stage?: string }, token: string) =>
+      request<AIRiskAnalysisResponse>('/api/v1/ai/risk-analysis', { method: 'POST', body: JSON.stringify(body), token }),
+    ideaChat: (body: { messages: { role: 'user' | 'assistant'; content: string }[] }, token: string) =>
+      request<AIIdeaChatResponse>('/api/v1/ai/idea-chat', { method: 'POST', body: JSON.stringify(body), token }),
+    smartMilestones: (body: { ideaSummary?: string; projectId?: string; horizonWeeks?: number }, token: string) =>
+      request<AISmartMilestonesResponse>('/api/v1/ai/smart-milestones', { method: 'POST', body: JSON.stringify(body), token }),
   },
   campaigns: {
     create: (body: { projectId: string; platform: string; budget: number; startDate: string; endDate: string }, token: string) =>
@@ -454,6 +477,52 @@ export interface AIProjectInsightsResponse {
 
 export interface AIMarketingSuggestionsResponse {
   suggestions: string[];
+  summary: string;
+}
+
+export interface AIStartupCofounderResponse {
+  idealCofounderProfile: string[];
+  roleFit: { yourRole: string; suggestedComplement: string };
+  traitsToLookFor: string[];
+  redFlags: string[];
+  summary: string;
+}
+
+export interface AIBusinessPlanResponse {
+  executiveSummary: string;
+  problemStatement: string;
+  solution: string;
+  marketOpportunity: { size: string; trends: string[] };
+  businessModel: { revenue: string; pricing: string; unitEconomics: string };
+  goToMarket: string[];
+  financialProjections: { year1: string; year2: string; year3: string };
+  summary: string;
+}
+
+export interface AIMarketAnalysisResponse {
+  marketSize: { tam: string; sam: string; som: string };
+  trends: string[];
+  competitors: string[];
+  opportunities: string[];
+  threats: string[];
+  summary: string;
+}
+
+export interface AIRiskAnalysisResponse {
+  risks: { area: string; level: string; description: string; mitigation: string }[];
+  investorReadinessScore: number;
+  scoreBreakdown: Record<string, number>;
+  nextSteps: string[];
+  summary: string;
+}
+
+export interface AIIdeaChatResponse {
+  message: string;
+}
+
+export interface AISmartMilestonesResponse {
+  milestones: { title: string; suggestedWeeks: number; phase: string; order: number; dueOffsetWeeks: number }[];
+  horizonWeeks: number;
   summary: string;
 }
 

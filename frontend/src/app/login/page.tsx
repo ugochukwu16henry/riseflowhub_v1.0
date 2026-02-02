@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { api, setStoredToken } from '@/lib/api';
 
@@ -39,7 +40,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="flex justify-center mb-4">
-          <img src="/Afrilauch_logo.png" alt="AfriLaunch Hub" className="h-14 w-auto object-contain" />
+          <Image
+            src="/Afrilauch_logo.png"
+            alt="AfriLaunch Hub"
+            width={180}
+            height={56}
+            priority
+            className="h-14 w-auto object-contain"
+          />
         </div>
         <h1 className="text-2xl font-bold text-primary mb-2 text-center">AfriLaunch Hub</h1>
         <p className="text-secondary text-sm mb-6 text-center">Sign in to your account</p>

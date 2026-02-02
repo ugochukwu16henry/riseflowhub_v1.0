@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { getStoredToken, clearStoredToken, api, type User } from '@/lib/api';
 
 const clientNav = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard/mentor', label: 'AI Mentor' },
   { href: '/dashboard/project', label: 'Project' },
   { href: '/dashboard/startup', label: 'Publish to Marketplace' },
   { href: '/dashboard/marketing', label: 'Marketing' },
@@ -74,8 +76,11 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-secondary">Loading...</p>
+      <div className="min-h-screen flex bg-background text-text-dark">
+        <aside className="w-56 flex-shrink-0 border-r border-gray-200 bg-white min-h-screen animate-pulse-subtle" />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <p className="text-secondary text-sm">Loading...</p>
+        </main>
       </div>
     );
   }
@@ -96,7 +101,7 @@ export default function DashboardLayout({
       <aside className="w-56 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col min-h-screen">
         <div className="p-4 border-b border-gray-100">
           <Link href={base} className="flex items-center gap-2 text-lg font-bold" style={{ color: primaryColor }}>
-            <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" />
+            <Image src={logoUrl} alt={brandName} width={32} height={32} className="h-8 w-auto object-contain" unoptimized={logoUrl.startsWith('http')} />
             <span>{brandName}</span>
           </Link>
         </div>

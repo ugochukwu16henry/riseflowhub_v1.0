@@ -14,3 +14,11 @@ body {
   background-color: var(--background);
   color: var(--text-dark);
 }
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 1s ease-in-out infinite;
+}

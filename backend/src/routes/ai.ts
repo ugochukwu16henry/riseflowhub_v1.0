@@ -139,4 +139,168 @@ router.post(
   }
 );
 
+// ——— AI Startup Mentor ———
+
+// POST /api/v1/ai/startup-cofounder — Cofounder fit & role suggestions
+router.post(
+  '/startup-cofounder',
+  [
+    body('idea').trim().notEmpty(),
+    body('currentRole').optional().trim(),
+    body('skillsYouHave').optional().isArray(),
+    body('skillsNeeded').optional().isArray(),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { idea, currentRole = 'founder', skillsYouHave = [], skillsNeeded = [] } = req.body;
+    const roles = ['Technical cofounder (CTO)', 'Business/ops cofounder (COO)', 'Product cofounder', 'Growth/marketing cofounder'];
+    const traits = ['Complementary skills', 'Aligned vision', 'Clear equity split', 'Defined decision-making'];
+    res.json({
+      idealCofounderProfile: roles.slice(0, 2),
+      roleFit: { yourRole: currentRole, suggestedComplement: roles[0] },
+      traitsToLookFor: traits,
+      redFlags: ['No vesting', 'Unclear roles', 'No written agreement'],
+      summary: `For "${idea.slice(0, 50)}...", consider a cofounder strong in ${roles[0].toLowerCase()}. Skills to seek: ${(skillsNeeded as string[]).length ? (skillsNeeded as string[]).join(', ') : 'complementary to yours'}.`,
+    });
+  }
+);
+
+// POST /api/v1/ai/business-plan — Generate business plan sections
+router.post(
+  '/business-plan',
+  [
+    body('idea').trim().notEmpty(),
+    body('industry').optional().trim(),
+    body('targetMarket').optional().trim(),
+    body('businessModel').optional().trim(),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { idea, industry = 'Technology', targetMarket = 'SMBs and early adopters', businessModel = 'Subscription + usage' } = req.body;
+    res.json({
+      executiveSummary: `A venture addressing: ${idea}. Target: ${targetMarket}. Model: ${businessModel}. We aim to validate in 6 months and scale in 12.`,
+      problemStatement: `Current solutions are fragmented, expensive, or not tailored to the target segment. Opportunity: ${industry} market gap.`,
+      solution: `Our solution focuses on core value: clarity, ease of use, and measurable outcomes for ${targetMarket}.`,
+      marketOpportunity: { size: 'Addressable market in billions (TAM/SAM/SOM).', trends: ['Digital adoption', 'Remote-first', 'Data-driven decisions'] },
+      businessModel: { revenue: businessModel, pricing: 'Tiered subscription; enterprise custom.', unitEconomics: 'CAC, LTV, payback period to be validated.' },
+      goToMarket: ['Launch MVP to early adopters', 'Content and partnerships', 'Paid acquisition once PMF'],
+      financialProjections: { year1: 'Focus on retention and ARR', year2: 'Scale marketing', year3: 'Expand segments' },
+      summary: `Business plan outline generated for ${industry} venture. Refine with real numbers and market research.`,
+    });
+  }
+);
+
+// POST /api/v1/ai/market-analysis — Market size, trends, competitors, insights
+router.post(
+  '/market-analysis',
+  [
+    body('idea').trim().notEmpty(),
+    body('region').optional().trim(),
+    body('industry').optional().trim(),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { idea, region = 'Africa', industry = 'Technology' } = req.body;
+    res.json({
+      marketSize: { tam: 'Total addressable market growing 15%+ CAGR', sam: 'Serviceable addressable market', som: 'Realistic Year 1–3 capture' },
+      trends: ['Digital transformation', 'Mobile-first', 'Localization and trust', 'Regulation and compliance'],
+      competitors: ['Incumbents (broad, legacy)', 'Niche players', 'Regional alternatives'],
+      opportunities: [`First-mover in ${region} for this use case`, 'Partnerships with incumbents', 'Upsell and expansion revenue'],
+      threats: ['Funding cycles', 'Talent', 'Infrastructure'],
+      summary: `Market analysis for ${industry} in ${region}. Validate with primary research and expert interviews.`,
+    });
+  }
+);
+
+// POST /api/v1/ai/risk-analysis — Risks, mitigations, investor readiness score
+router.post(
+  '/risk-analysis',
+  [
+    body('idea').trim().notEmpty(),
+    body('projectId').optional().isUUID(),
+    body('stage').optional().trim(),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { idea, stage = 'idea' } = req.body;
+    const score = Math.min(95, 45 + Math.floor(Math.random() * 50));
+    const risks = [
+      { area: 'Market', level: 'Medium', description: 'Market timing and adoption risk.', mitigation: 'Validate with early users and pilots.' },
+      { area: 'Execution', level: 'Medium', description: 'Team capacity and delivery risk.', mitigation: 'Scope MVP tightly; consider technical cofounder.' },
+      { area: 'Financial', level: 'Low', description: 'Runway and burn rate.', mitigation: '18-month runway target; diversify revenue.' },
+    ];
+    res.json({
+      risks,
+      investorReadinessScore: score,
+      scoreBreakdown: {
+        team: Math.min(100, score + 5),
+        market: Math.min(100, score),
+        traction: Math.max(0, score - 10),
+        financials: Math.min(100, score + 2),
+        documentation: Math.max(0, score - 15),
+      },
+      nextSteps: [
+        'Document assumptions and milestones in a one-pager.',
+        'Prepare a clear ask (amount, use of funds).',
+        score < 60 ? 'Strengthen traction or team before pitching.' : 'Consider soft commitments and intro meetings.',
+      ],
+      summary: `Investor readiness: ${score}/100. Focus on improving lowest scores before raising.`,
+    });
+  }
+);
+
+// POST /api/v1/ai/idea-chat — Idea validation chat (conversational)
+router.post(
+  '/idea-chat',
+  [body('messages').isArray(), body('messages.*.role').isIn(['user', 'assistant']), body('messages.*.content').trim().notEmpty()],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { messages } = req.body as { messages: { role: string; content: string }[] };
+    const lastUser = messages.filter((m: { role: string }) => m.role === 'user').pop();
+    const content = (lastUser?.content ?? '').toLowerCase();
+    let reply = 'Share more about your idea—problem, who it’s for, and why now—and I’ll give focused feedback.';
+    if (content.includes('market') || content.includes('competitor')) {
+      reply = 'Market and competition matter a lot. I can run a market analysis for you from the Mentor—use the Market insights tab and paste your idea there.';
+    } else if (content.includes('investor') || content.includes('pitch')) {
+      reply = 'Use the Risk & investor readiness section here to get a readiness score and a list of next steps before you pitch.';
+    } else if (content.length > 80) {
+      reply = `You’ve described a clear direction. Next: (1) Validate with 5–10 potential users. (2) Draft a one-page business plan using the Business plan tab. (3) Check your investor readiness in the Risk analysis section.`;
+    }
+    res.json({ message: reply });
+  }
+);
+
+// POST /api/v1/ai/smart-milestones — Suggested milestones from idea or project
+router.post(
+  '/smart-milestones',
+  [body('ideaSummary').optional().trim(), body('projectId').optional().isUUID(), body('horizonWeeks').optional().isInt({ min: 4, max: 52 })],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { ideaSummary = '', horizonWeeks = 24 } = req.body;
+    const milestones = [
+      { title: 'Problem validation & user interviews', suggestedWeeks: 2, phase: 'Discovery' },
+      { title: 'MVP scope lock & design', suggestedWeeks: 4, phase: 'Discovery' },
+      { title: 'MVP build (core features)', suggestedWeeks: 8, phase: 'Build' },
+      { title: 'Private beta & feedback', suggestedWeeks: 4, phase: 'Validate' },
+      { title: 'Launch & first 100 users', suggestedWeeks: 4, phase: 'Launch' },
+      { title: 'Metrics review & iteration', suggestedWeeks: 2, phase: 'Scale' },
+    ];
+    res.json({
+      milestones: milestones.map((m, i) => ({
+        ...m,
+        order: i + 1,
+        dueOffsetWeeks: milestones.slice(0, i + 1).reduce((s, x) => s + x.suggestedWeeks, 0),
+      })),
+      horizonWeeks,
+      summary: ideaSummary ? `Smart milestones for: ${ideaSummary.slice(0, 60)}...` : `Default ${horizonWeeks}-week milestone plan. Adapt to your project.`,
+    });
+  }
+);
+
 export { router as aiRoutes };
