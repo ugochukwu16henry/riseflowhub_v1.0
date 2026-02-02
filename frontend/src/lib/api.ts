@@ -392,13 +392,25 @@ export interface StartupProfileListItem extends StartupProfile {
 }
 
 export interface StartupProfileDetail extends StartupProfile {
+  fullView?: boolean;
+  country?: string | null;
+  liveUrl?: string | null;
+  repoUrl?: string | null;
+  screenshots?: string[] | null;
+  pitchDeckUrl?: string | null;
+  aiFeasibilityScore?: number | null;
+  aiRiskLevel?: string | null;
+  aiMarketPotential?: string | null;
   project: {
     id: string;
     projectName: string;
-    description: string | null;
+    description?: string | null;
     stage: string;
-    status: string;
-    client: { businessName: string; industry: string | null; userId: string; user: { name: string } };
+    status?: string;
+    liveUrl?: string | null;
+    repoUrl?: string | null;
+    client: { businessName: string; industry: string | null; userId?: string; user?: { name: string } };
+    milestones?: { id: string; title: string; status: string; dueDate: string | null }[];
   };
 }
 

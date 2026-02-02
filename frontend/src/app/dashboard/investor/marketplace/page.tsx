@@ -75,7 +75,7 @@ export default function MarketplacePage() {
           {startups.map((s) => (
             <Link
               key={s.id}
-              href={`/dashboard/investor/startups/${s.id}`}
+              href={`/startups/${s.id}`}
               className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary hover:shadow-md transition"
             >
               <h2 className="font-semibold text-secondary mb-1">{s.project?.projectName ?? 'Startup'}</h2>

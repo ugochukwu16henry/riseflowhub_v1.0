@@ -343,16 +343,24 @@ model Investor {
 }
 
 model StartupProfile {
-  id                String                 @id @default(uuid())
-  projectId         String                 @unique @map("project_id")
-  pitchSummary      String                 @map("pitch_summary") @db.Text
-  tractionMetrics   String?                @map("traction_metrics") @db.Text
-  fundingNeeded     Decimal                @map("funding_needed") @db.Decimal(12, 2)
-  equityOffer       Decimal?               @map("equity_offer") @db.Decimal(5, 2)
-  stage             String
-  visibilityStatus  StartupVisibilityStatus @default(draft) @map("visibility_status")
-  createdAt         DateTime               @default(now()) @map("created_at")
-  updatedAt         DateTime               @updatedAt @map("updated_at")
+  id                  String                 @id @default(uuid())
+  projectId           String                 @unique @map("project_id")
+  pitchSummary        String                 @map("pitch_summary") @db.Text
+  tractionMetrics     String?                @map("traction_metrics") @db.Text
+  fundingNeeded       Decimal                @map("funding_needed") @db.Decimal(12, 2)
+  equityOffer         Decimal?               @map("equity_offer") @db.Decimal(5, 2)
+  stage               String
+  country             String?                @db.VarChar(100)
+  liveUrl             String?                @map("live_url") @db.VarChar(500)
+  repoUrl             String?                @map("repo_url") @db.VarChar(500)
+  screenshots         Json?                  @db.JsonB // string[] URLs
+  pitchDeckUrl        String?                @map("pitch_deck_url") @db.VarChar(500)
+  aiFeasibilityScore  Int?                   @map("ai_feasibility_score") // 0-100
+  aiRiskLevel         String?                @map("ai_risk_level") @db.VarChar(20) // Low | Medium | High
+  aiMarketPotential   String?                @map("ai_market_potential") @db.VarChar(50)
+  visibilityStatus    StartupVisibilityStatus @default(draft) @map("visibility_status")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
 
   project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   investments Investment[]

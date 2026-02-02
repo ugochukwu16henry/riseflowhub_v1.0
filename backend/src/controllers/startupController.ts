@@ -9,14 +9,23 @@ const VISIBILITY_APPROVED = 'approved';
 /** POST /api/v1/startups/publish — Create or update startup profile; visibility = pending_approval until admin approves */
 export async function publish(req: Request, res: Response): Promise<void> {
   const payload = (req as unknown as { user: AuthPayload }).user;
-  const { projectId, pitchSummary, tractionMetrics, fundingNeeded, equityOffer, stage } = req.body as {
+  const body = req.body as {
     projectId: string;
     pitchSummary: string;
     tractionMetrics?: string;
     fundingNeeded: number;
     equityOffer?: number;
     stage?: string;
+    country?: string;
+    liveUrl?: string;
+    repoUrl?: string;
+    screenshots?: string[];
+    pitchDeckUrl?: string;
+    aiFeasibilityScore?: number;
+    aiRiskLevel?: string;
+    aiMarketPotential?: string;
   };
+  const { projectId, pitchSummary, tractionMetrics, fundingNeeded, equityOffer, stage } = body;
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: { client: true },
@@ -37,6 +46,14 @@ export async function publish(req: Request, res: Response): Promise<void> {
     equityOffer: equityOffer != null ? equityOffer : null,
     stage: stage || project.stage,
     visibilityStatus,
+    country: body.country?.trim() || null,
+    liveUrl: body.liveUrl?.trim() || null,
+    repoUrl: body.repoUrl?.trim() || null,
+    screenshots: Array.isArray(body.screenshots) ? body.screenshots : null,
+    pitchDeckUrl: body.pitchDeckUrl?.trim() || null,
+    aiFeasibilityScore: body.aiFeasibilityScore != null ? Math.min(100, Math.max(0, body.aiFeasibilityScore)) : null,
+    aiRiskLevel: body.aiRiskLevel?.trim() || null,
+    aiMarketPotential: body.aiMarketPotential?.trim() || null,
   };
   const startup = await prisma.startupProfile.upsert({
     where: { projectId },
@@ -122,7 +139,7 @@ export async function marketplace(req: Request, res: Response): Promise<void> {
   res.json(startups);
 }
 
-/** GET /api/v1/startups/:id — Get startup profile by id (marketplace id = StartupProfile.id) */
+/** GET /api/v1/startups/:id — Get startup profile by id; full details only for verified investors or admin/owner */
 export async function getById(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
   const startup = await prisma.startupProfile.findUnique({
@@ -135,7 +152,12 @@ export async function getById(req: Request, res: Response): Promise<void> {
           description: true,
           stage: true,
           status: true,
+          liveUrl: true,
+          repoUrl: true,
           client: { select: { businessName: true, industry: true, userId: true, user: { select: { name: true } } } },
+        },
+        include: {
+          milestones: { orderBy: { createdAt: 'asc' }, select: { id: true, title: true, status: true, dueDate: true } },
         },
       },
     },
@@ -144,20 +166,67 @@ export async function getById(req: Request, res: Response): Promise<void> {
     res.status(404).json({ error: 'Startup not found' });
     return;
   }
+  const payload = (req as unknown as { user?: AuthPayload }).user;
+  const isAdmin = payload?.role === 'super_admin' || payload?.role === 'project_manager';
+  const projectWithClient = startup.project && 'client' in startup.project ? startup.project : null;
+  const ownerId = projectWithClient?.client?.userId;
+  const isOwner = ownerId === payload?.userId;
+
   if (startup.visibilityStatus !== VISIBILITY_APPROVED) {
-    const payload = (req as unknown as { user?: AuthPayload }).user;
-    const isAdmin = payload?.role === 'super_admin' || payload?.role === 'project_manager';
-    const projectWithClient = await prisma.project.findUnique({
-      where: { id: startup.projectId },
-      select: { client: { select: { userId: true } } },
-    });
-    const isOwner = projectWithClient?.client?.userId === payload?.userId;
     if (!isAdmin && !isOwner) {
       res.status(403).json({ error: 'Startup not visible' });
       return;
     }
   }
-  res.json(startup);
+
+  let fullView = isAdmin || isOwner;
+  if (!fullView && payload?.role === 'investor') {
+    const investor = await prisma.investor.findUnique({
+      where: { userId: payload.userId },
+      select: { verified: true },
+    });
+    fullView = investor?.verified === true;
+  }
+
+  const project = startup.project as {
+    id: string;
+    projectName: string;
+    description: string | null;
+    stage: string;
+    status: string;
+    liveUrl: string | null;
+    repoUrl: string | null;
+    client: { businessName: string; industry: string | null; userId: string; user: { name: string } };
+    milestones?: { id: string; title: string; status: string; dueDate: string | null }[];
+  } | null;
+
+  if (fullView && project) {
+    return res.json({ ...startup, fullView: true, project: { ...project, milestones: project.milestones ?? [] } });
+  }
+
+  const partial = {
+    id: startup.id,
+    projectId: startup.projectId,
+    stage: startup.stage,
+    fundingNeeded: startup.fundingNeeded,
+    equityOffer: startup.equityOffer,
+    country: startup.country,
+    visibilityStatus: startup.visibilityStatus,
+    fullView: false,
+    project: project
+      ? { id: project.id, projectName: project.projectName, stage: project.stage, client: project.client }
+      : null,
+    pitchSummary: startup.pitchSummary.length > 400 ? startup.pitchSummary.slice(0, 400) + '…' : startup.pitchSummary,
+    tractionMetrics: null,
+    liveUrl: null,
+    repoUrl: null,
+    screenshots: null,
+    pitchDeckUrl: null,
+    aiFeasibilityScore: null,
+    aiRiskLevel: null,
+    aiMarketPotential: null,
+  };
+  res.json(partial);
 }
 
 /** PUT /api/v1/startups/:id/approve — Admin approve startup visibility */

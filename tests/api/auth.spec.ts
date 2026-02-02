@@ -38,6 +38,8 @@ test.describe('Auth API', () => {
     expect(user.id).toBeDefined();
     expect(user.email).toBe('test-client@example.com');
     expect(user.role).toBeDefined();
+    expect(typeof user.setupPaid).toBe('boolean');
+    expect(user.setupReason === null || typeof user.setupReason === 'string').toBeTruthy();
   });
 
   test('GET /api/v1/auth/me without token returns 401', async ({ request }) => {
