@@ -15,8 +15,13 @@
 ```
 Afrilauch_v1.0/
 ├── frontend/          # Next.js app (Client + Super Admin dashboards)
-├── backend/           # Express API (auth, users, clients, projects, tasks)
+├── backend/           # Express API (auth, users, clients, projects, tasks, agreements, etc.)
+├── mobile/            # React Native (Expo) app — projects, tasks, agreements, chat, AI, push
 ├── TECH Platform/     # Specs, wireframes, API docs (extracted .txt in extracted/)
+├── PROJECT_BUILD_SUMMARY.md   # Living doc: summaries of all modules — update as we move forward
+├── MODULE_1_SUMMARY.md
+├── MODULE_2_AGREEMENTS_SUMMARY.md
+├── MODULE_3_PROJECT_MANAGEMENT_SUMMARY.md
 ├── ANALYSIS_SUMMARY.md
 └── README.md
 ```
@@ -63,7 +68,7 @@ App runs at **http://localhost:3000**.
 - **Projects:** `POST/GET/PUT/DELETE /api/v1/projects`
 - **Tasks:** `POST/GET /api/v1/projects/:id/tasks`, `PUT/DELETE /api/v1/projects/:id/tasks/:taskId`
 
-Full list: see `backend/API_DOCUMENTATION.md`.
+Full list: see `backend/API_DOCUMENTATION.md`. For a consolidated summary of all modules (Investor Marketplace, Marketing, Multi-tenant, Mobile app, etc.), see **`PROJECT_BUILD_SUMMARY.md`** — update that doc as the project moves forward.
 
 ## Development phases (from specs)
 
