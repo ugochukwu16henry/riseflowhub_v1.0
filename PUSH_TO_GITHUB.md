@@ -1,35 +1,21 @@
-# Push to GitHub
+# Push to GitHub (ugochukwu16henry)
 
 Run these commands in **PowerShell** from the project root `c:\Users\Dell\Documents\Afrilauch_v1.0`.
 
-## 1. Unstage everything and re-add (so .gitignore applies)
+## 1. Create the repo on GitHub (one-time)
+
+1. Go to [https://github.com/new](https://github.com/new) and sign in as **ugochukwu16henry**.
+2. Repository name: **Afrilauch_v1.0**
+3. Leave it **empty** (no README, no .gitignore).
+4. Click **Create repository**.
+
+## 2. Point remote to your account and push
 
 ```powershell
 cd "c:\Users\Dell\Documents\Afrilauch_v1.0"
-git reset HEAD .
-git add .
-```
-
-## 2. Check that .pnpm-store and node_modules are NOT listed
-
-```powershell
-git status --short
-```
-
-If you see `.pnpm-store/` or `node_modules/` in the list, they are not ignored. The root `.gitignore` should exclude them.
-
-## 3. Commit
-
-```powershell
-git commit -m "Initial commit: AfriLaunch Hub MVP"
-```
-
-## 4. Set remote and push
-
-```powershell
-git remote remove origin 2>$null; git remote add origin https://github.com/ugochukwuhenry/Afrilauch_v1.0.git
+git remote set-url origin https://github.com/ugochukwu16henry/Afrilauch_v1.0.git
 git branch -M main
 git push -u origin main
 ```
 
-If GitHub asks for auth, use a **Personal Access Token** (Settings → Developer settings → Personal access tokens) as the password, or sign in with GitHub CLI (`gh auth login`).
+If Git asks for credentials, use your **ugochukwu16henry** GitHub username and a **Personal Access Token** (Settings → Developer settings → Personal access tokens) as the password.
