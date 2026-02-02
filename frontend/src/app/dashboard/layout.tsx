@@ -21,6 +21,7 @@ const clientNav = [
 
 const adminNav = [
   { href: '/dashboard/admin', label: 'Dashboard' },
+  { href: '/dashboard/mentor', label: 'AI Mentor' },
   { href: '/dashboard/admin/projects', label: 'Projects' },
   { href: '/dashboard/marketing', label: 'Marketing' },
   { href: '/dashboard/admin/tenants', label: 'Tenants' },
@@ -33,6 +34,7 @@ const adminNav = [
 
 const investorNav = [
   { href: '/dashboard/investor', label: 'Dashboard' },
+  { href: '/dashboard/mentor', label: 'AI Mentor' },
   { href: '/dashboard/investor/marketplace', label: 'Marketplace' },
   { href: '/dashboard/investor/investments', label: 'My investments' },
 ];

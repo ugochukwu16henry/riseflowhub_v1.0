@@ -1,0 +1,12 @@
+export { Section } from './Section';
+export { Nav } from './Nav';
+export { Hero } from './Hero';
+export { Problem } from './Problem';
+export { Solution } from './Solution';
+export { HowItWorks } from './HowItWorks';
+export { AIPower } from './AIPower';
+export { ForInvestors } from './ForInvestors';
+export { PlatformFeatures } from './PlatformFeatures';
+export { Vision } from './Vision';
+export { FinalCTA } from './FinalCTA';
+export { Footer } from './Footer';

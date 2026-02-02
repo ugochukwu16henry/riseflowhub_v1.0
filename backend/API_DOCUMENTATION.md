@@ -96,6 +96,28 @@
 
 ---
 
+## AI (Startup Mentor)
+
+All AI endpoints require **JWT**.
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/ai/startup-cofounder` | Cofounder fit & role suggestions |
+| POST | `/ai/business-plan` | Generate business plan sections |
+| POST | `/ai/market-analysis` | Market size, trends, competitors, insights |
+| POST | `/ai/risk-analysis` | Risks, mitigations, investor readiness score |
+| POST | `/ai/idea-chat` | Idea validation chat (conversational) |
+| POST | `/ai/smart-milestones` | Suggested milestones from idea or horizon |
+
+**Startup cofounder body:** `{ "idea" (required), "currentRole?", "skillsYouHave?", "skillsNeeded?" }`  
+**Business plan body:** `{ "idea" (required), "industry?", "targetMarket?", "businessModel?" }`  
+**Market analysis body:** `{ "idea" (required), "region?", "industry?" }`  
+**Risk analysis body:** `{ "idea" (required), "projectId?", "stage?" }` — returns `investorReadinessScore` (0–100) and `scoreBreakdown`.  
+**Idea chat body:** `{ "messages": [ { "role": "user" | "assistant", "content": "..." } ] }` — returns `{ "message": "..." }`.  
+**Smart milestones body:** `{ "ideaSummary?", "projectId?", "horizonWeeks?" }` — returns ordered milestones with phases and suggested weeks.
+
+---
+
 ## Roles (for access control)
 
 - `client` — own projects only  
