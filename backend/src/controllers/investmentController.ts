@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { sendNotificationEmail } from '../services/emailService';
+import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
@@ -39,6 +40,13 @@ export async function expressInterest(req: Request, res: Response): Promise<void
         where: { id: existing.id },
         data: { status: 'meeting_requested', meetingRequestedAt: new Date() },
       });
+      createAuditLog(prisma, {
+        adminId: userId,
+        actionType: 'investor_interest',
+        entityType: 'investment',
+        entityId: existing.id,
+        details: { startupId, status: 'meeting_requested' },
+      }).catch(() => {});
       const updated = await prisma.investment.findUnique({
         where: { id: existing.id },
         include: { startup: { include: { project: { select: { projectName: true } } } } },
@@ -64,6 +72,13 @@ export async function expressInterest(req: Request, res: Response): Promise<void
       },
     },
   });
+  createAuditLog(prisma, {
+    adminId: userId,
+    actionType: 'investor_interest',
+    entityType: 'investment',
+    entityId: investment.id,
+    details: { startupId, status: investment.status },
+  }).catch(() => {});
   const ownerEmail = investment?.startup?.project?.client?.user?.email;
   const investorName = (await prisma.user.findUnique({ where: { id: userId }, select: { name: true } }))?.name;
   if (ownerEmail) {

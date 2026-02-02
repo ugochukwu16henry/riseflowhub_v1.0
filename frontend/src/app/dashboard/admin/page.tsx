@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getStoredToken } from '@/lib/api';
+import { getStoredToken, api, type User } from '@/lib/api';
+import type { SuperAdminOverview } from '@/lib/api';
 
 interface ProjectSummary {
   id: string;
@@ -13,22 +14,62 @@ interface ProjectSummary {
 }
 
 export default function SuperAdminDashboardPage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [overview, setOverview] = useState<SuperAdminOverview | null>(null);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
-    fetch('/api/v1/projects', { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => res.ok ? res.json() : [])
-      .then(setProjects)
-      .finally(() => setLoading(false));
+    api.auth.me(token).then(setUser).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) return;
+    if (user?.role === 'super_admin') {
+      api.superAdmin
+        .overview(token)
+        .then(setOverview)
+        .catch(() => setOverview(null));
+    }
+    api.projects
+      .list(token)
+      .then(setProjects)
+      .catch(() => setProjects([]))
+      .finally(() => setLoading(false));
+  }, [user?.role]);
+
+  const isSuperAdmin = user?.role === 'super_admin';
 
   return (
     <div className="max-w-6xl">
-      <h1 className="text-2xl font-bold text-secondary mb-2">Super Admin Dashboard</h1>
-      <p className="text-gray-600 mb-8">Overview of all projects and platform activity.</p>
+      <h1 className="text-2xl font-bold text-secondary mb-2">
+        {isSuperAdmin ? 'Super Admin' : 'Admin'} Dashboard
+      </h1>
+      <p className="text-gray-600 mb-8">
+        {isSuperAdmin
+          ? 'Full platform visibility, metrics, and activity.'
+          : 'Overview of projects and platform activity.'}
+      </p>
+
+      {isSuperAdmin && overview && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          <MetricCard label="Total Users" value={overview.totalUsers} />
+          <MetricCard label="Total Clients" value={overview.totalClients} />
+          <MetricCard label="Total Investors" value={overview.totalInvestors} />
+          <MetricCard label="Ideas Submitted" value={overview.ideasSubmitted} />
+          <MetricCard label="Active Projects" value={overview.activeProjects} />
+          <MetricCard label="Agreements Signed" value={overview.agreementsSigned} />
+          <MetricCard label="Total Revenue (USD)" value={`$${overview.totalRevenueUsd.toFixed(2)}`} />
+          <MetricCard label="Revenue (Month)" value={`$${overview.revenueMonthlyUsd.toFixed(2)}`} />
+          <MetricCard label="Revenue (Year)" value={`$${overview.revenueYearlyUsd.toFixed(2)}`} />
+          <MetricCard label="Setup Fees (USD)" value={`$${overview.setupFeesCollectedUsd.toFixed(2)}`} />
+          <MetricCard label="Consultation (USD)" value={`$${overview.consultationPaymentsUsd.toFixed(2)}`} />
+          <MetricCard label="Investor Fees (USD)" value={`$${overview.investorFeesUsd.toFixed(2)}`} />
+        </div>
+      )}
 
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-8">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -109,6 +150,31 @@ export default function SuperAdminDashboardPage() {
           <h3 className="font-semibold text-secondary mb-1">Users</h3>
           <p className="text-sm text-gray-500">Clients and team members</p>
         </Link>
+        {isSuperAdmin && (
+          <>
+            <Link
+              href="/dashboard/admin/payments"
+              className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
+            >
+              <h3 className="font-semibold text-secondary mb-1">Payments Audit</h3>
+              <p className="text-sm text-gray-500">All payments, filters, export</p>
+            </Link>
+            <Link
+              href="/dashboard/admin/activity"
+              className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
+            >
+              <h3 className="font-semibold text-secondary mb-1">User Activity</h3>
+              <p className="text-sm text-gray-500">Logins, submissions, signings</p>
+            </Link>
+            <Link
+              href="/dashboard/admin/audit-logs"
+              className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
+            >
+              <h3 className="font-semibold text-secondary mb-1">Audit Logs</h3>
+              <p className="text-sm text-gray-500">Platform audit trail</p>
+            </Link>
+          </>
+        )}
         <Link
           href="/dashboard/admin/reports"
           className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
@@ -117,6 +183,21 @@ export default function SuperAdminDashboardPage() {
           <p className="text-sm text-gray-500">Revenue and activity</p>
         </Link>
       </div>
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-secondary">{value}</p>
     </div>
   );
 }

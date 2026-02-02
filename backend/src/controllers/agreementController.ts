@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { sendNotificationEmail } from '../services/emailService';
+import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
@@ -236,6 +237,13 @@ export async function signAgreement(req: Request, res: Response): Promise<void> 
     where: { id: assigned.id },
     include: { agreement: { select: { title: true, type: true } }, user: { select: { email: true, name: true } } },
   });
+  createAuditLog(prisma, {
+    adminId: userId,
+    actionType: 'agreement_signed',
+    entityType: 'agreement',
+    entityId: assigned.id,
+    details: { agreementId },
+  }).catch(() => {});
   if (updated?.user?.email) {
     sendNotificationEmail({
       type: 'agreement_signed',

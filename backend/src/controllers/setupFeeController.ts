@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { convertUsdToCurrency } from '../services/currencyService';
+import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
@@ -86,6 +87,13 @@ export async function verify(req: Request, res: Response): Promise<void> {
       data: { setupPaid: true },
     }),
   ]);
+  createAuditLog(prisma, {
+    adminId: payload.userId,
+    actionType: 'setup_paid',
+    entityType: 'payment',
+    entityId: payment.id,
+    details: { type: 'setup_fee' },
+  }).catch(() => {});
   res.json({ ok: true, setupPaid: true });
 }
 
@@ -99,5 +107,12 @@ export async function skip(req: Request, res: Response): Promise<void> {
     where: { id: payload.userId },
     data: { setupReason: value },
   });
+  createAuditLog(prisma, {
+    adminId: payload.userId,
+    actionType: 'setup_skipped',
+    entityType: 'user',
+    entityId: payload.userId,
+    details: { reason: value },
+  }).catch(() => {});
   res.json({ ok: true, setupReason: value });
 }

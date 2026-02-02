@@ -37,6 +37,7 @@ function runAIEvaluation(ideaDescription: string, industry: string, country: str
 }
 
 import { sendNotificationEmail } from '../services/emailService';
+import { createAuditLog } from '../services/auditLogService';
 
 /** POST /api/v1/idea-submissions — Public: create User + Client + Project, trigger AI, return token */
 export async function submit(req: Request, res: Response): Promise<void> {
@@ -121,7 +122,7 @@ export async function submit(req: Request, res: Response): Promise<void> {
     .filter(Boolean)
     .join('\n\n');
 
-  await prisma.project.create({
+  const project = await prisma.project.create({
     data: {
       clientId: client.id,
       projectName,
@@ -130,6 +131,14 @@ export async function submit(req: Request, res: Response): Promise<void> {
       status: 'IdeaSubmitted',
     },
   });
+
+  createAuditLog(prisma, {
+    adminId: user.id,
+    actionType: 'idea_submitted',
+    entityType: 'idea',
+    entityId: project.id,
+    details: { email: user.email, name: user.name },
+  }).catch(() => {});
 
   runAIEvaluation(ideaDescription.trim(), industry?.trim() || '', country?.trim() || '');
   sendNotificationEmail({

@@ -341,7 +341,89 @@ export const api = {
     skip: (body: { reason: 'cant_afford' | 'pay_later' | 'exploring' | 'other' }, token: string) =>
       request<{ ok: boolean; setupReason: string }>('/api/v1/setup-fee/skip', { method: 'PUT', body: JSON.stringify(body), token }),
   },
+  superAdmin: {
+    overview: (token: string) => request<SuperAdminOverview>(`/api/v1/super-admin/overview`, { token }),
+    payments: (token: string, params?: { period?: string; userId?: string; paymentType?: string; format?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<{ rows: SuperAdminPaymentRow[]; total?: number } | string>(`/api/v1/super-admin/payments${q ? `?${q}` : ''}`, { token });
+    },
+    activity: (token: string, params?: { actionType?: string; limit?: number }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<{ items: SuperAdminActivityItem[] }>(`/api/v1/super-admin/activity${q ? `?${q}` : ''}`, { token });
+    },
+    auditLogs: (token: string, params?: { page?: number; limit?: number; entityType?: string; actionType?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<SuperAdminAuditLogsResponse>(`/api/v1/super-admin/audit-logs${q ? `?${q}` : ''}`, { token });
+    },
+    reports: (token: string, params?: { period?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<SuperAdminReportsResponse>(`/api/v1/super-admin/reports${q ? `?${q}` : ''}`, { token });
+    },
+  },
 };
+
+export interface SuperAdminOverview {
+  totalUsers: number;
+  totalClients: number;
+  totalInvestors: number;
+  ideasSubmitted: number;
+  activeProjects: number;
+  agreementsSigned: number;
+  totalRevenueUsd: number;
+  revenueMonthlyUsd: number;
+  revenueYearlyUsd: number;
+  setupFeesCollectedUsd: number;
+  consultationPaymentsUsd: number;
+  investorFeesUsd: number;
+}
+
+export interface SuperAdminPaymentRow {
+  userName: string;
+  role: string;
+  paymentType: string;
+  amount: number;
+  currency: string;
+  convertedUsd: number;
+  status: string;
+  date: string;
+}
+
+export interface SuperAdminActivityItem {
+  id: string;
+  actionType: string;
+  entityType: string;
+  entityId: string | null;
+  details: Record<string, unknown> | null;
+  timestamp: string;
+  userEmail: string | null;
+  userName: string | null;
+}
+
+export interface SuperAdminAuditLogEntry {
+  id: string;
+  adminId: string | null;
+  adminEmail: string | null;
+  actionType: string;
+  entityType: string;
+  entityId: string | null;
+  details: unknown;
+  timestamp: string;
+}
+
+export interface SuperAdminAuditLogsResponse {
+  items: SuperAdminAuditLogEntry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface SuperAdminReportsResponse {
+  period: string;
+  financialSummary: Array<{ period: string; revenueUsd: number; setupFeesUsd: number; milestoneUsd: number }>;
+  paymentTrends: Array<{ period: string; revenueUsd: number; setupFeesUsd: number; milestoneUsd: number }>;
+  growthMetrics: { totalUsers: number; totalProjects: number; newUsersLast30Days: number; newProjectsLast30Days: number };
+  platformUsage: { totalUsers: number; totalProjects: number; totalAgreementsSigned: number; totalConsultationsBooked: number };
+}
 
 export interface InvestorRegisterBody {
   name: string;
@@ -421,6 +503,14 @@ export interface StartupPublishBody {
   fundingNeeded: number;
   equityOffer?: number;
   stage?: string;
+  country?: string;
+  liveUrl?: string;
+  repoUrl?: string;
+  screenshots?: string[];
+  pitchDeckUrl?: string;
+  aiFeasibilityScore?: number;
+  aiRiskLevel?: string;
+  aiMarketPotential?: string;
 }
 
 export interface Investment {

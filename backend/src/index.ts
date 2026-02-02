@@ -25,6 +25,7 @@ import { consultationRoutes } from './routes/consultations';
 import { contactRoutes } from './routes/contact';
 import { adminLeadsRoutes } from './routes/adminLeads';
 import { setupFeeRoutes } from './routes/setupFee';
+import { superAdminRoutes } from './routes/superAdmin';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -58,6 +59,7 @@ app.use('/api/v1/consultations', consultationRoutes);
 app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/admin/leads', adminLeadsRoutes);
 app.use('/api/v1/setup-fee', setupFeeRoutes);
+app.use('/api/v1/super-admin', superAdminRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

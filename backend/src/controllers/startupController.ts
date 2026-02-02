@@ -146,17 +146,8 @@ export async function getById(req: Request, res: Response): Promise<void> {
     where: { id },
     include: {
       project: {
-        select: {
-          id: true,
-          projectName: true,
-          description: true,
-          stage: true,
-          status: true,
-          liveUrl: true,
-          repoUrl: true,
-          client: { select: { businessName: true, industry: true, userId: true, user: { select: { name: true } } } },
-        },
         include: {
+          client: { select: { businessName: true, industry: true, userId: true, user: { select: { name: true } } } },
           milestones: { orderBy: { createdAt: 'asc' }, select: { id: true, title: true, status: true, dueDate: true } },
         },
       },

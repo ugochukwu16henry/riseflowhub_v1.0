@@ -34,6 +34,28 @@ const adminNav = [
   { href: '/dashboard/admin/settings', label: 'Settings' },
 ];
 
+const superAdminNav = [
+  { href: '/dashboard/admin', label: 'Dashboard Overview' },
+  { href: '/dashboard/admin/users', label: 'Users' },
+  { href: '/dashboard/admin/leads', label: 'Leads' },
+  { href: '/dashboard/admin/projects', label: 'Ideas & Projects' },
+  { href: '/dashboard/admin/milestones', label: 'Milestones' },
+  { href: '/dashboard/tasks', label: 'Tasks' },
+  { href: '/dashboard/admin/investors', label: 'Investors' },
+  { href: '/dashboard/admin/startups', label: 'Startup Marketplace' },
+  { href: '/dashboard/admin/agreements', label: 'Agreements' },
+  { href: '/dashboard/admin/payments', label: 'Payments' },
+  { href: '/dashboard/admin/subscriptions', label: 'Subscriptions' },
+  { href: '/dashboard/admin/consultations', label: 'Consultations' },
+  { href: '/dashboard/notifications', label: 'Notifications' },
+  { href: '/dashboard/mentor', label: 'AI Evaluations' },
+  { href: '/dashboard/marketing', label: 'Marketing Campaigns' },
+  { href: '/dashboard/admin/analytics', label: 'Analytics' },
+  { href: '/dashboard/admin/audit-logs', label: 'Audit Logs' },
+  { href: '/dashboard/admin/reports', label: 'Reports' },
+  { href: '/dashboard/admin/settings', label: 'Settings' },
+];
+
 const investorNav = [
   { href: '/dashboard/investor', label: 'Dashboard' },
   { href: '/dashboard/mentor', label: 'AI Mentor' },
@@ -112,7 +134,8 @@ export default function DashboardLayout({
 
   if (!user) return null;
 
-  const nav = isAdmin(user.role) ? adminNav : isInvestor(user.role) ? investorNav : clientNav;
+  const nav =
+    user.role === 'super_admin' ? superAdminNav : isAdmin(user.role) ? adminNav : isInvestor(user.role) ? investorNav : clientNav;
   const base = isAdmin(user.role) ? '/dashboard/admin' : isInvestor(user.role) ? '/dashboard/investor' : '/dashboard';
   const primaryColor = user.tenant?.primaryColor || '#0FA958';
   const brandName = user.tenant?.orgName || 'AfriLaunch Hub';

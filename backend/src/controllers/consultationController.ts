@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
@@ -56,6 +57,14 @@ export async function create(req: Request, res: Response): Promise<void> {
       timezone: timezone?.trim() || null,
     },
   });
+
+  createAuditLog(prisma, {
+    adminId: null,
+    actionType: 'consultation_booked',
+    entityType: 'consultation',
+    entityId: booking.id,
+    details: { email: booking.email, fullName: booking.fullName },
+  }).catch(() => {});
 
   sendNotificationEmail({
     type: 'consultation_booked',

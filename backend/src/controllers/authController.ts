@@ -5,6 +5,7 @@ import { hashPassword, comparePassword } from '../utils/hash';
 import { signToken } from '../utils/jwt';
 import type { AuthPayload } from '../middleware/auth';
 import { sendNotificationEmail } from '../services/emailService';
+import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
@@ -77,6 +78,13 @@ export async function login(req: Request, res: Response): Promise<void> {
     role: user.role,
     tenantId: user.tenantId ?? undefined,
   });
+  createAuditLog(prisma, {
+    adminId: user.id,
+    actionType: 'login',
+    entityType: 'user',
+    entityId: user.id,
+    details: { email: user.email },
+  }).catch(() => {});
   const setupPaid = user.setupPaid ?? false;
   const setupReason = user.setupReason ?? null;
   res.json({

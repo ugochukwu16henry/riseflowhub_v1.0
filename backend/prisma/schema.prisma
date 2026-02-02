@@ -132,6 +132,7 @@ model User {
   adminLeadsAssigned AdminLead[]     @relation("AdminLeadsAssigned")
   adminLeadNotes    AdminLeadNote[]
   userPayments      UserPayment[]
+  auditLogsCreated  AuditLog[]    @relation("AuditLogAdmin")
 }
 
 model Client {
@@ -513,4 +514,17 @@ model AdminLeadNote {
 
   adminLead AdminLead @relation(fields: [adminLeadId], references: [id], onDelete: Cascade)
   createdBy User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+// Super Admin platform-wide audit (who did what, when)
+model AuditLog {
+  id          String   @id @default(uuid())
+  adminId     String?  @map("admin_id")   // user who performed action; null for system
+  actionType  String   @map("action_type") // e.g. login, idea_submitted, setup_skipped, agreement_signed
+  entityType  String   @map("entity_type") // user | payment | agreement | project | idea | consultation | investment
+  entityId    String?  @map("entity_id")
+  details     Json?    // extra payload
+  timestamp   DateTime @default(now()) @map("timestamp")
+
+  admin User? @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: SetNull)
 }

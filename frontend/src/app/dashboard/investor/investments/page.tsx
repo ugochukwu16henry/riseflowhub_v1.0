@@ -66,7 +66,7 @@ export default function MyInvestmentsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      href={`/dashboard/investor/startups/${inv.startupId}`}
+                      href={`/startups/${inv.startupId}`}
                       className="text-primary hover:underline"
                     >
                       View

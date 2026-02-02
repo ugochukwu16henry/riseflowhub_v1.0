@@ -35,3 +35,11 @@ export async function convertUsdToCurrency(usdAmount: number, currency: string):
     rate,
   };
 }
+
+/** Convert amount in given currency to USD (for audit/reports). */
+export async function convertToUsd(amount: number, currency: string): Promise<number> {
+  const code = (currency || 'USD').toUpperCase().slice(0, 3);
+  if (code === 'USD') return amount;
+  const rate = await getUsdToCurrencyRate(code);
+  return rate && rate > 0 ? Math.round((amount / rate) * 100) / 100 : amount;
+}

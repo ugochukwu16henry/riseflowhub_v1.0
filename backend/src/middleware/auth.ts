@@ -46,6 +46,20 @@ export function requireRoles(...allowedRoles: UserRole[]) {
   };
 }
 
+/** Super Admin only — full platform visibility and audit. */
+export function requireSuperAdmin(req: Request, res: Response, next: NextFunction): void {
+  const user = (req as Request & { user?: AuthPayload }).user;
+  if (!user) {
+    res.status(401).json({ error: 'Not authenticated' });
+    return;
+  }
+  if (user.role !== 'super_admin') {
+    res.status(403).json({ error: 'Super Admin access only' });
+    return;
+  }
+  next();
+}
+
 export function optionalAuth(req: Request, res: Response, next: NextFunction): void {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
