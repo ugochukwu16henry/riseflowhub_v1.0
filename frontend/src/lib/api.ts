@@ -25,6 +25,8 @@ export interface User {
   email: string;
   role: UserRole;
   tenantId?: string | null;
+  setupPaid?: boolean;
+  setupReason?: string | null;
   createdAt?: string;
   tenant?: {
     id: string;
@@ -322,6 +324,22 @@ export const api = {
       const q = new URLSearchParams(params as Record<string, string>).toString();
       return request<User[]>(`/api/v1/users${q ? `?${q}` : ''}`, { token });
     },
+  },
+  setupFee: {
+    quote: (currency: string, token?: string) =>
+      request<{ amountUsd: number; amount: number; currency: string; rate: number }>(
+        `/api/v1/setup-fee/quote?currency=${encodeURIComponent(currency)}`,
+        token ? { token } : {}
+      ),
+    createSession: (body: { currency?: string }, token: string) =>
+      request<{ sessionId: string; checkoutUrl: string; amount: number; currency: string; amountUsd: number }>(
+        '/api/v1/setup-fee/create-session',
+        { method: 'POST', body: JSON.stringify(body), token }
+      ),
+    verify: (body: { reference: string }, token: string) =>
+      request<{ ok: boolean; setupPaid: boolean }>('/api/v1/setup-fee/verify', { method: 'POST', body: JSON.stringify(body), token }),
+    skip: (body: { reason: 'cant_afford' | 'pay_later' | 'exploring' | 'other' }, token: string) =>
+      request<{ ok: boolean; setupReason: string }>('/api/v1/setup-fee/skip', { method: 'PUT', body: JSON.stringify(body), token }),
   },
 };
 
