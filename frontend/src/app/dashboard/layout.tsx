@@ -72,11 +72,11 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex bg-background text-text-dark">
-      <aside className="w-56 flex-shrink-0 border-r border-gray-200 bg-white">
+      <aside className="w-56 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col min-h-screen">
         <div className="p-4 border-b border-gray-100">
           <Link href={base} className="text-lg font-bold text-primary">AfriLaunch Hub</Link>
         </div>
-        <nav className="p-2 space-y-0.5">
+        <nav className="p-2 space-y-0.5 flex-1">
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -91,7 +91,7 @@ export default function DashboardLayout({
             </Link>
           ))}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100">
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
           <p className="text-xs text-gray-400 capitalize">{user.role.replace('_', ' ')}</p>
           <button
