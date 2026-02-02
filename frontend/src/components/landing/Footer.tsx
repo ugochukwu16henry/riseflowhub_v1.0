@@ -3,9 +3,10 @@ import Image from 'next/image';
 
 const FOOTER_LINKS = [
   { label: 'About', href: '/about' },
+  { label: 'Submit idea', href: '/submit-idea' },
   { label: 'Investors', href: '/dashboard/investor/marketplace' },
   { label: 'Startups', href: '/dashboard/startup' },
-  { label: 'Pricing', href: '#' },
+  { label: 'Pricing', href: '/pricing' },
   { label: 'Contact', href: '#contact' },
   { label: 'Terms', href: '#' },
   { label: 'Privacy', href: '#' },

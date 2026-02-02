@@ -77,7 +77,32 @@ async function request<T>(
   return res.json();
 }
 
+export interface IdeaSubmissionBody {
+  name: string;
+  email: string;
+  password: string;
+  country: string;
+  ideaDescription: string;
+  problemItSolves: string;
+  targetUsers: string;
+  industry: string;
+  stage: 'just_idea' | 'prototype' | 'existing_business';
+  goals: string[];
+  budgetRange: string;
+}
+
+export interface IdeaSubmissionResponse extends AuthResponse {
+  message: string;
+}
+
 export const api = {
+  ideaSubmissions: {
+    submit: (body: IdeaSubmissionBody) =>
+      request<IdeaSubmissionResponse>('/api/v1/idea-submissions', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  },
   auth: {
     register: (body: { name: string; email: string; password: string; role?: UserRole }, tenantDomain?: string) =>
       request<AuthResponse>('/api/v1/auth/register', {

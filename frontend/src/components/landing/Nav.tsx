@@ -49,6 +49,7 @@ export function Nav() {
         <div className="border-t border-gray-100 bg-white px-4 py-4 md:hidden">
           <div className="flex flex-col gap-3">
             <Link href="/about" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>About</Link>
+            <Link href="/pricing" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Pricing</Link>
             <a href="/#solution" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>How it works</a>
             <a href="/#investors" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Investors</a>
             <a href="/#features" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Features</a>
