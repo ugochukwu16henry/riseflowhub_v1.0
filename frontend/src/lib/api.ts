@@ -95,10 +95,55 @@ export interface IdeaSubmissionResponse extends AuthResponse {
   message: string;
 }
 
+export interface ConsultationBookingBody {
+  fullName: string;
+  email: string;
+  country?: string;
+  businessIdea?: string;
+  stage?: string;
+  mainGoal?: string;
+  budgetRange?: string;
+  preferredContactMethod?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  timezone?: string;
+}
+
+export interface ConsultationBookingResponse {
+  id: string;
+  message: string;
+}
+
+export interface ContactMessageBody {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+}
+
+export interface ContactMessageResponse {
+  id: string;
+  message: string;
+}
+
 export const api = {
   ideaSubmissions: {
     submit: (body: IdeaSubmissionBody) =>
       request<IdeaSubmissionResponse>('/api/v1/idea-submissions', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  },
+  consultations: {
+    book: (body: ConsultationBookingBody) =>
+      request<ConsultationBookingResponse>('/api/v1/consultations', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  },
+  contact: {
+    send: (body: ContactMessageBody) =>
+      request<ContactMessageResponse>('/api/v1/contact', {
         method: 'POST',
         body: JSON.stringify(body),
       }),
@@ -254,6 +299,29 @@ export const api = {
     commit: (body: { startupId: string; amount?: number; equityPercent?: number; agreementId?: string }, token: string) =>
       request<Investment>(`/api/v1/investments/commit`, { method: 'POST', body: JSON.stringify(body), token }),
     list: (token: string) => request<InvestmentListItem[]>(`/api/v1/investments`, { token }),
+  },
+  admin: {
+    leads: {
+      list: (token: string, params?: { status?: string }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<AdminLeadRow[]>(`/api/v1/admin/leads${q ? `?${q}` : ''}`, { token });
+      },
+      get: (id: string, token: string) => request<AdminLeadDetail>(`/api/v1/admin/leads/${id}`, { token }),
+      create: (body: { name: string; email: string; country?: string; ideaSummary?: string; stage?: string; goal?: string; budget?: string }, token: string) =>
+        request<AdminLeadRow>('/api/v1/admin/leads', { method: 'POST', body: JSON.stringify(body), token }),
+      updateStatus: (id: string, body: { status: AdminLeadStatus }, token: string) =>
+        request<AdminLeadRow>(`/api/v1/admin/leads/${id}/status`, { method: 'PUT', body: JSON.stringify(body), token }),
+      assign: (id: string, body: { assignedToId: string | null }, token: string) =>
+        request<AdminLeadRow>(`/api/v1/admin/leads/${id}/assign`, { method: 'PUT', body: JSON.stringify(body), token }),
+      addNote: (id: string, body: { content: string }, token: string) =>
+        request<AdminLeadNoteRow>(`/api/v1/admin/leads/${id}/notes`, { method: 'POST', body: JSON.stringify(body), token }),
+    },
+  },
+  users: {
+    list: (token: string, params?: { role?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<User[]>(`/api/v1/users${q ? `?${q}` : ''}`, { token });
+    },
   },
 };
 
@@ -617,4 +685,37 @@ export interface MarketingAnalytics {
     periodStart: string;
     periodEnd: string;
   } | null;
+}
+
+export type AdminLeadStatus = 'New' | 'Contacted' | 'ProposalSent' | 'Converted' | 'Closed';
+
+export interface AdminLeadRow {
+  id: string;
+  name: string;
+  email: string;
+  country: string | null;
+  ideaSummary: string | null;
+  stage: string | null;
+  goal: string | null;
+  budget: string | null;
+  status: AdminLeadStatus;
+  assignedToId: string | null;
+  projectId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  assignedTo?: { id: string; name: string; email: string } | null;
+  project?: { id: string; projectName: string } | null;
+}
+
+export interface AdminLeadDetail extends AdminLeadRow {
+  notes: AdminLeadNoteRow[];
+}
+
+export interface AdminLeadNoteRow {
+  id: string;
+  adminLeadId: string;
+  content: string;
+  createdById: string | null;
+  createdAt: string;
+  createdBy?: { id: string; name: string } | null;
 }

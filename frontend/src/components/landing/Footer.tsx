@@ -4,10 +4,11 @@ import Image from 'next/image';
 const FOOTER_LINKS = [
   { label: 'About', href: '/about' },
   { label: 'Submit idea', href: '/submit-idea' },
+  { label: 'Book consultation', href: '/book-consultation' },
   { label: 'Investors', href: '/dashboard/investor/marketplace' },
   { label: 'Startups', href: '/dashboard/startup' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Contact', href: '/contact' },
   { label: 'Terms', href: '#' },
   { label: 'Privacy', href: '#' },
 ];

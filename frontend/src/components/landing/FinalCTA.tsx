@@ -18,12 +18,12 @@ export function FinalCTA() {
           >
             Start My Project
           </Link>
-          <a
-            href="#contact"
+          <Link
+            href="/book-consultation"
             className="w-full sm:w-auto rounded-xl border-2 border-gray-300 bg-white px-8 py-3.5 text-base font-semibold text-gray-700 hover:border-primary/30 hover:bg-gray-50 transition"
           >
             Book a Consultation
-          </a>
+          </Link>
         </div>
       </div>
     </Section>

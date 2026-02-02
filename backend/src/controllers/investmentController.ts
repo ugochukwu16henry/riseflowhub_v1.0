@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
+import { sendNotificationEmail } from '../services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -19,7 +20,7 @@ export async function expressInterest(req: Request, res: Response): Promise<void
   const { startupId, requestMeeting } = req.body as { startupId: string; requestMeeting?: boolean };
   const startup = await prisma.startupProfile.findUnique({
     where: { id: startupId },
-    include: { project: true },
+    include: { project: { include: { client: { include: { user: { select: { email: true, name: true } } } } } },
   });
   if (!startup) {
     res.status(404).json({ error: 'Startup not found' });
@@ -53,8 +54,25 @@ export async function expressInterest(req: Request, res: Response): Promise<void
       status: requestMeeting ? 'meeting_requested' : 'expressed',
       meetingRequestedAt: requestMeeting ? new Date() : null,
     },
-    include: { startup: { include: { project: { select: { projectName: true } } } } },
+    include: {
+      startup: {
+        include: {
+          project: {
+            include: { client: { include: { user: { select: { email: true, name: true } } } } },
+          },
+        },
+      },
+    },
   });
+  const ownerEmail = investment?.startup?.project?.client?.user?.email;
+  const investorName = (await prisma.user.findUnique({ where: { id: userId }, select: { name: true } }))?.name;
+  if (ownerEmail) {
+    sendNotificationEmail({
+      type: 'investor_interest_received',
+      userEmail: ownerEmail,
+      dynamicData: { startupName: investment?.startup?.project?.projectName, investorName },
+    }).catch((e) => console.error('[Investment] Email error:', e));
+  }
   res.status(201).json(investment);
 }
 

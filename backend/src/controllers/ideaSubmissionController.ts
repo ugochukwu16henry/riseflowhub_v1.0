@@ -36,11 +36,7 @@ function runAIEvaluation(ideaDescription: string, industry: string, country: str
   });
 }
 
-/** Stub: send confirmation email */
-function sendConfirmationEmail(email: string, name: string): void {
-  console.log('[IdeaSubmission] Confirmation email (stub):', { to: email, name });
-  // TODO: Integrate nodemailer / SendGrid / etc.
-}
+import { sendNotificationEmail } from '../services/emailService';
 
 /** POST /api/v1/idea-submissions — Public: create User + Client + Project, trigger AI, return token */
 export async function submit(req: Request, res: Response): Promise<void> {
@@ -136,7 +132,11 @@ export async function submit(req: Request, res: Response): Promise<void> {
   });
 
   runAIEvaluation(ideaDescription.trim(), industry?.trim() || '', country?.trim() || '');
-  sendConfirmationEmail(normalizedEmail, name.trim());
+  sendNotificationEmail({
+    type: 'idea_submitted',
+    userEmail: normalizedEmail,
+    dynamicData: { name: name.trim(), ideaPreview: ideaDescription.trim().slice(0, 120) },
+  }).catch((e) => console.error('[IdeaSubmission] Email error:', e));
 
   const token = signToken({
     userId: user.id,

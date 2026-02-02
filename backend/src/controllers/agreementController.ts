@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
+import { sendNotificationEmail } from '../services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -126,6 +127,18 @@ export async function assignAgreement(req: Request, res: Response): Promise<void
       results.push({ id: a.id, userId: uid, deadline: deadlineDate });
     }
   }
+  const users = await prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, email: true, name: true },
+  });
+  const deadlineStr = deadlineDate ? deadlineDate.toISOString().slice(0, 10) : undefined;
+  for (const u of users) {
+    sendNotificationEmail({
+      type: 'agreement_pending',
+      userEmail: u.email,
+      dynamicData: { name: u.name, agreementTitle: agreement.title, deadline: deadlineStr },
+    }).catch((e) => console.error('[Agreement] Email error:', e));
+  }
   res.status(201).json({ assigned: results });
 }
 
@@ -221,8 +234,15 @@ export async function signAgreement(req: Request, res: Response): Promise<void> 
   ]);
   const updated = await prisma.assignedAgreement.findUnique({
     where: { id: assigned.id },
-    include: { agreement: { select: { title: true, type: true } } },
+    include: { agreement: { select: { title: true, type: true } }, user: { select: { email: true, name: true } } },
   });
+  if (updated?.user?.email) {
+    sendNotificationEmail({
+      type: 'agreement_signed',
+      userEmail: updated.user.email,
+      dynamicData: { name: updated.user.name, agreementTitle: updated.agreement.title },
+    }).catch((e) => console.error('[Agreement] Email error:', e));
+  }
   res.json({ message: 'Agreement signed successfully', assignment: updated });
 }
 

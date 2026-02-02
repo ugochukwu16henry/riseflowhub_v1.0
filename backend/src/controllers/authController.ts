@@ -4,6 +4,7 @@ import type { UserRole } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/hash';
 import { signToken } from '../utils/jwt';
 import type { AuthPayload } from '../middleware/auth';
+import { sendNotificationEmail } from '../services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,12 @@ export async function signup(req: Request, res: Response): Promise<void> {
     role: user.role,
     tenantId: user.tenantId ?? undefined,
   });
+  sendNotificationEmail({
+    type: 'account_created',
+    userEmail: user.email,
+    dynamicData: { name: user.name },
+  }).catch((e) => console.error('[Auth] Welcome email error:', e));
+
   res.status(201).json({
     user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId },
     token,

@@ -18,7 +18,7 @@ export function Nav() {
         <div className="hidden md:flex md:items-center md:gap-8">
           <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-primary transition">About</Link>
           <a href="/#solution" className="text-sm font-medium text-gray-600 hover:text-primary transition">How it works</a>
-          <a href="/#investors" className="text-sm font-medium text-gray-600 hover:text-primary transition">Investors</a>
+          <Link href="/investors" className="text-sm font-medium text-gray-600 hover:text-primary transition">Investors</Link>
           <a href="/#features" className="text-sm font-medium text-gray-600 hover:text-primary transition">Features</a>
           <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-primary transition">Login</Link>
           <Link
@@ -51,7 +51,7 @@ export function Nav() {
             <Link href="/about" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>About</Link>
             <Link href="/pricing" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Pricing</Link>
             <a href="/#solution" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>How it works</a>
-            <a href="/#investors" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Investors</a>
+            <Link href="/investors" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Investors</Link>
             <a href="/#features" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Features</a>
             <Link href="/login" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Login</Link>
             <Link

@@ -127,6 +127,8 @@ model User {
   sentMessages      Message[]        @relation("SentMessages")
   uploadedFiles     File[]           @relation("UploadedFiles")
   assignedAgreements AssignedAgreement[]
+  adminLeadsAssigned AdminLead[]     @relation("AdminLeadsAssigned")
+  adminLeadNotes    AdminLeadNote[]
 }
 
 model Client {
@@ -170,6 +172,7 @@ model Project {
   startupProfile  StartupProfile?
   campaigns       Campaign[]
   analyticsSnapshots MarketingAnalyticsSnapshot[]
+  adminLead       AdminLead?
 }
 
 model Milestone {
@@ -406,4 +409,81 @@ model MarketingAnalyticsSnapshot {
   createdAt   DateTime  @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ConsultationBooking {
+  id                    String   @id @default(uuid())
+  fullName              String   @map("full_name")
+  email                 String
+  country               String?
+  businessIdea          String?  @map("business_idea") @db.Text
+  stage                 String?  // Idea | MVP | Business
+  mainGoal              String?  @map("main_goal") // Website | App | Marketing | Funding | All
+  budgetRange           String?  @map("budget_range")
+  preferredContactMethod String? @map("preferred_contact_method") // Email | WhatsApp | Zoom
+  preferredDate         DateTime? @map("preferred_date") @db.Date
+  preferredTime         String?  @map("preferred_time") // e.g. "09:00", "14:30"
+  timezone              String?
+  createdAt             DateTime @default(now()) @map("created_at")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+}
+
+model EmailLog {
+  id          String   @id @default(uuid())
+  type        String   @map("type") // account_created, consultation_booked, idea_submitted, etc.
+  toEmail     String   @map("to_email")
+  subject     String
+  status      String   @default("pending") // pending | sent | failed
+  errorMessage String? @map("error_message") @db.Text
+  sentAt     DateTime? @map("sent_at")
+  metadata   Json?    // dynamicData for debugging
+  createdAt   DateTime @default(now()) @map("created_at")
+}
+
+// Admin Leads (track and manage incoming leads; convert to project)
+enum AdminLeadStatus {
+  New
+  Contacted
+  ProposalSent
+  Converted
+  Closed
+}
+
+model AdminLead {
+  id           String          @id @default(uuid())
+  name         String
+  email        String
+  country      String?
+  ideaSummary  String?         @map("idea_summary") @db.Text
+  stage        String?         // e.g. Idea | MVP | Business
+  goal         String?         // e.g. Website | App | Marketing
+  budget       String?         // e.g. range or amount
+  status       AdminLeadStatus @default(New)
+  assignedToId String?         @map("assigned_to_id")
+  projectId    String?         @unique @map("project_id") // set when Converted
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  assignedTo User?            @relation("AdminLeadsAssigned", fields: [assignedToId], references: [id], onDelete: SetNull)
+  project    Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  notes      AdminLeadNote[]
+}
+
+model AdminLeadNote {
+  id         String    @id @default(uuid())
+  adminLeadId String   @map("admin_lead_id")
+  content    String    @db.Text
+  createdById String?  @map("created_by_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  adminLead AdminLead @relation(fields: [adminLeadId], references: [id], onDelete: Cascade)
+  createdBy User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
 }
