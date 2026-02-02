@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
+**/.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build / output
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Prisma
+backend/prisma/migrations/
+
+# Python (extract script)
+__pycache__/
+*.py[cod]
+.venv/
+venv/

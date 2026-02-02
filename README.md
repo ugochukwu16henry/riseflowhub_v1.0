@@ -1,0 +1,79 @@
+# AfriLaunch Hub
+
+**From Idea to Impact.** — A platform to help African entrepreneurs turn ideas into websites, apps, and businesses.
+
+## Tech stack
+
+- **Frontend:** Next.js 14 (React), TypeScript, Tailwind CSS
+- **Backend:** Node.js, Express, TypeScript, Prisma
+- **Database:** PostgreSQL (Supabase or local)
+- **Auth:** JWT, role-based access (Client, Super Admin, Project Manager, etc.)
+
+## Project structure
+
+```
+Afrilauch_v1.0/
+├── frontend/          # Next.js app (Client + Super Admin dashboards)
+├── backend/           # Express API (auth, users, clients, projects, tasks)
+├── TECH Platform/     # Specs, wireframes, API docs (extracted .txt in extracted/)
+├── ANALYSIS_SUMMARY.md
+└── README.md
+```
+
+## Quick start
+
+### 1. Backend
+
+```bash
+cd backend
+cp .env.example .env
+# Edit .env: set DATABASE_URL (PostgreSQL) and JWT_SECRET
+npm install
+npx prisma generate
+npx prisma db push
+npm run dev
+```
+
+API runs at **http://localhost:4000**. Health: `GET http://localhost:4000/api/v1/health`
+
+### 2. Frontend
+
+```bash
+cd frontend
+# Optional: copy .env.local.example to .env.local and set NEXT_PUBLIC_API_URL=http://localhost:4000
+# If unset, Next.js rewrites /api/v1/* to the backend (ensure backend URL in next.config.js)
+npm install
+npm run dev
+```
+
+App runs at **http://localhost:3000**.
+
+### 3. First use
+
+1. Open http://localhost:3000 → **Register** (creates a client).
+2. After login you’re on the **Client dashboard** (welcome, project stage, progress, next milestone, team).
+3. To test **Super Admin**: create a user with role `super_admin` (e.g. via API or seed), then log in as that user to see the admin dashboard (projects table, Agreements, Users, Reports).
+
+## API overview
+
+- **Auth:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`
+- **Users:** `GET /api/v1/users`, `GET /api/v1/users/:id`, `PUT /api/v1/users/:id` (role-based)
+- **Clients:** `POST/GET/PUT /api/v1/clients`
+- **Projects:** `POST/GET/PUT/DELETE /api/v1/projects`
+- **Tasks:** `POST/GET /api/v1/projects/:id/tasks`, `PUT/DELETE /api/v1/projects/:id/tasks/:taskId`
+
+Full list: see `backend/API_DOCUMENTATION.md`.
+
+## Development phases (from specs)
+
+- **Phase 1 (MVP):** Auth, client dashboard home, projects, task tracking, progress % — **done**
+- **Phase 2:** Messaging, file uploads, notifications
+- **Phase 3:** Payments, invoices, marketing reports
+- **Phase 4:** Master project board, task assignment, QA
+- **Phase 5:** Email alerts, auto status, analytics
+- **Agreement module:** Automated agreement signing (Super Admin + Client “Agreements to Sign”)
+
+## Environment
+
+- **Backend:** `backend/.env` (from `.env.example`) — `DATABASE_URL`, `JWT_SECRET`, `PORT`, etc.
+- **Frontend:** `frontend/.env.local` (optional) — `NEXT_PUBLIC_API_URL` for direct API URL; if unset, Next rewrites `/api/v1/*` to the backend URL in `next.config.js`.
