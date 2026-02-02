@@ -44,7 +44,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
     data: { name, email, passwordHash, role, tenantId },
-    select: { id: true, name: true, email: true, role: true, tenantId: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, tenantId: true, setupPaid: true, setupReason: true, createdAt: true },
   });
   const token = signToken({
     userId: user.id,
@@ -59,7 +59,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
   }).catch((e) => console.error('[Auth] Welcome email error:', e));
 
   res.status(201).json({
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, setupPaid: user.setupPaid, setupReason: user.setupReason },
     token,
   });
 }
@@ -77,6 +77,8 @@ export async function login(req: Request, res: Response): Promise<void> {
     role: user.role,
     tenantId: user.tenantId ?? undefined,
   });
+  const setupPaid = user.setupPaid ?? false;
+  const setupReason = user.setupReason ?? null;
   res.json({
     user: {
       id: user.id,
@@ -84,6 +86,8 @@ export async function login(req: Request, res: Response): Promise<void> {
       email: user.email,
       role: user.role,
       tenantId: user.tenantId ?? undefined,
+      setupPaid,
+      setupReason,
     },
     token,
   });
@@ -99,6 +103,8 @@ export async function me(req: Request, res: Response): Promise<void> {
       email: true,
       role: true,
       tenantId: true,
+      setupPaid: true,
+      setupReason: true,
       createdAt: true,
       tenant: {
         select: {

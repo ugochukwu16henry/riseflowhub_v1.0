@@ -24,6 +24,7 @@ import { ideaSubmissionRoutes } from './routes/ideaSubmissions';
 import { consultationRoutes } from './routes/consultations';
 import { contactRoutes } from './routes/contact';
 import { adminLeadsRoutes } from './routes/adminLeads';
+import { setupFeeRoutes } from './routes/setupFee';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -56,6 +57,7 @@ app.use('/api/v1/idea-submissions', ideaSubmissionRoutes);
 app.use('/api/v1/consultations', consultationRoutes);
 app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/admin/leads', adminLeadsRoutes);
+app.use('/api/v1/setup-fee', setupFeeRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

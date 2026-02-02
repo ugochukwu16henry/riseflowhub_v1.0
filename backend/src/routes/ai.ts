@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, requireSetupPaid } from '../middleware/auth';
 
 const router = Router();
 
-router.use(authMiddleware);
+router.use(authMiddleware, requireSetupPaid);
 
 // POST /api/v1/ai/evaluate-idea — Mock: returns feasibility, risk, market potential, MVP scope
 router.post(

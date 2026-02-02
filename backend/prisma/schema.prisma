@@ -451,6 +451,22 @@ model EmailLog {
   createdAt   DateTime @default(now()) @map("created_at")
 }
 
+// User-level payments (setup fee, etc.)
+model UserPayment {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  amount      Decimal  @db.Decimal(12, 2)
+  currency    String   @db.VarChar(6) // USD, NGN, EUR, etc.
+  type        String   @map("type") // setup_fee
+  status      String   @default("pending") // pending | completed | failed | refunded
+  reference   String?  @unique // gateway reference
+  metadata    Json?    // gateway response, etc.
+  createdAt   DateTime @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // Admin Leads (track and manage incoming leads; convert to project)
 enum AdminLeadStatus {
   New

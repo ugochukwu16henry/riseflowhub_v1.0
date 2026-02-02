@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, param, validationResult } from 'express-validator';
-import { authMiddleware, requireRoles } from '../middleware/auth';
+import { authMiddleware, requireRoles, requireSetupPaid } from '../middleware/auth';
 import { UserRole } from '@prisma/client';
 import * as startupController from '../controllers/startupController';
 
@@ -12,10 +12,11 @@ router.get('/', authMiddleware, (req, res) => startupController.listAll(req, res
 // GET /api/v1/startups/me — Client: my startup profiles; admin: same as list
 router.get('/me', authMiddleware, (req, res) => startupController.listMine(req, res));
 
-// POST /api/v1/startups/publish — Client or admin: create/update startup profile (pending_approval until admin approves)
+// POST /api/v1/startups/publish — Client or admin: create/update startup profile (requires setup_paid for client)
 router.post(
   '/publish',
   authMiddleware,
+  requireSetupPaid,
   [
     body('projectId').isUUID(),
     body('pitchSummary').trim().notEmpty(),
