@@ -290,8 +290,9 @@ export default function AdminAgreementsPage() {
             <h2 className="text-lg font-semibold text-secondary mb-4">Add New Agreement</h2>
             {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
             <form onSubmit={handleCreateAgreement}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="add-agreement-title">Title</label>
               <input
+                id="add-agreement-title"
                 type="text"
                 value={addTitle}
                 onChange={(e) => setAddTitle(e.target.value)}

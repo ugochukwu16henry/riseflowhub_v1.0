@@ -74,6 +74,17 @@ Full list: see `backend/API_DOCUMENTATION.md`.
 - **Phase 5:** Email alerts, auto status, analytics
 - **Agreement module:** Automated agreement signing (Super Admin + Client “Agreements to Sign”)
 
+## E2E tests (Playwright)
+
+From `frontend/`:
+
+1. **Backend must be running** at http://localhost:4000 with DB seeded: `cd backend && pnpm run db:seed && pnpm run dev`
+2. Install browsers (first time): `pnpm exec playwright install`
+3. Run tests: `pnpm test:e2e` (starts frontend via Playwright if not running)
+4. UI mode: `pnpm test:e2e:ui`
+
+See `frontend/e2e/README.md` for test users and suites (auth, client dashboard, admin dashboard, agreements flow, protected routes, tasks Kanban).
+
 ## Environment
 
 - **Backend:** `backend/.env` (from `.env.example`) — `DATABASE_URL`, `JWT_SECRET`, `PORT`, etc.
