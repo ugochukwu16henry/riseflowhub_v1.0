@@ -17,18 +17,14 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const base = process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${base}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      const tenantDomain = typeof window !== 'undefined' ? window.location.hostname : undefined;
+      const data = await api.auth.login({ email, password }, tenantDomain);
       setStoredToken(data.token);
       const role = data.user?.role;
       if (role === 'super_admin' || role === 'project_manager' || role === 'finance_admin') {
         router.push('/dashboard/admin');
+      } else if (role === 'investor') {
+        router.push('/dashboard/investor');
       } else {
         router.push('/dashboard');
       }
@@ -42,8 +38,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-primary mb-2">AfriLaunch Hub</h1>
-        <p className="text-secondary text-sm mb-6">Sign in to your account</p>
+        <div className="flex justify-center mb-4">
+          <img src="/Afrilauch_logo.png" alt="AfriLaunch Hub" className="h-14 w-auto object-contain" />
+        </div>
+        <h1 className="text-2xl font-bold text-primary mb-2 text-center">AfriLaunch Hub</h1>
+        <p className="text-secondary text-sm mb-6 text-center">Sign in to your account</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>

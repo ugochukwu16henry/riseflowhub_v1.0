@@ -4,6 +4,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background text-text-dark px-4">
       <div className="max-w-2xl text-center">
+        <img src="/Afrilauch_logo.png" alt="AfriLaunch Hub" className="h-20 w-auto object-contain mx-auto mb-6" />
         <h1 className="text-4xl font-bold text-primary mb-2">AfriLaunch Hub</h1>
         <p className="text-xl text-secondary mb-6">From Idea to Impact.</p>
         <p className="text-gray-600 mb-10">

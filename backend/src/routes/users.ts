@@ -12,12 +12,19 @@ router.use(authMiddleware);
 // GET /api/v1/users/me — Logged-in user profile (same as GET /auth/me)
 router.get('/me', (req, res) => authController.me(req, res));
 
-// GET /api/v1/users?role=developer
+// GET /api/v1/users?role=developer — tenant-scoped for admins
 router.get('/', requireRoles(UserRole.super_admin, UserRole.project_manager, UserRole.finance_admin), async (req, res) => {
+  const payload = (req as unknown as { user: { tenantId?: string | null } }).user;
   const role = req.query.role as string | undefined;
+  const where: { role?: UserRole; tenantId?: string | null } = role ? { role: role as UserRole } : {};
+  if (payload.tenantId != null) {
+    where.tenantId = payload.tenantId;
+  } else {
+    where.tenantId = null;
+  }
   const users = await prisma.user.findMany({
-    where: role ? { role: role as UserRole } : undefined,
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    where,
+    select: { id: true, name: true, email: true, role: true, tenantId: true, createdAt: true },
   });
   res.json(users);
 });
@@ -25,15 +32,18 @@ router.get('/', requireRoles(UserRole.super_admin, UserRole.project_manager, Use
 // GET /api/v1/users/:id
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const payload = (req as unknown as { user: { userId: string; role: string } }).user;
+  const payload = (req as unknown as { user: { userId: string; role: string; tenantId?: string | null } }).user;
   if (payload.userId !== id && payload.role !== 'super_admin' && payload.role !== 'project_manager') {
     return res.status(403).json({ error: 'Cannot view other users' });
   }
   const user = await prisma.user.findUnique({
     where: { id },
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, tenantId: true, createdAt: true },
   });
   if (!user) return res.status(404).json({ error: 'User not found' });
+  if (payload.tenantId != null && user.tenantId !== payload.tenantId && payload.role !== 'super_admin') {
+    return res.status(403).json({ error: 'User belongs to another tenant' });
+  }
   res.json(user);
 });
 

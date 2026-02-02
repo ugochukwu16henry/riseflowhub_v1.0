@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { setStoredToken } from '@/lib/api';
+import { setStoredToken, api } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,14 +18,8 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      const base = process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${base}/api/v1/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role: 'client' }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.errors?.[0]?.msg || 'Registration failed');
+      const tenantDomain = typeof window !== 'undefined' ? window.location.hostname : undefined;
+      const data = await api.auth.register({ name, email, password, role: 'client' }, tenantDomain);
       setStoredToken(data.token);
       router.push('/dashboard');
     } catch (err) {
@@ -38,8 +32,11 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-primary mb-2">AfriLaunch Hub</h1>
-        <p className="text-secondary text-sm mb-6">Create your account</p>
+        <div className="flex justify-center mb-4">
+          <img src="/Afrilauch_logo.png" alt="AfriLaunch Hub" className="h-14 w-auto object-contain" />
+        </div>
+        <h1 className="text-2xl font-bold text-primary mb-2 text-center">AfriLaunch Hub</h1>
+        <p className="text-secondary text-sm mb-6 text-center">Create your account</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>

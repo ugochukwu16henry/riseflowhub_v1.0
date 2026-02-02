@@ -10,12 +10,30 @@ export type UserRole =
   | 'super_admin'
   | 'investor';
 
+export interface TenantBranding {
+  id: string;
+  orgName: string;
+  domain: string | null;
+  logo: string | null;
+  primaryColor: string | null;
+  planType: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  tenantId?: string | null;
   createdAt?: string;
+  tenant?: {
+    id: string;
+    orgName: string;
+    domain: string | null;
+    logo: string | null;
+    primaryColor: string | null;
+    planType: string;
+  } | null;
 }
 
 export interface AuthResponse {
@@ -57,12 +75,29 @@ async function request<T>(
 
 export const api = {
   auth: {
-    register: (body: { name: string; email: string; password: string; role?: UserRole }) =>
-      request<AuthResponse>('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-    login: (body: { email: string; password: string }) =>
-      request<AuthResponse>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+    register: (body: { name: string; email: string; password: string; role?: UserRole }, tenantDomain?: string) =>
+      request<AuthResponse>('/api/v1/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...(tenantDomain && { headers: { 'X-Tenant-Domain': tenantDomain } as HeadersInit }),
+      }),
+    login: (body: { email: string; password: string }, tenantDomain?: string) =>
+      request<AuthResponse>('/api/v1/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...(tenantDomain && { headers: { 'X-Tenant-Domain': tenantDomain } as HeadersInit }),
+      }),
     me: (token: string) => request<User>('/api/v1/auth/me', { token }),
     logout: (token: string) => request<{ message: string }>('/api/v1/auth/logout', { method: 'POST', token }),
+  },
+  tenants: {
+    current: (token: string) => request<{ tenant: { id: string; orgName: string; domain: string | null; planType: string } | null; branding: { logo: string | null; primaryColor: string | null } | null }>('/api/v1/tenants/current', { token }),
+    list: (token: string) => request<TenantRow[]>(`/api/v1/tenants`, { token }),
+    create: (body: { orgName: string; domain?: string; logo?: string; primaryColor?: string; planType?: string }, token: string) =>
+      request<Tenant>('/api/v1/tenants', { method: 'POST', body: JSON.stringify(body), token }),
+    update: (id: string, body: { orgName?: string; domain?: string | null; logo?: string | null; primaryColor?: string | null; planType?: string }, token: string) =>
+      request<Tenant>(`/api/v1/tenants/${id}`, { method: 'PATCH', body: JSON.stringify(body), token }),
+    billing: (tenantId: string, token: string) => request<TenantBillingRow[]>(`/api/v1/tenants/${tenantId}/billing`, { token }),
   },
   projects: {
     list: (token: string) => request<Project[]>('/api/v1/projects', { token }),
@@ -102,6 +137,22 @@ export const api = {
       request<AIPricingResponse>('/api/v1/ai/pricing', { method: 'POST', body: JSON.stringify(body), token }),
     projectInsights: (body: { projectId?: string }, token: string) =>
       request<AIProjectInsightsResponse>('/api/v1/ai/project-insights', { method: 'POST', body: JSON.stringify(body), token }),
+    marketingSuggestions: (body: { projectId?: string; traffic?: number; conversions?: number; cac?: number; roi?: number; byPlatform?: Record<string, unknown> }, token: string) =>
+      request<AIMarketingSuggestionsResponse>('/api/v1/ai/marketing-suggestions', { method: 'POST', body: JSON.stringify(body), token }),
+  },
+  campaigns: {
+    create: (body: { projectId: string; platform: string; budget: number; startDate: string; endDate: string }, token: string) =>
+      request<Campaign>('/api/v1/campaigns', { method: 'POST', body: JSON.stringify(body), token }),
+    listByProject: (projectId: string, token: string) =>
+      request<CampaignWithLeads[]>(`/api/v1/campaigns/project/${projectId}`, { token }),
+  },
+  leads: {
+    import: (body: { campaignId: string; leads: Array<{ source?: string; cost: number; conversionStatus?: string }> }, token: string) =>
+      request<{ imported: number; leads: Lead[] }>('/api/v1/leads/import', { method: 'POST', body: JSON.stringify(body), token }),
+  },
+  analytics: {
+    get: (projectId: string, token: string) =>
+      request<MarketingAnalytics>(`/api/v1/analytics/${projectId}`, { token }),
   },
   agreements: {
     list: (token: string) => request<Agreement[]>(`/api/v1/agreements`, { token }),
@@ -129,7 +180,120 @@ export const api = {
     logs: (id: string, token: string) => request<AgreementAuditLog[]>(`/api/v1/agreements/${id}/logs`, { token }),
     listAssignedToMe: (token: string) => request<AssignedToMe[]>(`/api/v1/agreements/assigned`, { token }),
   },
+  investors: {
+    register: (body: InvestorRegisterBody) =>
+      request<AuthResponse>('/api/v1/investors/register', { method: 'POST', body: JSON.stringify(body) }),
+    me: (token: string) => request<Investor>('/api/v1/investors/me', { token }),
+    list: (token: string) => request<Investor[] | Investor>('/api/v1/investors', { token }),
+  },
+  startups: {
+    list: (token: string) => request<StartupProfile[]>(`/api/v1/startups`, { token }),
+    myProfiles: (token: string) => request<StartupProfile[]>(`/api/v1/startups/me`, { token }),
+    publish: (body: StartupPublishBody, token: string) =>
+      request<StartupProfile>('/api/v1/startups/publish', { method: 'POST', body: JSON.stringify(body), token }),
+    marketplace: (params?: { industry?: string; stage?: string; fundingMin?: number; fundingMax?: number }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<StartupProfileListItem[]>(`/api/v1/startups/marketplace${q ? `?${q}` : ''}`);
+    },
+    get: (id: string, token?: string) =>
+      request<StartupProfileDetail>(`/api/v1/startups/${id}`, token ? { token } : {}),
+    approve: (id: string, token: string) =>
+      request<StartupProfile>(`/api/v1/startups/${id}/approve`, { method: 'PUT', token }),
+  },
+  investments: {
+    expressInterest: (body: { startupId: string; requestMeeting?: boolean }, token: string) =>
+      request<Investment>(`/api/v1/investments/express-interest`, { method: 'POST', body: JSON.stringify(body), token }),
+    commit: (body: { startupId: string; amount?: number; equityPercent?: number; agreementId?: string }, token: string) =>
+      request<Investment>(`/api/v1/investments/commit`, { method: 'POST', body: JSON.stringify(body), token }),
+    list: (token: string) => request<InvestmentListItem[]>(`/api/v1/investments`, { token }),
+  },
 };
+
+export interface InvestorRegisterBody {
+  name: string;
+  email: string;
+  password: string;
+  firmName?: string;
+  investmentRangeMin?: number;
+  investmentRangeMax?: number;
+  industries?: string;
+  country?: string;
+}
+
+export interface Investor {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  firmName: string | null;
+  investmentRangeMin: number | null;
+  investmentRangeMax: number | null;
+  industries: string | null;
+  country: string | null;
+  verified: boolean;
+  createdAt: string;
+}
+
+export interface StartupProfile {
+  id: string;
+  projectId: string;
+  pitchSummary: string;
+  tractionMetrics: string | null;
+  fundingNeeded: number;
+  equityOffer: number | null;
+  stage: string;
+  visibilityStatus: 'draft' | 'pending_approval' | 'approved' | 'rejected';
+  createdAt: string;
+  project?: { projectName: string; client?: { businessName: string } };
+}
+
+export interface StartupProfileListItem extends StartupProfile {
+  project: {
+    id: string;
+    projectName: string;
+    stage: string;
+    description: string | null;
+    client: { businessName: string; industry: string | null };
+  };
+}
+
+export interface StartupProfileDetail extends StartupProfile {
+  project: {
+    id: string;
+    projectName: string;
+    description: string | null;
+    stage: string;
+    status: string;
+    client: { businessName: string; industry: string | null; userId: string; user: { name: string } };
+  };
+}
+
+export interface StartupPublishBody {
+  projectId: string;
+  pitchSummary: string;
+  tractionMetrics?: string;
+  fundingNeeded: number;
+  equityOffer?: number;
+  stage?: string;
+}
+
+export interface Investment {
+  id: string;
+  investorId: string;
+  startupId: string;
+  amount: number | null;
+  equityPercent: number | null;
+  status: string;
+  agreementId: string | null;
+  createdAt: string;
+  startup?: { project?: { projectName: string } };
+}
+
+export interface InvestmentListItem extends Investment {
+  startup: {
+    project: { projectName: string; client?: { businessName: string } };
+  };
+}
 
 export type AgreementType = 'NDA' | 'MOU' | 'CoFounder' | 'Terms';
 
@@ -286,4 +450,77 @@ export interface AIProjectInsightsResponse {
   suggestions: string[];
   overallHealth: string;
   summary: string;
+}
+
+export interface AIMarketingSuggestionsResponse {
+  suggestions: string[];
+  summary: string;
+}
+
+export interface Tenant {
+  id: string;
+  orgName: string;
+  domain: string | null;
+  logo: string | null;
+  primaryColor: string | null;
+  planType: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TenantRow extends Tenant {
+  userCount?: number;
+  createdAt: string;
+}
+
+export interface TenantBillingRow {
+  id: string;
+  tenantId: string;
+  periodStart: string;
+  periodEnd: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface Campaign {
+  id: string;
+  projectId: string;
+  platform: string;
+  budget: number;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+}
+
+export interface Lead {
+  id: string;
+  campaignId: string;
+  source: string;
+  cost: number;
+  conversionStatus: string;
+  createdAt: string;
+}
+
+export interface CampaignWithLeads extends Campaign {
+  leads: Lead[];
+}
+
+export interface MarketingAnalytics {
+  projectId: string;
+  traffic: number;
+  conversions: number;
+  cac: number | null;
+  roi: number | null;
+  totalCost: number;
+  byPlatform: Record<string, { traffic: number; conversions: number; cost: number }>;
+  funnel: { stage: string; count: number }[];
+  snapshot: {
+    traffic: number;
+    conversions: number;
+    cac: number | null;
+    roi: number | null;
+    periodStart: string;
+    periodEnd: string;
+  } | null;
 }

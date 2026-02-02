@@ -19,6 +19,18 @@ const roles = [
 async function main() {
   const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
 
+  const defaultTenant = await prisma.tenant.upsert({
+    where: { domain: 'default' },
+    update: {},
+    create: {
+      orgName: 'AfriLaunch Hub',
+      domain: 'default',
+      primaryColor: '#6366f1',
+      planType: 'enterprise',
+    },
+  });
+  console.log('Seeded default tenant:', defaultTenant.orgName);
+
   for (let i = 0; i < roles.length; i++) {
     const role = roles[i];
     const email = `test-${role}@example.com`;
@@ -26,28 +38,29 @@ async function main() {
 
     await prisma.user.upsert({
       where: { email },
-      update: { name, role, passwordHash },
+      update: { name, role, passwordHash, tenantId: defaultTenant.id },
       create: {
         email,
         name,
         passwordHash,
         role,
+        tenantId: defaultTenant.id,
       },
     });
     console.log(`Seeded user: ${email} (${role})`);
   }
 
-  // Super Admin account (ugochukwuhenry16@gmail.com)
   const superAdminPassword = '1995Mobuchi@.';
   const superAdminHash = await bcrypt.hash(superAdminPassword, 10);
   await prisma.user.upsert({
     where: { email: 'ugochukwuhenry16@gmail.com' },
-    update: { name: 'Super Admin', role: 'super_admin', passwordHash: superAdminHash },
+    update: { name: 'Super Admin', role: 'super_admin', passwordHash: superAdminHash, tenantId: defaultTenant.id },
     create: {
       email: 'ugochukwuhenry16@gmail.com',
       name: 'Super Admin',
       passwordHash: superAdminHash,
       role: 'super_admin',
+      tenantId: defaultTenant.id,
     },
   });
   console.log('Seeded Super Admin: ugochukwuhenry16@gmail.com');

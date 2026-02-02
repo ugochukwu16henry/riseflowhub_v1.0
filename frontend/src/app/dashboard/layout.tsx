@@ -8,6 +8,8 @@ import { getStoredToken, clearStoredToken, api, type User } from '@/lib/api';
 const clientNav = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/project', label: 'Project' },
+  { href: '/dashboard/startup', label: 'Publish to Marketplace' },
+  { href: '/dashboard/marketing', label: 'Marketing' },
   { href: '/dashboard/tasks', label: 'Tasks' },
   { href: '/dashboard/files', label: 'Files' },
   { href: '/dashboard/messages', label: 'Messages' },
@@ -18,14 +20,27 @@ const clientNav = [
 const adminNav = [
   { href: '/dashboard/admin', label: 'Dashboard' },
   { href: '/dashboard/admin/projects', label: 'Projects' },
+  { href: '/dashboard/marketing', label: 'Marketing' },
+  { href: '/dashboard/admin/tenants', label: 'Tenants' },
   { href: '/dashboard/admin/users', label: 'Users' },
   { href: '/dashboard/admin/agreements', label: 'Agreements' },
+  { href: '/dashboard/admin/startups', label: 'Startup approvals' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
   { href: '/dashboard/admin/settings', label: 'Settings' },
 ];
 
+const investorNav = [
+  { href: '/dashboard/investor', label: 'Dashboard' },
+  { href: '/dashboard/investor/marketplace', label: 'Marketplace' },
+  { href: '/dashboard/investor/investments', label: 'My investments' },
+];
+
 function isAdmin(role: string) {
   return ['super_admin', 'project_manager', 'finance_admin'].includes(role);
+}
+
+function isInvestor(role: string) {
+  return role === 'investor';
 }
 
 export default function DashboardLayout({
@@ -67,14 +82,23 @@ export default function DashboardLayout({
 
   if (!user) return null;
 
-  const nav = isAdmin(user.role) ? adminNav : clientNav;
-  const base = isAdmin(user.role) ? '/dashboard/admin' : '/dashboard';
+  const nav = isAdmin(user.role) ? adminNav : isInvestor(user.role) ? investorNav : clientNav;
+  const base = isAdmin(user.role) ? '/dashboard/admin' : isInvestor(user.role) ? '/dashboard/investor' : '/dashboard';
+  const primaryColor = user.tenant?.primaryColor || '#6366f1';
+  const brandName = user.tenant?.orgName || 'AfriLaunch Hub';
+  const logoUrl = user.tenant?.logo || '/Afrilauch_logo.png';
 
   return (
-    <div className="min-h-screen flex bg-background text-text-dark">
+    <div
+      className="min-h-screen flex bg-background text-text-dark"
+      style={{ ['--tenant-primary' as string]: primaryColor }}
+    >
       <aside className="w-56 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col min-h-screen">
         <div className="p-4 border-b border-gray-100">
-          <Link href={base} className="text-lg font-bold text-primary">AfriLaunch Hub</Link>
+          <Link href={base} className="flex items-center gap-2 text-lg font-bold" style={{ color: primaryColor }}>
+            <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" />
+            <span>{brandName}</span>
+          </Link>
         </div>
         <nav className="p-2 space-y-0.5 flex-1">
           {nav.map((item) => (
@@ -86,6 +110,7 @@ export default function DashboardLayout({
                   ? 'bg-primary/10 text-primary'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
+              style={pathname === item.href ? { backgroundColor: `${primaryColor}20`, color: primaryColor } : undefined}
             >
               {item.label}
             </Link>
@@ -97,7 +122,8 @@ export default function DashboardLayout({
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-2 text-sm text-gray-500 hover:text-primary"
+            className="mt-2 text-sm text-gray-500 hover:underline"
+            style={{ color: primaryColor }}
           >
             Log out
           </button>

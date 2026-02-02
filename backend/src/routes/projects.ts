@@ -50,14 +50,19 @@ router.post(
   }
 );
 
-// GET /api/v1/projects — all (admin) or own (client); team: assigned only
+// GET /api/v1/projects — all (admin, tenant-scoped) or own (client); team: assigned only
 router.get('/', async (req, res) => {
-  const payload = (req as unknown as { user: { userId: string; role: string } }).user;
+  const payload = (req as unknown as { user: { userId: string; role: string; tenantId?: string | null } }).user;
   const isAdmin = ['super_admin', 'project_manager', 'developer', 'designer', 'marketer', 'finance_admin'].includes(payload.role);
   if (isAdmin) {
+    const tenantFilter =
+      payload.tenantId != null
+        ? { client: { user: { tenantId: payload.tenantId } } }
+        : { client: { user: { tenantId: null } } };
     const projects = await prisma.project.findMany({
+      where: tenantFilter,
       include: {
-        client: { include: { user: { select: { name: true, email: true } } } },
+        client: { include: { user: { select: { name: true, email: true, tenantId: true } } } },
         tasks: { select: { id: true, title: true, status: true } },
         milestones: { select: { id: true, title: true, status: true } },
       },
@@ -102,11 +107,11 @@ router.get('/:id/milestones', (req, res) => milestoneController.listMilestones(r
 // GET /api/v1/projects/:id
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const payload = (req as unknown as { user: { userId: string; role: string } }).user;
+  const payload = (req as unknown as { user: { userId: string; role: string; tenantId?: string | null } }).user;
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
-      client: { include: { user: { select: { id: true, name: true, email: true } } } },
+      client: { include: { user: { select: { id: true, name: true, email: true, tenantId: true } } } },
       tasks: { include: { assignedTo: { select: { id: true, name: true, email: true } }, milestone: { select: { id: true, title: true } } } },
       milestones: true,
     },
@@ -115,8 +120,15 @@ router.get('/:id', async (req, res) => {
   const isAdmin = ['super_admin', 'project_manager', 'developer', 'designer', 'marketer', 'finance_admin'].includes(payload.role);
   const isClient = project.client.userId === payload.userId;
   const isAssigned = await prisma.task.findFirst({ where: { projectId: id, assignedToId: payload.userId } }).then(Boolean);
+  const sameTenant =
+    payload.tenantId == null
+      ? (project.client.user as { tenantId?: string | null }).tenantId == null
+      : (project.client.user as { tenantId?: string | null }).tenantId === payload.tenantId;
   if (!isAdmin && !isClient && !isAssigned) {
     return res.status(403).json({ error: 'Cannot view this project' });
+  }
+  if (isAdmin && !sameTenant) {
+    return res.status(403).json({ error: 'Project belongs to another tenant' });
   }
   res.json(project);
 });

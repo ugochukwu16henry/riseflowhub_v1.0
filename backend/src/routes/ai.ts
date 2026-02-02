@@ -95,4 +95,48 @@ router.post(
   }
 );
 
+// POST /api/v1/ai/marketing-suggestions — Mock: growth suggestions from analytics
+router.post(
+  '/marketing-suggestions',
+  [
+    body('projectId').optional().isUUID(),
+    body('traffic').optional().isInt({ min: 0 }),
+    body('conversions').optional().isInt({ min: 0 }),
+    body('cac').optional().isFloat({ min: 0 }),
+    body('roi').optional().isFloat(),
+    body('byPlatform').optional().isObject(),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { traffic = 0, conversions = 0, cac, roi, byPlatform = {} } = req.body;
+    const platforms = Object.keys(byPlatform).length || 1;
+    const suggestions: string[] = [];
+    if (traffic === 0) {
+      suggestions.push('Launch campaigns on Meta and Google to drive initial traffic.');
+      suggestions.push('Set up email capture (landing page or lead magnet) for Email channel.');
+    } else if (conversions === 0) {
+      suggestions.push('Optimize landing pages and CTAs to improve conversion rate.');
+      suggestions.push('Review audience targeting; consider A/B testing ad creatives.');
+    }
+    if (cac != null && cac > 50) {
+      suggestions.push('CAC is high; try narrowing audience or testing lower-funnel channels.');
+    }
+    if (roi != null && roi < 100) {
+      suggestions.push('Focus on retargeting and email sequences to improve ROI.');
+    }
+    if (platforms < 2) {
+      suggestions.push('Diversify: add a second platform (Meta, Google, or Email) to reduce risk.');
+    }
+    if (suggestions.length === 0) {
+      suggestions.push('Scale winning campaigns; consider lookalike audiences.');
+      suggestions.push('Run retention campaigns (email, Meta retargeting) for converted users.');
+    }
+    res.json({
+      suggestions,
+      summary: `Based on traffic ${traffic}, conversions ${conversions}, CAC ${cac ?? 'N/A'}, ROI ${roi ?? 'N/A'}%.`,
+    });
+  }
+);
+
 export { router as aiRoutes };

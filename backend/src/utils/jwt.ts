@@ -8,6 +8,7 @@ export interface AuthPayload {
   userId: string;
   email: string;
   role: UserRole;
+  tenantId?: string | null;
 }
 
 export function signToken(payload: AuthPayload): string {

@@ -33,10 +33,13 @@ router.post(
   }
 );
 
-// GET /api/v1/clients — list (admin only)
+// GET /api/v1/clients — list (admin only, tenant-scoped)
 router.get('/', requireRoles(UserRole.super_admin, UserRole.project_manager, UserRole.finance_admin), async (req, res) => {
+  const payload = (req as unknown as { user: { tenantId?: string | null } }).user;
+  const tenantFilter = payload.tenantId != null ? { user: { tenantId: payload.tenantId } } : { user: { tenantId: null } };
   const clients = await prisma.client.findMany({
-    include: { user: { select: { id: true, name: true, email: true, role: true } } },
+    where: tenantFilter,
+    include: { user: { select: { id: true, name: true, email: true, role: true, tenantId: true } } },
   });
   res.json(clients);
 });
