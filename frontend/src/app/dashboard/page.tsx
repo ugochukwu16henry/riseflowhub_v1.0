@@ -3,7 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { Project, AssignedToMe } from '@/lib/api';
+import type { Project, AssignedToMe, ProjectStatus } from '@/lib/api';
+
+const PROJECT_STATUS_FLOW: { value: ProjectStatus; label: string }[] = [
+  { value: 'IdeaSubmitted', label: 'Idea Submitted' },
+  { value: 'ReviewValidation', label: 'Review & Validation' },
+  { value: 'ProposalSent', label: 'Proposal Sent' },
+  { value: 'Development', label: 'Development' },
+  { value: 'Testing', label: 'Testing' },
+  { value: 'Live', label: 'Live' },
+  { value: 'Maintenance', label: 'Maintenance' },
+];
 
 export default function ClientDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -11,10 +21,6 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [signModal, setSignModal] = useState<AssignedToMe | null>(null);
-  const [signAgreed, setSignAgreed] = useState(false);
-  const [signatureText, setSignatureText] = useState('');
-  const [signError, setSignError] = useState('');
-  const [signSuccess, setSignSuccess] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -30,9 +36,13 @@ export default function ClientDashboardPage() {
 
   const project = projects[0];
   const tasks = project?.tasks ?? [];
+  const milestones = project?.milestones ?? [];
   const nextTask = tasks.find((t) => t.status !== 'Done') ?? null;
   const doneCount = tasks.filter((t) => t.status === 'Done').length;
   const progress = tasks.length ? Math.round((doneCount / tasks.length) * 100) : project?.progressPercent ?? 0;
+  const currentStatusIndex = project?.status
+    ? PROJECT_STATUS_FLOW.findIndex((s) => s.value === project.status)
+    : 0;
 
   return (
     <div className="max-w-4xl">
@@ -60,14 +70,17 @@ export default function ClientDashboardPage() {
 
       {!loading && project && (
         <>
+          {/* Overview — progress bar */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
             <div className="rounded-xl border border-gray-200 bg-white p-4">
               <p className="text-sm text-gray-500 mb-1">Project</p>
               <p className="font-semibold text-secondary">{project.projectName}</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="text-sm text-gray-500 mb-1">Stage</p>
-              <p className="font-semibold text-primary capitalize">{project.stage}</p>
+              <p className="text-sm text-gray-500 mb-1">Status</p>
+              <p className="font-semibold text-primary capitalize">
+                {project.status ? PROJECT_STATUS_FLOW.find((s) => s.value === project.status)?.label ?? project.status : project.stage}
+              </p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-4">
               <p className="text-sm text-gray-500 mb-1">Progress</p>
@@ -84,9 +97,89 @@ export default function ClientDashboardPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-4">
               <p className="text-sm text-gray-500 mb-1">Next milestone</p>
               <p className="font-semibold text-text-dark truncate">
-                {nextTask ? nextTask.title : '—'}
+                {nextTask ? nextTask.title : milestones[0]?.title ?? '—'}
               </p>
             </div>
+          </div>
+
+          {/* Project status timeline */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+            <h2 className="text-lg font-semibold text-secondary mb-3">Project timeline</h2>
+            <div className="flex flex-wrap gap-2">
+              {PROJECT_STATUS_FLOW.map((s, i) => (
+                <span
+                  key={s.value}
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                    i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {s.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Documents & Repo */}
+          {(project.repoUrl || project.liveUrl) && (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+              <h2 className="text-lg font-semibold text-secondary mb-3">Documents & Repo</h2>
+              <div className="flex flex-wrap gap-3">
+                {project.repoUrl && (
+                  <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Repository (GitHub/GitLab)
+                  </a>
+                )}
+                {project.liveUrl && (
+                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Live site
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Milestones & Tasks */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+            <h2 className="text-lg font-semibold text-secondary mb-3">Milestones & Tasks</h2>
+            {milestones.length > 0 ? (
+              <ul className="space-y-3">
+                {milestones.map((m) => (
+                  <li key={m.id} className="border-l-2 border-primary/30 pl-4">
+                    <p className="font-medium text-text-dark">{m.title}</p>
+                    <p className="text-sm text-gray-500 capitalize">{m.status}</p>
+                    {m.tasks && m.tasks.length > 0 && (
+                      <ul className="mt-2 ml-2 text-sm text-gray-600">
+                        {m.tasks.map((t) => (
+                          <li key={t.id}>• {t.title} — {t.status}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-sm">No milestones yet. Tasks:</p>
+            )}
+            {tasks.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm">
+                {tasks.slice(0, 5).map((t) => (
+                  <li key={t.id} className="flex justify-between">
+                    <span>{t.title}</span>
+                    <span className="capitalize text-gray-500">{t.status}</span>
+                  </li>
+                ))}
+                {tasks.length > 5 && <li className="text-gray-500">+{tasks.length - 5} more</li>}
+              </ul>
+            )}
+            {tasks.length === 0 && milestones.length === 0 && <p className="text-gray-500 text-sm">No tasks yet.</p>}
+            <Link href="/dashboard/tasks" className="mt-3 inline-block text-sm text-primary hover:underline">View all tasks →</Link>
+          </div>
+
+          {/* Payments & Billing placeholder */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+            <h2 className="text-lg font-semibold text-secondary mb-3">Payments & Billing</h2>
+            <p className="text-gray-500 text-sm">View invoices and payment history in the Payments section.</p>
+            <Link href="/dashboard/payments" className="mt-2 inline-block text-sm text-primary hover:underline">Go to Payments →</Link>
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">

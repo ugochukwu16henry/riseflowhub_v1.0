@@ -18,13 +18,15 @@ router.post(
     body('description').optional().trim(),
     body('status').optional().isIn(['Todo', 'InProgress', 'Done', 'Blocked']),
     body('assignedToId').optional().isUUID(),
+    body('milestoneId').optional().isUUID(),
+    body('priority').optional().isIn(['Low', 'Medium', 'High']),
     body('dueDate').optional().isISO8601(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     const projectId = req.params.id;
-    const { title, description, status, assignedToId, dueDate } = req.body;
+    const { title, description, status, assignedToId, milestoneId, priority, dueDate } = req.body;
     const task = await prisma.task.create({
       data: {
         projectId,
@@ -32,6 +34,8 @@ router.post(
         description,
         status: status || 'Todo',
         assignedToId: assignedToId || null,
+        milestoneId: milestoneId || null,
+        priority: priority || 'Medium',
         dueDate: dueDate ? new Date(dueDate) : null,
       },
     });
@@ -51,7 +55,7 @@ router.get('/:id/tasks', async (req, res) => {
   }
   const tasks = await prisma.task.findMany({
     where: { projectId },
-    include: { assignedTo: { select: { id: true, name: true, email: true } } },
+    include: { assignedTo: { select: { id: true, name: true, email: true } }, milestone: { select: { id: true, title: true, status: true } } },
   });
   res.json(tasks);
 });
@@ -67,7 +71,7 @@ router.put('/:id/tasks/:taskId', async (req, res) => {
   if (!isAdmin && task.project.client.userId !== payload.userId && !isAssigned) {
     return res.status(403).json({ error: 'Cannot update this task' });
   }
-  const { title, description, status, assignedToId, dueDate } = req.body;
+  const { title, description, status, assignedToId, milestoneId, priority, dueDate } = req.body;
   const updated = await prisma.task.update({
     where: { id: taskId },
     data: {
@@ -75,7 +79,9 @@ router.put('/:id/tasks/:taskId', async (req, res) => {
       description,
       status,
       assignedToId,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
+      milestoneId: milestoneId !== undefined ? milestoneId || null : undefined,
+      priority: priority !== undefined ? priority : undefined,
+      dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
     },
   });
   res.json(updated);

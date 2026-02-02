@@ -67,10 +67,41 @@ export const api = {
   projects: {
     list: (token: string) => request<Project[]>('/api/v1/projects', { token }),
     get: (id: string, token: string) => request<Project>(`/api/v1/projects/${id}`, { token }),
+    update: (id: string, body: Partial<ProjectUpdateBody>, token: string) =>
+      request<Project>(`/api/v1/projects/${id}`, { method: 'PUT', body: JSON.stringify(body), token }),
+  },
+  milestones: {
+    list: (projectId: string, token: string) => request<Milestone[]>(`/api/v1/projects/${projectId}/milestones`, { token }),
+    create: (projectId: string, body: { title: string; status?: string; dueDate?: string }, token: string) =>
+      request<Milestone>(`/api/v1/projects/${projectId}/milestones`, { method: 'POST', body: JSON.stringify(body), token }),
+    update: (id: string, body: { title?: string; status?: string; dueDate?: string }, token: string) =>
+      request<Milestone>(`/api/v1/milestones/${id}`, { method: 'PUT', body: JSON.stringify(body), token }),
+    delete: (id: string, token: string) => request<void>(`/api/v1/milestones/${id}`, { method: 'DELETE', token }),
   },
   tasks: {
     list: (projectId: string, token: string) =>
       request<Task[]>(`/api/v1/projects/${projectId}/tasks`, { token }),
+    listByProject: (projectId: string, token: string) =>
+      request<Task[]>(`/api/v1/tasks?projectId=${projectId}`, { token }),
+    myTasks: (token: string) => request<TaskWithProject[]>(`/api/v1/tasks/me`, { token }),
+  },
+  notifications: {
+    list: (token: string) => request<{ notifications: NotificationItem[] }>('/api/v1/notifications', { token }),
+  },
+  payments: {
+    list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
+    create: (body: { projectId: string; amount: number; currency?: string; type?: string }, token: string) =>
+      request<{ paymentId: string; status: string }>('/api/v1/payments/create', { method: 'POST', body: JSON.stringify(body), token }),
+  },
+  ai: {
+    evaluateIdea: (body: { ideaDescription: string; industry?: string; country?: string }, token: string) =>
+      request<AIEvaluateIdeaResponse>('/api/v1/ai/evaluate-idea', { method: 'POST', body: JSON.stringify(body), token }),
+    generateProposal: (body: { ideaSummary?: string; industry?: string; budgetRange?: string }, token: string) =>
+      request<AIGenerateProposalResponse>('/api/v1/ai/generate-proposal', { method: 'POST', body: JSON.stringify(body), token }),
+    pricing: (body: { amountUsd?: number; scope?: string; region?: string }, token: string) =>
+      request<AIPricingResponse>('/api/v1/ai/pricing', { method: 'POST', body: JSON.stringify(body), token }),
+    projectInsights: (body: { projectId?: string }, token: string) =>
+      request<AIProjectInsightsResponse>('/api/v1/ai/project-insights', { method: 'POST', body: JSON.stringify(body), token }),
   },
   agreements: {
     list: (token: string) => request<Agreement[]>(`/api/v1/agreements`, { token }),
@@ -140,23 +171,119 @@ export interface AgreementAuditLog {
   createdAt: string;
 }
 
+export type ProjectStatus =
+  | 'IdeaSubmitted'
+  | 'ReviewValidation'
+  | 'ProposalSent'
+  | 'Development'
+  | 'Testing'
+  | 'Live'
+  | 'Maintenance';
+
 export interface Project {
   id: string;
   projectName: string;
   description: string | null;
   stage: string;
+  status?: ProjectStatus;
   progressPercent: number;
+  budget?: number | null;
   startDate: string | null;
   deadline: string | null;
+  repoUrl?: string | null;
+  liveUrl?: string | null;
   client?: { user?: { name: string; email: string } };
+  tasks?: Task[];
+  milestones?: Milestone[];
+}
+
+export interface ProjectUpdateBody {
+  projectName?: string;
+  description?: string;
+  stage?: string;
+  status?: ProjectStatus;
+  progressPercent?: number;
+  budget?: number | null;
+  startDate?: string | null;
+  deadline?: string | null;
+  repoUrl?: string | null;
+  liveUrl?: string | null;
+}
+
+export interface Milestone {
+  id: string;
+  projectId: string;
+  title: string;
+  status: 'Pending' | 'InProgress' | 'Completed';
+  dueDate: string | null;
   tasks?: Task[];
 }
 
 export interface Task {
   id: string;
+  projectId: string;
+  milestoneId?: string | null;
   title: string;
   description: string | null;
   status: string;
+  priority?: 'Low' | 'Medium' | 'High';
   dueDate: string | null;
   assignedTo?: { id: string; name: string; email: string } | null;
+  milestone?: { id: string; title: string; status?: string } | null;
+}
+
+export interface TaskWithProject extends Task {
+  project?: { id: string; projectName: string };
+}
+
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  createdAt: string;
+  link?: string;
+}
+
+export interface PaymentRow {
+  id: string;
+  projectId: string;
+  amount: number;
+  status: string;
+  dueDate: string | null;
+  createdAt: string;
+}
+
+export interface AIEvaluateIdeaResponse {
+  feasibilityScore: number;
+  riskLevel: string;
+  marketPotential: string;
+  suggestedMvpScope: string[];
+  summary: string;
+}
+
+export interface AIGenerateProposalResponse {
+  projectScope: string[];
+  timelineWeeks: number;
+  techStack: Record<string, string>;
+  estimatedCostUsd: number;
+  estimatedCostNgn?: number;
+  estimatedCostEur?: number;
+  estimatedCostGbp?: number;
+  currency: string;
+  summary: string;
+}
+
+export interface AIPricingResponse {
+  amountUsd: number;
+  conversions: Record<string, number>;
+  regionAdjustment: number;
+  summary: string;
+}
+
+export interface AIProjectInsightsResponse {
+  predictedDelays: string[];
+  riskAreas: string[];
+  suggestions: string[];
+  overallHealth: string;
+  summary: string;
 }
