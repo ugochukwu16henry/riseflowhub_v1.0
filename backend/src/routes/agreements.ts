@@ -50,7 +50,7 @@ router.get(
 router.put(
   '/:id',
   requireRoles(UserRole.super_admin),
-  [param('id').isUUID()],
+  [param('id').isUUID(), body('title').optional().trim(), body('type').optional().isIn(['NDA', 'MOU', 'CoFounder', 'Terms']), body('templateUrl').optional().trim()],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

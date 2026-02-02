@@ -5,7 +5,6 @@ import { getStoredToken } from '@/lib/api';
 import type {
   AssignedAgreementRow,
   Agreement,
-  AgreementDetail,
   AgreementType,
   AgreementAuditLog,
 } from '@/lib/api';
