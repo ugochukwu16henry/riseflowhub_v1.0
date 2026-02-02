@@ -13,6 +13,7 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ChatThreadScreen from '../screens/ChatThreadScreen';
 import AIScreen from '../screens/AIScreen';
+import AccountScreen from '../screens/AccountScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,11 +28,12 @@ function MainTabs() {
       }}
     >
       <Tab.Screen name="Projects" component={ProjectsScreen} options={{ title: 'Projects' }} />
-      <Tab.Screen name="Tasks" component={TasksScreen} options={{ title: 'My Tasks' }} />
+      <Tab.Screen name="Tasks" component={TasksScreen} options={{ title: 'Tasks' }} />
       <Tab.Screen name="Agreements" component={AgreementsScreen} options={{ title: 'Agreements' }} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notifications' }} />
       <Tab.Screen name="Chat" component={ChatScreen} options={{ title: 'Chat' }} />
-      <Tab.Screen name="AI" component={AIScreen} options={{ title: 'AI Assistant' }} />
+      <Tab.Screen name="AI" component={AIScreen} options={{ title: 'AI' }} />
+      <Tab.Screen name="Account" component={AccountScreen} options={{ title: 'Account' }} />
     </Tab.Navigator>
   );
 }

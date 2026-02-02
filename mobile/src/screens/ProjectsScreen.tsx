@@ -56,7 +56,7 @@ export default function ProjectsScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.getParent()?.navigate('ProjectDetail', { projectId: item.id })}
+            onPress={() => (navigation.getParent() as any)?.getParent()?.navigate('ProjectDetail', { projectId: item.id })}
           >
             <Text style={styles.cardTitle}>{item.projectName}</Text>
             <Text style={styles.cardStage}>{item.stage}</Text>

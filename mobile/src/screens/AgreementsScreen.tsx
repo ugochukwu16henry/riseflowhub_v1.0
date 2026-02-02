@@ -48,7 +48,7 @@ export default function AgreementsScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => item.status === 'Pending' && navigation.getParent()?.navigate('AgreementSign', { agreementId: item.agreement.id, title: item.agreement.title })}
+            onPress={() => item.status === 'Pending' && (navigation.getParent() as any)?.getParent()?.navigate('AgreementSign', { agreementId: item.agreement.id, title: item.agreement.title })}
             disabled={item.status !== 'Pending'}
           >
             <Text style={styles.cardTitle}>{item.agreement.title}</Text>

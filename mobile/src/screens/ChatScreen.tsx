@@ -49,7 +49,7 @@ export default function ChatScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.getParent()?.navigate('ChatThread', { projectId: item.id, projectName: item.projectName })}
+            onPress={() => (navigation.getParent() as any)?.getParent()?.navigate('ChatThread', { projectId: item.id, projectName: item.projectName })}
           >
             <Text style={styles.cardTitle}>{item.projectName}</Text>
           </TouchableOpacity>
