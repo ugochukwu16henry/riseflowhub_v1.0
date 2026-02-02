@@ -117,6 +117,8 @@ model User {
   email         String    @unique
   passwordHash  String    @map("password_hash")
   role          UserRole  @default(client)
+  setupPaid     Boolean   @default(false) @map("setup_paid")
+  setupReason   String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -129,6 +131,7 @@ model User {
   assignedAgreements AssignedAgreement[]
   adminLeadsAssigned AdminLead[]     @relation("AdminLeadsAssigned")
   adminLeadNotes    AdminLeadNote[]
+  userPayments      UserPayment[]
 }
 
 model Client {

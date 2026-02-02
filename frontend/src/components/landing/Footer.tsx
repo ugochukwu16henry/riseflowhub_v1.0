@@ -9,8 +9,9 @@ const FOOTER_LINKS = [
   { label: 'Startups', href: '/dashboard/startup' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Terms', href: '#' },
-  { label: 'Privacy', href: '#' },
+  { label: 'Terms', href: '/terms' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'User Agreement', href: '/user-agreement' },
 ];
 
 export function Footer() {

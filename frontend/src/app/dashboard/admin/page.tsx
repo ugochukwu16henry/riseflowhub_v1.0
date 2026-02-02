@@ -89,6 +89,13 @@ export default function SuperAdminDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Link
+          href="/dashboard/admin/leads"
+          className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
+        >
+          <h3 className="font-semibold text-secondary mb-1">Leads</h3>
+          <p className="text-sm text-gray-500">Track and manage incoming leads</p>
+        </Link>
+        <Link
           href="/dashboard/admin/agreements"
           className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
         >
