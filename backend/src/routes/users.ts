@@ -2,11 +2,15 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware, requireRoles } from '../middleware/auth';
 import { UserRole } from '@prisma/client';
+import * as authController from '../controllers/authController';
 
 const router = Router();
 const prisma = new PrismaClient();
 
 router.use(authMiddleware);
+
+// GET /api/v1/users/me — Logged-in user profile (same as GET /auth/me)
+router.get('/me', (req, res) => authController.me(req, res));
 
 // GET /api/v1/users?role=developer
 router.get('/', requireRoles(UserRole.super_admin, UserRole.project_manager, UserRole.finance_admin), async (req, res) => {

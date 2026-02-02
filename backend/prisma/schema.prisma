@@ -184,6 +184,7 @@ model Agreement {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   assignedAgreements AssignedAgreement[]
+  auditLogs          AgreementAuditLog[]
 }
 
 model AssignedAgreement {
@@ -200,4 +201,18 @@ model AssignedAgreement {
 
   agreement Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  auditLogs AgreementAuditLog[]
+}
+
+model AgreementAuditLog {
+  id                  String   @id @default(uuid())
+  agreementId         String   @map("agreement_id")
+  assignedAgreementId String?  @map("assigned_agreement_id")
+  userId              String   @map("user_id")
+  action              String   // viewed | signed
+  ipAddress           String?  @map("ip_address")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  agreement         Agreement          @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  assignedAgreement AssignedAgreement? @relation(fields: [assignedAgreementId], references: [id], onDelete: Cascade)
 }

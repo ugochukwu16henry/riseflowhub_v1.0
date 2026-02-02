@@ -11,11 +11,12 @@
 | Method | Endpoint | Purpose | Auth |
 |--------|----------|---------|------|
 | POST | `/auth/register` | Create account | Public |
+| POST | `/auth/signup` | Create account (alias) | Public |
 | POST | `/auth/login` | Login | Public |
 | GET | `/auth/me` | Get current user | JWT |
 | POST | `/auth/logout` | Logout | JWT |
 
-**Register body:** `{ "name", "email", "password", "role?" }` — role defaults to `client`.  
+**Register/Signup body:** `{ "name", "email", "password", "role?" }` — role defaults to `client`.  
 **Login body:** `{ "email", "password" }` — returns `{ user, token }`.
 
 ---
@@ -24,6 +25,7 @@
 
 | Method | Endpoint | Purpose | Auth |
 |--------|----------|---------|------|
+| GET | `/users/me` | Get logged-in user profile | JWT |
 | GET | `/users` | List users (optional `?role=developer`) | Admin |
 | GET | `/users/:id` | Get user | Self or Admin |
 | PUT | `/users/:id` | Update user (e.g. name) | Self or Super Admin |
@@ -68,6 +70,16 @@
 
 **Create body:** `{ "title", "description?", "status?", "assignedToId?", "dueDate?" }`  
 **Status:** `Todo` | `InProgress` | `Done` | `Blocked`
+
+---
+
+## Agreements (skeleton — admin only)
+
+| Method | Endpoint | Purpose | Auth |
+|--------|----------|---------|------|
+| GET | `/agreements` | List all agreement templates | Super Admin / PM / Finance Admin |
+
+*Agreement signing (assign, view, sign) will be added in the next module.*
 
 ---
 

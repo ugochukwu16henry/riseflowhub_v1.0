@@ -8,6 +8,7 @@
 - **Backend:** Node.js, Express, TypeScript, Prisma
 - **Database:** PostgreSQL (Supabase or local)
 - **Auth:** JWT, role-based access (Client, Super Admin, Project Manager, etc.)
+- **Package manager:** pnpm
 
 ## Project structure
 
@@ -28,10 +29,10 @@ Afrilauch_v1.0/
 cd backend
 cp .env.example .env
 # Edit .env: set DATABASE_URL (PostgreSQL) and JWT_SECRET
-npm install
-npx prisma generate
-npx prisma db push
-npm run dev
+pnpm install
+pnpm prisma generate
+pnpm prisma db push
+pnpm run dev
 ```
 
 API runs at **http://localhost:4000**. Health: `GET http://localhost:4000/api/v1/health`
@@ -42,8 +43,8 @@ API runs at **http://localhost:4000**. Health: `GET http://localhost:4000/api/v1
 cd frontend
 # Optional: copy .env.local.example to .env.local and set NEXT_PUBLIC_API_URL=http://localhost:4000
 # If unset, Next.js rewrites /api/v1/* to the backend (ensure backend URL in next.config.js)
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 App runs at **http://localhost:3000**.

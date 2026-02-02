@@ -72,7 +72,73 @@ export const api = {
     list: (projectId: string, token: string) =>
       request<Task[]>(`/api/v1/projects/${projectId}/tasks`, { token }),
   },
+  agreements: {
+    list: (token: string) => request<Agreement[]>(`/api/v1/agreements`, { token }),
+    get: (id: string, token: string) => request<AgreementDetail>(`/api/v1/agreements/${id}`, { token }),
+    create: (body: { title: string; type: AgreementType; templateUrl?: string }, token: string) =>
+      request<Agreement>(`/api/v1/agreements`, { method: 'POST', body: JSON.stringify(body), token }),
+    update: (id: string, body: { title?: string; type?: AgreementType; templateUrl?: string }, token: string) =>
+      request<Agreement>(`/api/v1/agreements/${id}`, { method: 'PUT', body: JSON.stringify(body), token }),
+    delete: (id: string, token: string) =>
+      request<void>(`/api/v1/agreements/${id}`, { method: 'DELETE', token }),
+    listAssignments: (token: string, params?: { status?: string; type?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<AssignedAgreementRow[]>(`/api/v1/agreements/assignments${q ? `?${q}` : ''}`, { token });
+    },
+    assign: (agreementId: string, body: { userId?: string; userIds?: string[]; deadline?: string }, token: string) =>
+      request<{ assigned: { id: string; userId: string; deadline: string | null }[] }>(`/api/v1/agreements/${agreementId}/assign`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+    view: (id: string, token: string) => request<{ id: string; title: string; type: string; templateUrl: string | null }>(`/api/v1/agreements/${id}/view`, { token }),
+    sign: (id: string, body: { signatureText?: string; signatureUrl?: string }, token: string) =>
+      request<{ message: string; assignment: unknown }>(`/api/v1/agreements/${id}/sign`, { method: 'POST', body: JSON.stringify(body), token }),
+    status: (id: string, token: string) => request<unknown[]>(`/api/v1/agreements/${id}/status`, { token }),
+    logs: (id: string, token: string) => request<AgreementAuditLog[]>(`/api/v1/agreements/${id}/logs`, { token }),
+    listAssignedToMe: (token: string) => request<AssignedToMe[]>(`/api/v1/agreements/assigned`, { token }),
+  },
 };
+
+export type AgreementType = 'NDA' | 'MOU' | 'CoFounder' | 'Terms';
+
+export interface Agreement {
+  id: string;
+  title: string;
+  type: AgreementType;
+  templateUrl: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AgreementDetail extends Agreement {
+  assignedAgreements?: { id: string; userId: string; user: { id: string; name: string; email: string } }[];
+}
+
+export interface AssignedAgreementRow {
+  id: string;
+  status: 'Pending' | 'Signed' | 'Overdue';
+  signedAt: string | null;
+  deadline: string | null;
+  agreement: { id: string; title: string; type: string; templateUrl: string | null };
+  user: { id: string; name: string; email: string };
+}
+
+export interface AssignedToMe {
+  id: string;
+  status: 'Pending' | 'Signed' | 'Overdue';
+  signedAt: string | null;
+  agreement: { id: string; title: string; type: string; templateUrl: string | null };
+}
+
+export interface AgreementAuditLog {
+  id: string;
+  userId: string;
+  user: { id: string; name: string; email: string };
+  action: string;
+  ipAddress: string | null;
+  createdAt: string;
+}
 
 export interface Project {
   id: string;
