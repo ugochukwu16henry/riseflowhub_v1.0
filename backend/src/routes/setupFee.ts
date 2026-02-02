@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, optionalAuth } from '../middleware/auth';
 import * as setupFeeController from '../controllers/setupFeeController';
 
 const router = Router();
 
-// GET /api/v1/setup-fee/quote?currency=NGN — optional auth (uses role for amount)
-router.get('/quote', (req, res) => setupFeeController.quote(req, res));
+// GET /api/v1/setup-fee/quote?currency=NGN — optional auth (uses role for amount: investor $10, else $7)
+router.get('/quote', optionalAuth, (req, res) => setupFeeController.quote(req, res));
 
 // POST /api/v1/setup-fee/create-session — auth required
 router.post(

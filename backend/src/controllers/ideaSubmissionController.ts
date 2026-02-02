@@ -86,7 +86,7 @@ export async function submit(req: Request, res: Response): Promise<void> {
       role: 'client',
       tenantId,
     },
-    select: { id: true, name: true, email: true, role: true, tenantId: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, tenantId: true, setupPaid: true, setupReason: true, createdAt: true },
   });
 
   const businessName = ideaDescription.trim().slice(0, 80) || `${name.trim()}'s Venture`;
@@ -152,6 +152,8 @@ export async function submit(req: Request, res: Response): Promise<void> {
       email: user.email,
       role: user.role,
       tenantId: user.tenantId,
+      setupPaid: user.setupPaid ?? false,
+      setupReason: user.setupReason ?? null,
     },
     token,
     message: 'Your idea has been received. Our system is analyzing it and preparing your startup proposal.',

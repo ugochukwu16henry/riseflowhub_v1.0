@@ -26,7 +26,7 @@ export async function register(req: Request, res: Response): Promise<void> {
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
     data: { name, email, passwordHash, role: 'investor' },
-    select: { id: true, name: true, email: true, role: true },
+    select: { id: true, name: true, email: true, role: true, setupPaid: true, setupReason: true },
   });
   await prisma.investor.create({
     data: {
@@ -42,7 +42,17 @@ export async function register(req: Request, res: Response): Promise<void> {
     },
   });
   const token = signToken({ userId: user.id, email: user.email, role: user.role });
-  res.status(201).json({ user, token });
+  res.status(201).json({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      setupPaid: user.setupPaid ?? false,
+      setupReason: user.setupReason ?? null,
+    },
+    token,
+  });
 }
 
 /** GET /api/v1/investors — List investors (admin) or current investor profile */

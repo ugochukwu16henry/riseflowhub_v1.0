@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Nav, Section, Footer } from '@/components/landing';
-import { api, type ConsultationBookingBody } from '@/lib/api';
+import { api, getStoredToken, type ConsultationBookingBody, type User } from '@/lib/api';
 
 const STAGE_OPTIONS = [
   { value: 'Idea', label: 'Idea' },
@@ -68,6 +68,7 @@ export default function BookConsultationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [timezone, setTimezone] = useState('');
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     try {
@@ -77,6 +78,12 @@ export default function BookConsultationPage() {
     } catch {
       setTimezone('');
     }
+  }, []);
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) return;
+    api.auth.me(token).then(setUser).catch(() => setUser(null));
   }, []);
 
   function update<K extends keyof ConsultationBookingBody>(key: K, value: ConsultationBookingBody[K]) {
@@ -159,6 +166,15 @@ export default function BookConsultationPage() {
           <h1 className="text-3xl font-bold tracking-tight text-text-dark sm:text-4xl md:text-5xl">
             Let&apos;s Talk About Your Idea
           </h1>
+          {user?.setupPaid ? (
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-800">
+              Free consultation — included with your setup
+            </p>
+          ) : user ? (
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-1.5 text-sm font-medium text-amber-800">
+              Paid booking — unlock free consultation by completing setup
+            </p>
+          ) : null}
           <p className="mt-6 text-lg text-gray-600 leading-relaxed">
             Book a consultation and get expert guidance on turning your idea into a real business.
           </p>
