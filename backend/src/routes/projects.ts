@@ -104,6 +104,48 @@ router.post(
 // GET /api/v1/projects/:id/milestones
 router.get('/:id/milestones', (req, res) => milestoneController.listMilestones(req, res));
 
+// GET /api/v1/projects/:id/messages — project chat
+router.get('/:id/messages', async (req, res) => {
+  const { id: projectId } = req.params;
+  const payload = (req as unknown as { user: { userId: string; role: string } }).user;
+  const ADMIN_OR_TEAM = ['super_admin', 'project_manager', 'developer', 'designer', 'marketer', 'finance_admin'];
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { client: { select: { userId: true } }, tasks: { where: { assignedToId: payload.userId }, select: { id: true } } },
+  });
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+  const allowed = ADMIN_OR_TEAM.includes(payload.role) || project.client.userId === payload.userId || project.tasks.length > 0;
+  if (!allowed) return res.status(403).json({ error: 'Cannot access this project' });
+  const messages = await prisma.message.findMany({
+    where: { projectId },
+    orderBy: { createdAt: 'asc' },
+    include: { sender: { select: { id: true, name: true, email: true } } },
+  });
+  res.json(messages.map((m) => ({ id: m.id, projectId: m.projectId, senderId: m.senderId, message: m.message, createdAt: m.createdAt, sender: m.sender })));
+});
+
+// POST /api/v1/projects/:id/messages — send message
+router.post('/:id/messages', [body('message').trim().notEmpty()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  const { id: projectId } = req.params;
+  const { message } = req.body as { message: string };
+  const payload = (req as unknown as { user: { userId: string; role: string } }).user;
+  const ADMIN_OR_TEAM = ['super_admin', 'project_manager', 'developer', 'designer', 'marketer', 'finance_admin'];
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { client: { select: { userId: true } }, tasks: { where: { assignedToId: payload.userId }, select: { id: true } } },
+  });
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+  const allowed = ADMIN_OR_TEAM.includes(payload.role) || project.client.userId === payload.userId || project.tasks.length > 0;
+  if (!allowed) return res.status(403).json({ error: 'Cannot access this project' });
+  const created = await prisma.message.create({
+    data: { projectId, senderId: payload.userId, message: message.trim() },
+    include: { sender: { select: { id: true, name: true, email: true } } },
+  });
+  res.status(201).json({ id: created.id, projectId: created.projectId, senderId: created.senderId, message: created.message, createdAt: created.createdAt, sender: created.sender });
+});
+
 // GET /api/v1/projects/:id
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
