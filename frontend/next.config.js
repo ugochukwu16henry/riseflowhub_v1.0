@@ -10,9 +10,11 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['clsx', 'tailwind-merge'],
   },
+  // Proxy /api/v1/* to the backend. Set NEXT_PUBLIC_API_URL to your backend URL (e.g. https://your-api.railway.app).
   async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
     return [
-      { source: '/api/v1/:path*', destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1/:path*` },
+      { source: '/api/v1/:path*', destination: `${apiUrl}/api/v1/:path*` },
     ];
   },
 };

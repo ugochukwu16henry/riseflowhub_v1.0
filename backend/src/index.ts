@@ -1,6 +1,11 @@
 import 'dotenv/config';
-// Load .env.local so DATABASE_URL, JWT_SECRET, etc. are used when running locally
-require('dotenv').config({ path: '.env.local', override: true });
+import path from 'path';
+import fs from 'fs';
+// Optional: override with .env.local when present (local dev). On Render, use dashboard env vars only.
+const envLocal = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(envLocal)) {
+  require('dotenv').config({ path: envLocal, override: true });
+}
 
 import express from 'express';
 import cors from 'cors';
