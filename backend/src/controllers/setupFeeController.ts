@@ -17,7 +17,7 @@ export async function quote(req: Request, res: Response): Promise<void> {
   const currency = (req.query.currency as string) || 'USD';
   const payload = (req as unknown as { user?: AuthPayload }).user;
   const role = payload?.role;
-  const usdAmount = role === 'investor' ? INVESTOR_FEE_USD : ENTREPRENEUR_FEE_USD;
+  const usdAmount = role === 'investor' ? INVESTOR_SETUP_FEE_USD : IDEA_STARTER_SETUP_FEE_USD;
   try {
     const result = await convertUsdToCurrency(usdAmount, currency);
     res.json({

@@ -94,3 +94,12 @@ See `frontend/e2e/README.md` for test users and suites (auth, client dashboard, 
 
 - **Backend:** `backend/.env` (from `.env.example`) — `DATABASE_URL`, `JWT_SECRET`, `PORT`, etc.
 - **Frontend:** `frontend/.env.local` (optional) — `NEXT_PUBLIC_API_URL` for direct API URL; if unset, Next rewrites `/api/v1/*` to the backend URL in `next.config.js`.
+
+## Deployment
+
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for:
+
+- Full checklist (DB seeding, CMS, auth, dashboards, payments, AI)
+- Frontend (Vercel) and backend (Railway/Render) deployment steps
+- Environment variables for production
+- Optional CI/CD (GitHub Actions + Playwright)

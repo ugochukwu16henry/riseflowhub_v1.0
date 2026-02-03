@@ -65,6 +65,26 @@ async function main() {
   });
   console.log('Seeded Super Admin: ugochukwuhenry16@gmail.com');
 
+  // CMS: default content (Super Admin can edit via CMS Manager)
+  const cmsEntries: Array<{ key: string; value: string; type: string; page: string }> = [
+    { key: 'home.hero.title', value: 'Turn Ideas Into Real Startups', type: 'text', page: 'home' },
+    { key: 'home.hero.subtitle', value: 'From Idea to Impact — Build your venture with expert support.', type: 'text', page: 'home' },
+    { key: 'home.cta.label', value: 'Get Started', type: 'text', page: 'home' },
+    { key: 'pricing.setupFee', value: 'One-time setup fee to unlock your workspace.', type: 'text', page: 'pricing' },
+    { key: 'pricing.investorFee', value: 'Investor onboarding fee for deal room access.', type: 'text', page: 'pricing' },
+    { key: 'email.welcome.subject', value: 'Welcome to AfriLaunch Hub', type: 'text', page: 'email' },
+    { key: 'legal.terms', value: 'Terms of Service content — edit in CMS Manager.', type: 'richtext', page: 'legal' },
+    { key: 'legal.privacy', value: 'Privacy Policy content — edit in CMS Manager.', type: 'richtext', page: 'legal' },
+  ];
+  for (const entry of cmsEntries) {
+    await prisma.cmsContent.upsert({
+      where: { key: entry.key },
+      update: { value: entry.value, type: entry.type, page: entry.page },
+      create: { ...entry, updatedById: null },
+    });
+  }
+  console.log(`Seeded ${cmsEntries.length} CMS content entries`);
+
   console.log('\nSeed complete. Test users (password for all):', TEST_PASSWORD);
 }
 
