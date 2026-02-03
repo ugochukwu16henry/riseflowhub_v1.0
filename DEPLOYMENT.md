@@ -172,10 +172,12 @@ pnpm run db:seed
 
 ### Database (Supabase)
 
-1. Create project → Settings → Database → connection string (URI).
-2. Run migrations: `cd backend && pnpm prisma migrate deploy` (or `db push` for dev).
-3. Run seed: `pnpm run db:seed`.
-4. Enable Storage if you use file uploads; configure RLS if desired.
+**Full step-by-step:** see **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)**.
+
+1. Create a Supabase project → **Project Settings → Database** → copy the **Connection string (URI)**.
+2. Put it in `backend/.env` as `DATABASE_URL` (use the **pooler** URI, port 6543, for production).
+3. Run: `cd backend && pnpm prisma generate && pnpm prisma db push && pnpm run db:seed`.
+4. Optional: enable Storage for file uploads; configure RLS if desired.
 
 ---
 
