@@ -5,6 +5,9 @@ import * as setupFeeController from '../controllers/setupFeeController';
 
 const router = Router();
 
+// GET /api/v1/setup-fee/config — public: centralized pricing config (no auth)
+router.get('/config', (req, res) => setupFeeController.config(req, res));
+
 // GET /api/v1/setup-fee/quote?currency=NGN — optional auth (uses role for amount: investor $10, else $7)
 router.get('/quote', optionalAuth, (req, res) => setupFeeController.quote(req, res));
 

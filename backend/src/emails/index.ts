@@ -8,6 +8,7 @@ import { paymentReminderEmail } from './paymentReminderEmail';
 import { milestoneCompletedEmail } from './milestoneCompletedEmail';
 import { projectLaunchedEmail } from './projectLaunchedEmail';
 import { investorInterestEmail } from './investorInterestEmail';
+import { teamInviteEmail } from './teamInviteEmail';
 
 export type EmailType =
   | 'account_created'
@@ -19,7 +20,8 @@ export type EmailType =
   | 'payment_required'
   | 'milestone_completed'
   | 'project_launched'
-  | 'investor_interest_received';
+  | 'investor_interest_received'
+  | 'team_invite';
 
 export interface EmailPayload {
   type: EmailType;
@@ -38,6 +40,7 @@ const TEMPLATES: Record<EmailType, (data: Record<string, unknown>) => { subject:
   milestone_completed: milestoneCompletedEmail,
   project_launched: projectLaunchedEmail,
   investor_interest_received: investorInterestEmail,
+  team_invite: teamInviteEmail,
 };
 
 export function getEmailContent(type: EmailType, dynamicData: Record<string, unknown> = {}): { subject: string; html: string } {
@@ -46,4 +49,4 @@ export function getEmailContent(type: EmailType, dynamicData: Record<string, unk
   return fn(dynamicData);
 }
 
-export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail };
+export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail };

@@ -10,6 +10,11 @@ export type UserRole =
   | 'super_admin'
   | 'investor';
 
+export interface PricingConfig {
+  ideaStarterSetupFeeUsd: number;
+  investorSetupFeeUsd: number;
+}
+
 export interface TenantBranding {
   id: string;
   orgName: string;
@@ -27,7 +32,11 @@ export interface User {
   tenantId?: string | null;
   setupPaid?: boolean;
   setupReason?: string | null;
+  avatarUrl?: string | null;
+  lastLoginAt?: string | null;
+  welcomePanelSeen?: boolean;
   createdAt?: string;
+  customRole?: { id: string; name: string; department: string | null; level: string | null } | null;
   tenant?: {
     id: string;
     orgName: string;
@@ -324,8 +333,15 @@ export const api = {
       const q = new URLSearchParams(params as Record<string, string>).toString();
       return request<User[]>(`/api/v1/users${q ? `?${q}` : ''}`, { token });
     },
+    updateMe: (body: { welcomePanelSeen?: boolean }, token: string) =>
+      request<{ id: string; name: string; email: string; role: string; welcomePanelSeen?: boolean }>(
+        `/api/v1/users/me`,
+        { method: 'PATCH', body: JSON.stringify(body), token }
+      ),
   },
   setupFee: {
+    config: () =>
+      request<PricingConfig>(`/api/v1/setup-fee/config`),
     quote: (currency: string, token?: string) =>
       request<{ amountUsd: number; amount: number; currency: string; rate: number }>(
         `/api/v1/setup-fee/quote?currency=${encodeURIComponent(currency)}`,
@@ -362,6 +378,24 @@ export const api = {
     consultations: (token: string) =>
       request<SuperAdminConsultationRow[]>(`/api/v1/super-admin/consultations`, { token }),
   },
+  team: {
+    list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
+    invite: (body: { email: string; role?: string; customRoleId?: string }, token: string) =>
+      request<{ ok: boolean; message: string }>(`/api/v1/team/invite`, { method: 'POST', body: JSON.stringify(body), token }),
+    getAcceptInvite: (token: string) =>
+      request<{ valid: boolean; email?: string; role?: string; roleLabel?: string } | { error: string; valid: false }>(
+        `/api/v1/team/invite/accept?token=${encodeURIComponent(token)}`
+      ),
+    postAcceptInvite: (body: { token: string; name: string; password: string }) =>
+      request<AuthResponse>(`/api/v1/team/invite/accept`, { method: 'POST', body: JSON.stringify(body) }),
+    updateMember: (userId: string, body: { role?: string; customRoleId?: string | null }, token: string) =>
+      request<TeamMemberRow>(`/api/v1/team/${userId}`, { method: 'PATCH', body: JSON.stringify(body), token }),
+    deleteMember: (userId: string, token: string) =>
+      request<void>(`/api/v1/team/${userId}`, { method: 'DELETE', token }),
+    listCustomRoles: (token: string) => request<CustomRoleRow[]>(`/api/v1/team/roles`, { token }),
+    createCustomRole: (body: { name: string; department?: string; level?: string }, token: string) =>
+      request<CustomRoleRow>(`/api/v1/team/roles`, { method: 'POST', body: JSON.stringify(body), token }),
+  },
 };
 
 export interface SuperAdminConsultationRow {
@@ -377,6 +411,25 @@ export interface SuperAdminConsultationRow {
   preferredDate: string | null;
   preferredTime: string | null;
   timezone: string | null;
+  createdAt: string;
+}
+
+export interface TeamMemberRow {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl: string | null;
+  lastLoginAt: string | null;
+  createdAt: string;
+  customRole: { id: string; name: string; department: string | null; level: string | null } | null;
+}
+
+export interface CustomRoleRow {
+  id: string;
+  name: string;
+  department: string | null;
+  level: string | null;
   createdAt: string;
 }
 

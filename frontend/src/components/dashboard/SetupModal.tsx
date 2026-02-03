@@ -20,12 +20,19 @@ export function SetupModal({ user, onComplete, primaryColor }: SetupModalProps) 
   const [step, setStep] = useState<'choose' | 'skip'>('choose');
   const [reason, setReason] = useState<'cant_afford' | 'pay_later' | 'exploring' | 'other'>('exploring');
   const [quote, setQuote] = useState<{ amount: number; currency: string; amountUsd: number } | null>(null);
+  const [pricingConfig, setPricingConfig] = useState<{ ideaStarterSetupFeeUsd: number; investorSetupFeeUsd: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const token = getStoredToken();
   const isInvestor = user.role === 'investor';
-  const feeUsd = isInvestor ? 10 : 7;
+  const feeUsd = pricingConfig
+    ? (isInvestor ? pricingConfig.investorSetupFeeUsd : pricingConfig.ideaStarterSetupFeeUsd)
+    : (isInvestor ? 10 : 7);
+
+  useEffect(() => {
+    api.setupFee.config().then(setPricingConfig).catch(() => setPricingConfig(null));
+  }, []);
 
   useEffect(() => {
     if (!token) return;

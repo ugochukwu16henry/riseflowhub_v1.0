@@ -3,11 +3,14 @@ import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { convertUsdToCurrency } from '../services/currencyService';
 import { createAuditLog } from '../services/auditLogService';
+import { getPricingConfig, IDEA_STARTER_SETUP_FEE_USD, INVESTOR_SETUP_FEE_USD } from '../config/pricing';
 
 const prisma = new PrismaClient();
 
-const ENTREPRENEUR_FEE_USD = 7;
-const INVESTOR_FEE_USD = 10;
+/** GET /api/v1/setup-fee/config — Public: centralized pricing config (Idea Starter setup fee, etc.) */
+export async function config(_req: Request, res: Response): Promise<void> {
+  res.json(getPricingConfig());
+}
 
 /** GET /api/v1/setup-fee/quote?currency=NGN — amount in user's currency */
 export async function quote(req: Request, res: Response): Promise<void> {
@@ -32,7 +35,7 @@ export async function quote(req: Request, res: Response): Promise<void> {
 export async function createSession(req: Request, res: Response): Promise<void> {
   const payload = (req as unknown as { user: AuthPayload }).user;
   const { currency = 'USD' } = req.body as { currency?: string };
-  const usdAmount = payload.role === 'investor' ? INVESTOR_FEE_USD : ENTREPRENEUR_FEE_USD;
+  const usdAmount = payload.role === 'investor' ? INVESTOR_SETUP_FEE_USD : IDEA_STARTER_SETUP_FEE_USD;
   const converted = await convertUsdToCurrency(usdAmount, currency);
   const reference = `setup_${payload.userId}_${Date.now()}`;
   await prisma.userPayment.create({

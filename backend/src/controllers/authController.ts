@@ -72,6 +72,10 @@ export async function login(req: Request, res: Response): Promise<void> {
     res.status(401).json({ error: 'Invalid email or password' });
     return;
   }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  }).catch(() => {});
   const token = signToken({
     userId: user.id,
     email: user.email,
@@ -113,7 +117,11 @@ export async function me(req: Request, res: Response): Promise<void> {
       tenantId: true,
       setupPaid: true,
       setupReason: true,
+      avatarUrl: true,
+      lastLoginAt: true,
+      welcomePanelSeen: true,
       createdAt: true,
+      customRole: { select: { id: true, name: true, department: true, level: true } },
       tenant: {
         select: {
           id: true,
@@ -130,9 +138,10 @@ export async function me(req: Request, res: Response): Promise<void> {
     res.status(404).json({ error: 'User not found' });
     return;
   }
-  const { tenant, ...userFields } = profile;
+  const { tenant, customRole, ...userFields } = profile;
   res.json({
     ...userFields,
+    customRole: customRole ?? null,
     tenant: tenant
       ? {
           id: tenant.id,

@@ -111,18 +111,23 @@ model TenantBilling {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  tenantId      String?   @map("tenant_id")
-  name          String
-  email         String    @unique
-  passwordHash  String    @map("password_hash")
-  role          UserRole  @default(client)
-  setupPaid     Boolean   @default(false) @map("setup_paid")
-  setupReason   String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  tenantId        String?   @map("tenant_id")
+  name            String
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  role            UserRole  @default(client)
+  setupPaid       Boolean   @default(false) @map("setup_paid")
+  setupReason     String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
+  avatarUrl       String?   @map("avatar_url")
+  lastLoginAt     DateTime? @map("last_login_at")
+  welcomePanelSeen Boolean   @default(false) @map("welcome_panel_seen")
+  customRoleId    String?   @map("custom_role_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   tenant            Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  customRole        CustomRole? @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   client            Client?
   investor          Investor?
   assignedTasks     Task[]           @relation("AssignedTasks")
@@ -133,6 +138,34 @@ model User {
   adminLeadNotes    AdminLeadNote[]
   userPayments      UserPayment[]
   auditLogsCreated  AuditLog[]    @relation("AuditLogAdmin")
+  teamInvitesSent   TeamInvite[]   @relation("TeamInvitesSent")
+}
+
+// Custom roles (Super Admin can add); display name + department
+model CustomRole {
+  id          String       @id @default(uuid())
+  name        String       // e.g. "Brand Designer"
+  department  String?      @db.VarChar(100)
+  level       String?      @db.VarChar(50) // e.g. "Level 3"
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  users       User[]
+  teamInvites TeamInvite[]
+}
+
+// Team invite (Super Admin sends; invitee sets password via link)
+model TeamInvite {
+  id           String    @id @default(uuid())
+  email        String
+  role         String    @db.VarChar(50) // UserRole value for system role
+  customRoleId String?   @map("custom_role_id")
+  token        String    @unique
+  expiresAt    DateTime  @map("expires_at")
+  invitedById  String    @map("invited_by_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  invitedBy    User      @relation("TeamInvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  customRole   CustomRole? @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
 }
 
 model Client {

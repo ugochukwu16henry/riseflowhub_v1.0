@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 const FOOTER_LINKS = [
   { label: 'About', href: '/about' },
+  { label: 'Team', href: '/team' },
   { label: 'Submit idea', href: '/submit-idea' },
   { label: 'Book consultation', href: '/book-consultation' },
   { label: 'Investors', href: '/dashboard/investor/marketplace' },

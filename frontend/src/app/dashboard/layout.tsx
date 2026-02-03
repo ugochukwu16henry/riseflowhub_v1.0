@@ -22,6 +22,7 @@ const clientNav = [
 
 const adminNav = [
   { href: '/dashboard/admin', label: 'Dashboard' },
+  { href: '/dashboard/team', label: 'Team Dashboard' },
   { href: '/dashboard/mentor', label: 'AI Mentor' },
   { href: '/dashboard/admin/leads', label: 'Leads' },
   { href: '/dashboard/admin/projects', label: 'Projects' },
@@ -36,6 +37,7 @@ const adminNav = [
 
 const superAdminNav = [
   { href: '/dashboard/admin', label: 'Dashboard Overview' },
+  { href: '/dashboard/team', label: 'Team Dashboard' },
   { href: '/dashboard/admin/users', label: 'Users' },
   { href: '/dashboard/admin/leads', label: 'Leads' },
   { href: '/dashboard/admin/projects', label: 'Ideas & Projects' },
@@ -52,8 +54,18 @@ const superAdminNav = [
   { href: '/dashboard/marketing', label: 'Marketing Campaigns' },
   { href: '/dashboard/admin/analytics', label: 'Analytics' },
   { href: '/dashboard/admin/audit-logs', label: 'Audit Logs' },
+  { href: '/dashboard/admin/team', label: 'Team Management' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
   { href: '/dashboard/admin/settings', label: 'Settings' },
+];
+
+const teamMemberNav = [
+  { href: '/dashboard/team', label: 'Team Dashboard' },
+  { href: '/dashboard/mentor', label: 'AI Mentor' },
+  { href: '/dashboard/tasks', label: 'Tasks' },
+  { href: '/dashboard/files', label: 'Files' },
+  { href: '/dashboard/messages', label: 'Messages' },
+  { href: '/dashboard/notifications', label: 'Notifications' },
 ];
 
 const investorNav = [
@@ -65,6 +77,10 @@ const investorNav = [
 
 function isAdmin(role: string) {
   return ['super_admin', 'project_manager', 'finance_admin'].includes(role);
+}
+
+function isTeamMember(role: string) {
+  return ['super_admin', 'project_manager', 'finance_admin', 'developer', 'designer', 'marketer'].includes(role);
 }
 
 function isInvestor(role: string) {
@@ -135,15 +151,44 @@ export default function DashboardLayout({
   if (!user) return null;
 
   const nav =
-    user.role === 'super_admin' ? superAdminNav : isAdmin(user.role) ? adminNav : isInvestor(user.role) ? investorNav : clientNav;
-  const base = isAdmin(user.role) ? '/dashboard/admin' : isInvestor(user.role) ? '/dashboard/investor' : '/dashboard';
+    user.role === 'super_admin'
+      ? superAdminNav
+      : isAdmin(user.role)
+        ? adminNav
+        : isTeamMember(user.role)
+          ? teamMemberNav
+          : isInvestor(user.role)
+            ? investorNav
+            : clientNav;
+  const base =
+    user.role === 'super_admin'
+      ? '/dashboard/admin'
+      : isAdmin(user.role)
+        ? '/dashboard/admin'
+        : isTeamMember(user.role)
+          ? '/dashboard/team'
+          : isInvestor(user.role)
+            ? '/dashboard/investor'
+            : '/dashboard';
   const primaryColor = user.tenant?.primaryColor || '#0FA958';
   const brandName = user.tenant?.orgName || 'AfriLaunch Hub';
   const logoUrl = user.tenant?.logo || '/Afrilauch_logo.png';
   const showSetupModal = needsSetupModal(user);
+  const showWelcomePanel = isTeamMember(user.role) && user.welcomePanelSeen === false;
 
   function handleSetupComplete(updated: User) {
     setUser(updated);
+  }
+
+  async function dismissWelcomePanel() {
+    const token = getStoredToken();
+    if (!token) return;
+    try {
+      await api.users.updateMe({ welcomePanelSeen: true }, token);
+      setUser((u) => (u ? { ...u, welcomePanelSeen: true } : u));
+    } catch {
+      // ignore
+    }
   }
 
   return (
@@ -216,6 +261,24 @@ export default function DashboardLayout({
           }}
           primaryColor={primaryColor}
         />
+      )}
+      {showWelcomePanel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Welcome">
+          <div className="max-w-lg rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
+            <h2 className="text-xl font-bold text-secondary mb-4">Welcome to the Venture Builder Platform</h2>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              You are not just joining a team — you are helping build startups, systems, and opportunities from the ground up. Early contributors grow into leadership roles as the platform scales.
+            </p>
+            <button
+              type="button"
+              onClick={dismissWelcomePanel}
+              className="w-full rounded-xl py-3 px-4 font-semibold text-white hover:opacity-90"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Get started
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

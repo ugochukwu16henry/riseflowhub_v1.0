@@ -12,6 +12,21 @@ router.use(authMiddleware);
 // GET /api/v1/users/me — Logged-in user profile (same as GET /auth/me)
 router.get('/me', (req, res) => authController.me(req, res));
 
+// PATCH /api/v1/users/me — Update own profile (welcomePanelSeen, etc.)
+router.patch('/me', async (req, res) => {
+  const payload = (req as unknown as { user: { userId: string } }).user;
+  const { welcomePanelSeen } = req.body as { welcomePanelSeen?: boolean };
+  const data: { welcomePanelSeen?: boolean } = {};
+  if (typeof welcomePanelSeen === 'boolean') data.welcomePanelSeen = welcomePanelSeen;
+  if (Object.keys(data).length === 0) return res.status(400).json({ error: 'No updates provided' });
+  const user = await prisma.user.update({
+    where: { id: payload.userId },
+    data,
+    select: { id: true, name: true, email: true, role: true, welcomePanelSeen: true },
+  });
+  res.json(user);
+});
+
 // GET /api/v1/users?role=developer — tenant-scoped for admins
 router.get('/', requireRoles(UserRole.super_admin, UserRole.project_manager, UserRole.finance_admin), async (req, res) => {
   const payload = (req as unknown as { user: { tenantId?: string | null } }).user;

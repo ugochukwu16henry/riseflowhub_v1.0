@@ -10,3 +10,4 @@ export { PlatformFeatures } from './PlatformFeatures';
 export { Vision } from './Vision';
 export { FinalCTA } from './FinalCTA';
 export { Footer } from './Footer';
+export { PricingPlans } from './PricingPlans';
