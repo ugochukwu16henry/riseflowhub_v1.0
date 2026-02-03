@@ -57,12 +57,24 @@ From the `backend` folder:
 ```bash
 pnpm install
 pnpm prisma generate
+```
+
+If your Supabase `DATABASE_URL` is in **`.env.local`** (not `.env`), use:
+
+```bash
+pnpm run db:push:local
+pnpm run db:seed
+```
+
+Otherwise (if `DATABASE_URL` is in `.env`):
+
+```bash
 pnpm prisma db push
 pnpm run db:seed
 ```
 
-- **`db push`** — Creates/updates tables in Supabase to match `prisma/schema.prisma`.
-- **`db:seed`** — Creates the default tenant, test users (e.g. `test-super_admin@example.com` / `Password123`), and CMS content.
+- **`db push`** / **`db:push:local`** — Creates/updates tables in Supabase to match `prisma/schema.prisma`. Use `db:push:local` when using `.env.local`.
+- **`db:seed`** — Creates the default tenant, test users (e.g. `test-super_admin@example.com` / `Password123`), and CMS content. The seed script loads `.env.local` automatically.
 
 ---
 

@@ -1,3 +1,7 @@
+import 'dotenv/config';
+// Prefer .env.local if present (e.g. Supabase DATABASE_URL)
+require('dotenv').config({ path: '.env.local', override: true });
+
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 

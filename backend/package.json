@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:push:local": "node scripts/load-env-and-push.js",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts"
