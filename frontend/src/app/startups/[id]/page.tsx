@@ -7,7 +7,7 @@ import { Nav, Footer } from '@/components/landing';
 import { getStoredToken, api } from '@/lib/api';
 import type { StartupProfileDetail } from '@/lib/api';
 
-const API_BASE = typeof window === 'undefined' ? process.env.NEXT_PUBLIC_API_URL || '' : '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 export default function StartupProfilePage() {
   const params = useParams();

@@ -15,7 +15,9 @@ export default function LoginPage() {
   const [apiStatus, setApiStatus] = useState<'checking' | 'ok' | 'fail' | null>(null);
 
   useEffect(() => {
-    fetch('/api/v1/health')
+    const base = process.env.NEXT_PUBLIC_API_URL || '';
+    const healthUrl = base ? `${base.replace(/\/$/, '')}/api/v1/health` : '/api/v1/health';
+    fetch(healthUrl)
       .then((r) => {
         if (r.ok) return r.json();
         return Promise.reject(new Error(`${r.status} ${r.statusText}`));

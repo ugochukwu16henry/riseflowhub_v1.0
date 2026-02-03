@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { getStoredToken } from '@/lib/api';
 
+const API_BASE = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '') : '';
+
 type Result = { name: string; ok: boolean; ms?: number; status?: number; error?: string };
 
 export default function ApiTestPage() {
@@ -14,6 +16,7 @@ export default function ApiTestPage() {
   const run = useCallback(async () => {
     setRunning(true);
     const out: Result[] = [];
+    const base = API_BASE;
 
     async function check(name: string, fn: () => Promise<Response>) {
       const start = Date.now();
@@ -33,14 +36,16 @@ export default function ApiTestPage() {
       setResults([...out]);
     }
 
+    const url = (path: string) => base ? `${base}${path}` : path;
+
     // Public
-    await check('GET /api/v1/health', () => fetch('/api/v1/health'));
-    await check('GET /api/v1/setup-fee/config', () => fetch('/api/v1/setup-fee/config'));
-    await check('GET /api/v1/setup-fee/quote?currency=USD', () => fetch('/api/v1/setup-fee/quote?currency=USD'));
+    await check('GET /api/v1/health', () => fetch(url('/api/v1/health')));
+    await check('GET /api/v1/setup-fee/config', () => fetch(url('/api/v1/setup-fee/config')));
+    await check('GET /api/v1/setup-fee/quote?currency=USD', () => fetch(url('/api/v1/setup-fee/quote?currency=USD')));
 
     // Auth (no token)
     await check('POST /api/v1/auth/login (invalid) → 401', () =>
-      fetch('/api/v1/auth/login', {
+      fetch(url('/api/v1/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: 'bad@x.com', password: 'wrong' }),
@@ -49,12 +54,12 @@ export default function ApiTestPage() {
 
     if (token) {
       const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-      await check('GET /api/v1/auth/me', () => fetch('/api/v1/auth/me', { headers }));
-      await check('GET /api/v1/projects', () => fetch('/api/v1/projects', { headers }));
-      await check('GET /api/v1/notifications', () => fetch('/api/v1/notifications', { headers }));
-      await check('GET /api/v1/tasks/me', () => fetch('/api/v1/tasks/me', { headers }));
-      await check('GET /api/v1/agreements/assigned', () => fetch('/api/v1/agreements/assigned', { headers }));
-      await check('GET /api/v1/startups/marketplace', () => fetch('/api/v1/startups/marketplace'));
+      await check('GET /api/v1/auth/me', () => fetch(url('/api/v1/auth/me'), { headers }));
+      await check('GET /api/v1/projects', () => fetch(url('/api/v1/projects'), { headers }));
+      await check('GET /api/v1/notifications', () => fetch(url('/api/v1/notifications'), { headers }));
+      await check('GET /api/v1/tasks/me', () => fetch(url('/api/v1/tasks/me'), { headers }));
+      await check('GET /api/v1/agreements/assigned', () => fetch(url('/api/v1/agreements/assigned'), { headers }));
+      await check('GET /api/v1/startups/marketplace', () => fetch(url('/api/v1/startups/marketplace')));
     } else {
       out.push({ name: 'Protected endpoints (login to test)', ok: true, error: 'No token — sign in to test /auth/me, /projects, etc.' });
       setResults([...out]);
