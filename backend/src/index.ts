@@ -1,4 +1,7 @@
 import 'dotenv/config';
+// Load .env.local so DATABASE_URL, JWT_SECRET, etc. are used when running locally
+require('dotenv').config({ path: '.env.local', override: true });
+
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';

@@ -21,7 +21,15 @@ export async function expressInterest(req: Request, res: Response): Promise<void
   const { startupId, requestMeeting } = req.body as { startupId: string; requestMeeting?: boolean };
   const startup = await prisma.startupProfile.findUnique({
     where: { id: startupId },
-    include: { project: { include: { client: { include: { user: { select: { email: true, name: true } } } } } },
+    include: {
+      project: {
+        include: {
+          client: {
+            include: { user: { select: { email: true, name: true } } },
+          },
+        },
+      },
+    },
   });
   if (!startup) {
     res.status(404).json({ error: 'Startup not found' });
