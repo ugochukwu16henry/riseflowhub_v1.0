@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import * as investmentController from '../controllers/investmentController';
 
@@ -36,5 +36,19 @@ router.post(
 
 // GET /api/v1/investments — List investments (investor: own; admin: all)
 router.get('/', (req, res) => investmentController.list(req, res));
+
+// PATCH /api/v1/investments/:id/status — Admin: update deal status (e.g. due_diligence)
+router.patch(
+  '/:id/status',
+  [
+    param('id').isUUID(),
+    body('status').isIn(['expressed', 'meeting_requested', 'committed', 'due_diligence', 'agreement_signed', 'completed', 'withdrawn']),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    return investmentController.updateStatus(req, res);
+  }
+);
 
 export { router as investmentRoutes };

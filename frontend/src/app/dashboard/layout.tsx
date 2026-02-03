@@ -37,6 +37,7 @@ const adminNav = [
 
 const superAdminNav = [
   { href: '/dashboard/admin', label: 'Dashboard Overview' },
+  { href: '/dashboard/admin/knowledge', label: 'Internal Knowledge Center' },
   { href: '/dashboard/team', label: 'Team Dashboard' },
   { href: '/dashboard/admin/users', label: 'Users' },
   { href: '/dashboard/admin/leads', label: 'Leads' },
@@ -44,6 +45,7 @@ const superAdminNav = [
   { href: '/dashboard/admin/milestones', label: 'Milestones' },
   { href: '/dashboard/tasks', label: 'Tasks' },
   { href: '/dashboard/admin/investors', label: 'Investors' },
+  { href: '/dashboard/admin/deal-tracking', label: 'Deal Tracking' },
   { href: '/dashboard/admin/startups', label: 'Startup Marketplace' },
   { href: '/dashboard/admin/agreements', label: 'Agreements' },
   { href: '/dashboard/admin/payments', label: 'Payments' },
@@ -70,9 +72,10 @@ const teamMemberNav = [
 
 const investorNav = [
   { href: '/dashboard/investor', label: 'Dashboard' },
-  { href: '/dashboard/mentor', label: 'AI Mentor' },
+  { href: '/dashboard/investor/deal-room', label: 'Deal Room' },
   { href: '/dashboard/investor/marketplace', label: 'Marketplace' },
   { href: '/dashboard/investor/investments', label: 'My investments' },
+  { href: '/dashboard/mentor', label: 'AI Mentor' },
 ];
 
 function isAdmin(role: string) {

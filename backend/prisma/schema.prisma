@@ -131,8 +131,9 @@ model User {
   client            Client?
   investor          Investor?
   assignedTasks     Task[]           @relation("AssignedTasks")
-  sentMessages      Message[]        @relation("SentMessages")
-  uploadedFiles     File[]           @relation("UploadedFiles")
+  sentMessages       Message[]         @relation("SentMessages")
+  uploadedFiles      File[]           @relation("UploadedFiles")
+  dealRoomMessagesSent DealRoomMessage[] @relation("DealRoomMessageSender")
   assignedAgreements AssignedAgreement[]
   adminLeadsAssigned AdminLead[]     @relation("AdminLeadsAssigned")
   adminLeadNotes    AdminLeadNote[]
@@ -406,6 +407,7 @@ enum InvestmentStatus {
   expressed
   meeting_requested
   committed
+  due_diligence
   agreement_signed
   completed
   withdrawn
@@ -425,8 +427,10 @@ model Investor {
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  investments  Investment[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investments    Investment[]
+  dealRoomViews  DealRoomView[]
+  savedStartups  SavedStartup[]
 }
 
 model StartupProfile {
@@ -446,11 +450,14 @@ model StartupProfile {
   aiRiskLevel         String?                @map("ai_risk_level") @db.VarChar(20) // Low | Medium | High
   aiMarketPotential   String?                @map("ai_market_potential") @db.VarChar(50)
   visibilityStatus    StartupVisibilityStatus @default(draft) @map("visibility_status")
+  investorReady       Boolean                 @default(false) @map("investor_ready") // when true + approved → in Deal Room
   createdAt           DateTime               @default(now()) @map("created_at")
   updatedAt           DateTime               @updatedAt @map("updated_at")
 
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  investments Investment[]
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  investments   Investment[]
+  dealRoomViews DealRoomView[]
+  savedStartups SavedStartup[]
 }
 
 model Investment {
@@ -467,6 +474,47 @@ model Investment {
 
   investor Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
   startup  StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  messages DealRoomMessage[]
+}
+
+// Investor Deal Room: track views, saves, and messaging
+model DealRoomView {
+  id         String   @id @default(uuid())
+  investorId String   @map("investor_id")
+  startupId  String   @map("startup_id")
+  viewedAt   DateTime @default(now()) @map("viewed_at")
+
+  investor Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  startup  StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([investorId, startupId])
+  @@map("deal_room_views")
+}
+
+model SavedStartup {
+  id         String   @id @default(uuid())
+  investorId String   @map("investor_id")
+  startupId  String   @map("startup_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  investor Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  startup  StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([investorId, startupId])
+  @@map("saved_startups")
+}
+
+model DealRoomMessage {
+  id           String   @id @default(uuid())
+  investmentId String   @map("investment_id")
+  senderId     String   @map("sender_id")
+  message      String   @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  sender     User       @relation("DealRoomMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("deal_room_messages")
 }
 
 // Marketing Analytics & Campaign Engine

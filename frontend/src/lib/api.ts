@@ -348,6 +348,23 @@ export const api = {
     commit: (body: { startupId: string; amount?: number; equityPercent?: number; agreementId?: string }, token: string) =>
       request<Investment>(`/api/v1/investments/commit`, { method: 'POST', body: JSON.stringify(body), token }),
     list: (token: string) => request<InvestmentListItem[]>(`/api/v1/investments`, { token }),
+    updateStatus: (id: string, body: { status: string }, token: string) =>
+      request<Investment>(`/api/v1/investments/${id}/status`, { method: 'PATCH', body: JSON.stringify(body), token }),
+  },
+  dealRoom: {
+    list: (token: string) => request<DealRoomStartup[]>(`/api/v1/deal-room`, { token }),
+    getStartup: (startupId: string, token: string) =>
+      request<DealRoomStartupDetail>(`/api/v1/deal-room/${startupId}`, { token }),
+    save: (startupId: string, token: string) =>
+      request<{ saved: boolean; startupId: string }>(`/api/v1/deal-room/save`, { method: 'POST', body: JSON.stringify({ startupId }), token }),
+    unsave: (startupId: string, token: string) =>
+      request<void>(`/api/v1/deal-room/save/${startupId}`, { method: 'DELETE', token }),
+    listSaved: (token: string) => request<string[]>(`/api/v1/deal-room/saved`, { token }),
+    sendMessage: (investmentId: string, message: string, token: string) =>
+      request<DealRoomMessage>(`/api/v1/deal-room/messages`, { method: 'POST', body: JSON.stringify({ investmentId, message }), token }),
+    listMessages: (investmentId: string, token: string) =>
+      request<DealRoomMessage[]>(`/api/v1/deal-room/messages/${investmentId}`, { token }),
+    adminDeals: (token: string) => request<DealRoomAdminDeal[]>(`/api/v1/deal-room/admin/deals`, { token }),
   },
   admin: {
     leads: {
@@ -804,6 +821,64 @@ export interface WorkspaceProgress {
   tasksTotal: number;
   milestonesCompleted: number;
   milestonesTotal: number;
+}
+
+export interface DealRoomStartup {
+  id: string;
+  projectId: string;
+  pitchSummary: string;
+  tractionMetrics?: string | null;
+  fundingNeeded: number;
+  equityOffer?: number | null;
+  stage: string;
+  visibilityStatus: string;
+  investorReady: boolean;
+  project?: {
+    id: string;
+    projectName: string;
+    stage: string;
+    description?: string | null;
+    problemStatement?: string | null;
+    targetMarket?: string | null;
+    workspaceStage?: string | null;
+    client?: { businessName: string; industry?: string | null };
+  };
+}
+
+export interface DealRoomStartupDetail extends DealRoomStartup {
+  project?: DealRoomStartup['project'] & {
+    client?: { businessName: string; industry?: string | null; userId: string; user?: { name: string; email: string } };
+    milestones?: { id: string; title: string; status: string; dueDate: string | null }[];
+    files?: { id: string; fileUrl: string; category?: string | null }[];
+    businessModel?: { valueProposition?: string | null; customerSegments?: string | null; revenueStreams?: string | null; costStructure?: string | null; channels?: string | null; keyActivities?: string | null } | null;
+  };
+}
+
+export interface DealRoomMessage {
+  id: string;
+  investmentId: string;
+  senderId: string;
+  message: string;
+  createdAt: string;
+  sender?: { id: string; name: string; email: string };
+}
+
+export interface DealRoomAdminDeal {
+  id: string;
+  startupId: string;
+  startupName?: string;
+  investorId: string;
+  investorName: string;
+  investorEmail: string;
+  firmName?: string | null;
+  status: string;
+  interestLevel: string;
+  viewedAt: string | null;
+  meetingRequestedAt?: string | null;
+  amount?: number | null;
+  equityPercent?: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Milestone {

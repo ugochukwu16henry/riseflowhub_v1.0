@@ -28,6 +28,7 @@ import { setupFeeRoutes } from './routes/setupFee';
 import { superAdminRoutes } from './routes/superAdmin';
 import { teamRoutes } from './routes/team';
 import { workspaceRoutes } from './routes/workspace';
+import { dealRoomRoutes } from './routes/dealRoom';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -64,6 +65,7 @@ app.use('/api/v1/setup-fee', setupFeeRoutes);
 app.use('/api/v1/super-admin', superAdminRoutes);
 app.use('/api/v1/team', teamRoutes);
 app.use('/api/v1/workspace', workspaceRoutes);
+app.use('/api/v1/deal-room', dealRoomRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

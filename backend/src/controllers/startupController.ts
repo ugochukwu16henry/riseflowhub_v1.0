@@ -230,7 +230,7 @@ export async function approve(req: Request, res: Response): Promise<void> {
   }
   const updated = await prisma.startupProfile.update({
     where: { id },
-    data: { visibilityStatus: 'approved' },
+    data: { visibilityStatus: 'approved', investorReady: true },
     include: { project: { select: { projectName: true } } },
   });
   res.json(updated);

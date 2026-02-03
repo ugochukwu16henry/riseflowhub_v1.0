@@ -169,3 +169,35 @@ export async function list(req: Request, res: Response): Promise<void> {
   });
   res.json(investments);
 }
+
+const ADMIN_ROLES = ['super_admin', 'project_manager', 'finance_admin'];
+const STATUS_VALUES = ['expressed', 'meeting_requested', 'committed', 'due_diligence', 'agreement_signed', 'completed', 'withdrawn'] as const;
+
+/** PATCH /api/v1/investments/:id/status — Admin: update deal status (e.g. due_diligence) */
+export async function updateStatus(req: Request, res: Response): Promise<void> {
+  const { userId, role } = (req as unknown as { user: AuthPayload }).user;
+  if (!ADMIN_ROLES.includes(role)) {
+    res.status(403).json({ error: 'Admin only' });
+    return;
+  }
+  const { id } = req.params;
+  const { status } = req.body as { status: string };
+  if (!status || !STATUS_VALUES.includes(status as (typeof STATUS_VALUES)[number])) {
+    res.status(400).json({ error: 'Valid status required' });
+    return;
+  }
+  const investment = await prisma.investment.findUnique({ where: { id } });
+  if (!investment) {
+    res.status(404).json({ error: 'Investment not found' });
+    return;
+  }
+  const updated = await prisma.investment.update({
+    where: { id },
+    data: { status: status as (typeof STATUS_VALUES)[number] },
+    include: {
+      investor: { select: { name: true, email: true, firmName: true } },
+      startup: { include: { project: { select: { projectName: true } } } },
+    },
+  });
+  res.json(updated);
+}
