@@ -298,6 +298,14 @@ export async function auditLogs(req: Request, res: Response): Promise<void> {
   });
 }
 
+/** GET /api/v1/super-admin/consultations — List all consultation bookings (Super Admin only) */
+export async function consultations(_req: Request, res: Response): Promise<void> {
+  const list = await prisma.consultationBooking.findMany({
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(list);
+}
+
 /** GET /api/v1/super-admin/reports — Monthly/yearly reports, growth, payment trends */
 export async function reports(req: Request, res: Response): Promise<void> {
   const { period = 'monthly' } = req.query as { period?: 'monthly' | 'yearly' };

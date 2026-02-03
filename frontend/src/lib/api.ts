@@ -359,8 +359,26 @@ export const api = {
       const q = new URLSearchParams(params as Record<string, string>).toString();
       return request<SuperAdminReportsResponse>(`/api/v1/super-admin/reports${q ? `?${q}` : ''}`, { token });
     },
+    consultations: (token: string) =>
+      request<SuperAdminConsultationRow[]>(`/api/v1/super-admin/consultations`, { token }),
   },
 };
+
+export interface SuperAdminConsultationRow {
+  id: string;
+  fullName: string;
+  email: string;
+  country: string | null;
+  businessIdea: string | null;
+  stage: string | null;
+  mainGoal: string | null;
+  budgetRange: string | null;
+  preferredContactMethod: string | null;
+  preferredDate: string | null;
+  preferredTime: string | null;
+  timezone: string | null;
+  createdAt: string;
+}
 
 export interface SuperAdminOverview {
   totalUsers: number;

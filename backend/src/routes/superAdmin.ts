@@ -12,5 +12,6 @@ router.get('/payments', superAdminController.payments);
 router.get('/activity', superAdminController.activity);
 router.get('/audit-logs', superAdminController.auditLogs);
 router.get('/reports', superAdminController.reports);
+router.get('/consultations', superAdminController.consultations);
 
 export { router as superAdminRoutes };
