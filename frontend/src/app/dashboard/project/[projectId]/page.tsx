@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -31,6 +31,14 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id'];
 
+type OverviewFormState = {
+  projectName: string;
+  tagline: string;
+  problemStatement: string;
+  targetMarket: string;
+  workspaceStage: string;
+};
+
 export default function WorkspaceDashboardPage() {
   const params = useParams();
   const router = useRouter();
@@ -53,7 +61,7 @@ export default function WorkspaceDashboardPage() {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
 
   const [editOverview, setEditOverview] = useState(false);
-  const [overviewForm, setOverviewForm] = useState({ projectName: '', tagline: '', problemStatement: '', targetMarket: '', workspaceStage: '' });
+  const [overviewForm, setOverviewForm] = useState<OverviewFormState>({ projectName: '', tagline: '', problemStatement: '', targetMarket: '', workspaceStage: '' });
   const [savingOverview, setSavingOverview] = useState(false);
   const [newVaultTitle, setNewVaultTitle] = useState('');
   const [newVaultContent, setNewVaultContent] = useState('');
@@ -428,8 +436,8 @@ function OverviewTab({
   canEdit: boolean;
   editOverview: boolean;
   setEditOverview: (v: boolean) => void;
-  overviewForm: Record<string, string>;
-  setOverviewForm: (v: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  overviewForm: OverviewFormState;
+  setOverviewForm: Dispatch<SetStateAction<OverviewFormState>>;
   onSave: () => void;
   savingOverview: boolean;
   loadInvestorView?: () => void;
