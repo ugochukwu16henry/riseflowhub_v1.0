@@ -196,6 +196,44 @@ export const api = {
     update: (id: string, body: Partial<ProjectUpdateBody>, token: string) =>
       request<Project>(`/api/v1/projects/${id}`, { method: 'PUT', body: JSON.stringify(body), token }),
   },
+  workspace: {
+    get: (projectId: string, token: string) =>
+      request<WorkspaceOverview>(`/api/v1/workspace/${projectId}`, { token }),
+    update: (projectId: string, body: WorkspaceUpdateBody, token: string) =>
+      request<WorkspaceOverview>(`/api/v1/workspace/${projectId}`, { method: 'PATCH', body: JSON.stringify(body), token }),
+    ideaVault: {
+      list: (projectId: string, token: string) =>
+        request<IdeaVaultItem[]>(`/api/v1/workspace/${projectId}/idea-vault`, { token }),
+      create: (projectId: string, body: { type?: 'note' | 'pitch_draft'; title?: string; content?: string }, token: string) =>
+        request<IdeaVaultItem>(`/api/v1/workspace/${projectId}/idea-vault`, { method: 'POST', body: JSON.stringify(body), token }),
+      update: (projectId: string, itemId: string, body: { title?: string; content?: string; status?: 'draft' | 'submitted_for_review' }, token: string) =>
+        request<IdeaVaultItem>(`/api/v1/workspace/${projectId}/idea-vault/${itemId}`, { method: 'PATCH', body: JSON.stringify(body), token }),
+      delete: (projectId: string, itemId: string, token: string) =>
+        request<void>(`/api/v1/workspace/${projectId}/idea-vault/${itemId}`, { method: 'DELETE', token }),
+    },
+    businessModel: {
+      get: (projectId: string, token: string) =>
+        request<WorkspaceBusinessModel>(`/api/v1/workspace/${projectId}/business-model`, { token }),
+      update: (projectId: string, body: Partial<WorkspaceBusinessModel>, token: string) =>
+        request<WorkspaceBusinessModel>(`/api/v1/workspace/${projectId}/business-model`, { method: 'PATCH', body: JSON.stringify(body), token }),
+    },
+    team: {
+      list: (projectId: string, token: string) =>
+        request<WorkspaceTeamMember[]>(`/api/v1/workspace/${projectId}/team`, { token }),
+      add: (projectId: string, body: { userId: string; role?: 'member' | 'viewer' }, token: string) =>
+        request<WorkspaceTeamMember>(`/api/v1/workspace/${projectId}/team`, { method: 'POST', body: JSON.stringify(body), token }),
+      remove: (projectId: string, userId: string, token: string) =>
+        request<void>(`/api/v1/workspace/${projectId}/team/${userId}`, { method: 'DELETE', token }),
+    },
+    files: {
+      list: (projectId: string, token: string, category?: string) =>
+        request<WorkspaceFile[]>(`/api/v1/workspace/${projectId}/files${category ? `?category=${encodeURIComponent(category)}` : ''}`, { token }),
+    },
+    investorView: (projectId: string, token: string) =>
+      request<WorkspaceInvestorView>(`/api/v1/workspace/${projectId}/investor-view`, { token }),
+    progress: (projectId: string, token: string) =>
+      request<WorkspaceProgress>(`/api/v1/workspace/${projectId}/progress`, { token }),
+  },
   milestones: {
     list: (projectId: string, token: string) => request<Milestone[]>(`/api/v1/projects/${projectId}/milestones`, { token }),
     create: (projectId: string, body: { title: string; status?: string; dueDate?: string }, token: string) =>
@@ -679,6 +717,93 @@ export interface ProjectUpdateBody {
   deadline?: string | null;
   repoUrl?: string | null;
   liveUrl?: string | null;
+}
+
+export interface WorkspaceOverview {
+  id: string;
+  projectName: string;
+  tagline?: string | null;
+  description?: string | null;
+  problemStatement?: string | null;
+  targetMarket?: string | null;
+  workspaceStage?: string | null;
+  progressPercent?: number;
+  founder?: { id: string; name: string; email: string } | null;
+  members?: { userId: string; name: string; email: string; role: string }[];
+  access: 'full' | 'team' | 'investor';
+}
+
+export interface WorkspaceUpdateBody {
+  projectName?: string;
+  tagline?: string;
+  problemStatement?: string;
+  targetMarket?: string;
+  workspaceStage?: 'Idea' | 'Validation' | 'Building' | 'Growth';
+}
+
+export interface IdeaVaultItem {
+  id: string;
+  projectId: string;
+  type: 'note' | 'pitch_draft';
+  title: string;
+  content: string;
+  status: 'draft' | 'submitted_for_review';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkspaceBusinessModel {
+  id: string;
+  projectId: string;
+  valueProposition?: string | null;
+  customerSegments?: string | null;
+  revenueStreams?: string | null;
+  costStructure?: string | null;
+  channels?: string | null;
+  keyActivities?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WorkspaceTeamMember {
+  id: string;
+  userId: string;
+  role: string;
+  name: string;
+  email: string;
+}
+
+export interface WorkspaceFile {
+  id: string;
+  projectId: string;
+  fileName?: string;
+  fileUrl: string;
+  category?: string | null;
+  uploadedBy?: { id: string; name: string };
+  createdAt: string;
+}
+
+export interface WorkspaceInvestorView {
+  id: string;
+  projectName: string;
+  tagline?: string | null;
+  description?: string | null;
+  problemStatement?: string | null;
+  targetMarket?: string | null;
+  workspaceStage?: string | null;
+  progressPercent?: number;
+  founderName?: string | null;
+  startupProfile?: unknown;
+}
+
+export interface WorkspaceProgress {
+  progressPercent: number;
+  workspaceStage: string;
+  status?: string;
+  tasksCompleted: number;
+  tasksTotal: number;
+  milestonesCompleted: number;
+  milestonesTotal: number;
 }
 
 export interface Milestone {

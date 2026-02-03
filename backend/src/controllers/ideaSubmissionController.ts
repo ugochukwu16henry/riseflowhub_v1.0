@@ -127,10 +127,23 @@ export async function submit(req: Request, res: Response): Promise<void> {
       clientId: client.id,
       projectName,
       description,
+      tagline: ideaDescription.trim().slice(0, 280) || null,
+      problemStatement: problemItSolves?.trim() || null,
+      targetMarket: targetUsers?.trim() || null,
+      workspaceStage: 'Idea',
       stage: 'Planning',
       status: 'IdeaSubmitted',
     },
   });
+
+  await prisma.$transaction([
+    prisma.projectMember.create({
+      data: { projectId: project.id, userId: user.id, role: 'founder' },
+    }),
+    prisma.businessModel.create({
+      data: { projectId: project.id },
+    }),
+  ]);
 
   createAuditLog(prisma, {
     adminId: user.id,

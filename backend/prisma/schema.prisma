@@ -139,6 +139,7 @@ model User {
   userPayments      UserPayment[]
   auditLogsCreated  AuditLog[]    @relation("AuditLogAdmin")
   teamInvitesSent   TeamInvite[]   @relation("TeamInvitesSent")
+  projectMemberships ProjectMember[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -187,6 +188,10 @@ model Project {
   clientId        String         @map("client_id")
   projectName     String         @map("project_name")
   description     String?        @db.Text
+  tagline         String?        @db.VarChar(280)
+  problemStatement String?      @map("problem_statement") @db.Text
+  targetMarket    String?       @map("target_market") @db.Text
+  workspaceStage  String?       @map("workspace_stage") @db.VarChar(50) // Idea | Validation | Building | Growth
   stage           ProjectStage   @default(Planning)
   status          ProjectStatus  @default(IdeaSubmitted) @map("status")
   progressPercent Int            @default(0) @map("progress_percent")
@@ -210,6 +215,9 @@ model Project {
   campaigns       Campaign[]
   analyticsSnapshots MarketingAnalyticsSnapshot[]
   adminLead       AdminLead?
+  ideaVaultItems  IdeaVaultItem[]
+  businessModel   BusinessModel?
+  projectMembers  ProjectMember[]
 }
 
 model Milestone {
@@ -260,10 +268,55 @@ model File {
   uploadedById String @map("uploaded_by_id")
   fileUrl    String   @map("file_url")
   fileType   String?  @map("file_type")
+  category   String?  @db.VarChar(50) // pitch_deck | financial | legal | other
   createdAt  DateTime @default(now()) @map("created_at")
 
   project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   uploadedBy User    @relation("UploadedFiles", fields: [uploadedById], references: [id], onDelete: Cascade)
+}
+
+// Startup workspace: Idea Vault (notes, pitch drafts)
+model IdeaVaultItem {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  type      String   @db.VarChar(30) // note | pitch_draft
+  title     String
+  content   String   @db.Text
+  status    String   @default("draft") @db.VarChar(30) // draft | submitted_for_review
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// Startup workspace: Business Model Canvas (one per project)
+model BusinessModel {
+  id               String   @id @default(uuid())
+  projectId        String   @unique @map("project_id")
+  valueProposition String?  @map("value_proposition") @db.Text
+  customerSegments String?  @map("customer_segments") @db.Text
+  revenueStreams   String?  @map("revenue_streams") @db.Text
+  costStructure    String?  @map("cost_structure") @db.Text
+  channels         String?  @db.Text
+  keyActivities    String?  @map("key_activities") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// Startup workspace: assigned team (founder = client owner; members = added by admin)
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  userId    String   @map("user_id")
+  role      String   @db.VarChar(30) // founder | member | viewer
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }
 
 model Payment {
