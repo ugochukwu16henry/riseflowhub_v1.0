@@ -44,8 +44,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Login failed';
-      if (msg === 'Failed to fetch' || msg.includes('fetch')) {
-        setError('Cannot reach the server. If you just opened the app, wait 30–60s (backend may be waking) and try again. Otherwise check that the backend is running and NEXT_PUBLIC_API_URL is set on Vercel, then redeploy.');
+      if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('502') || msg.includes('Bad Gateway')) {
+        setError('Backend not responding (502). On Render free tier the app sleeps: open the backend health URL in a new tab, wait ~60s for it to load, then try again. Ensure NEXT_PUBLIC_API_URL is set on Vercel and FRONTEND_URL on Render, then redeploy both.');
       } else {
         setError(msg);
       }
@@ -72,8 +72,8 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {apiStatus === 'fail' && (
             <div className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2 text-sm space-y-1">
-              <p className="font-medium">API unreachable (404 = proxy not set).</p>
-              <p>On Vercel: add <strong>NEXT_PUBLIC_API_URL</strong> = your Render URL (e.g. <code className="bg-amber-100 px-1">https://afrilauch-v1-0.onrender.com</code>), then <strong>Redeploy</strong> and turn <strong>off</strong> “Use existing Build Cache” so the rewrite is applied.</p>
+              <p className="font-medium">API unreachable (404 or 502).</p>
+              <p>Set <strong>NEXT_PUBLIC_API_URL</strong> on Vercel to your Render URL, redeploy without cache. Set <strong>FRONTEND_URL</strong> on Render to this site’s URL. 502 = backend sleeping: open your backend <code className="bg-amber-100 px-1">/api/v1/health</code> in a new tab, wait ~60s, then try again.</p>
             </div>
           )}
           {error && (
