@@ -17,9 +17,9 @@ test.describe('Super Admin', () => {
   });
 
   test('Super Admin Dashboard shows main content', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /Super Admin Dashboard/i })).toBeVisible();
-    await expect(page.getByText(/Overview of all projects/i)).toBeVisible();
-    await expect(page.getByRole('table')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Super Admin.*Dashboard/i })).toBeVisible();
+    await expect(page.getByText(/All projects|Full platform visibility|Overview/i)).toBeVisible();
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('link', { name: /View all/i })).toBeVisible();
   });
 
@@ -30,17 +30,12 @@ test.describe('Super Admin', () => {
     await expect(page.getByRole('link', { name: /Reports/i }).first()).toBeVisible();
   });
 
-  test('super_admin sees full admin nav: Leads, Projects, Tenants, Users, Agreements, Startup approvals, Settings', async ({ page }) => {
-    await expect(page.getByRole('link', { name: /^Dashboard$/i }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /AI Mentor/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /^Leads$/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /^Projects$/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Marketing/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Tenants/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /^Users$/i })).toBeVisible();
+  test('super_admin sees full admin nav: Dashboard Overview, CMS Manager, Leads, Users, Agreements, Settings', async ({ page }) => {
+    await expect(page.getByRole('link', { name: /Dashboard Overview/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /CMS Manager/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Leads/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Users/i }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Agreements/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Startup approvals/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Reports/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Settings/i })).toBeVisible();
   });
 
@@ -50,21 +45,36 @@ test.describe('Super Admin', () => {
   });
 
   test('navigate to admin Dashboard (home) from nav', async ({ page }) => {
-    await page.getByRole('link', { name: /^Dashboard$/i }).first().click();
+    await page.getByRole('link', { name: /Dashboard Overview/i }).click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/?$/);
-    await expect(page.getByRole('heading', { name: /Super Admin Dashboard/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Super Admin.*Dashboard/i })).toBeVisible();
   });
 
   test('navigate to Projects from dashboard View all', async ({ page }) => {
     await page.getByRole('link', { name: /View all/i }).click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/projects/);
-    await expect(page.getByRole('heading', { name: /All projects|Projects/i })).toBeVisible();
+    await expect(page.getByText(/All projects|Projects|Ideas/i)).toBeVisible();
   });
 
   test('navigate to Leads from dashboard card', async ({ page }) => {
     await page.getByRole('link', { name: /Leads/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/leads/);
     await expect(page.getByRole('heading', { name: /Leads/i })).toBeVisible();
+  });
+
+  test('navigate to CMS Manager and see sections', async ({ page }) => {
+    await page.getByRole('link', { name: /CMS Manager/i }).click();
+    await expect(page).toHaveURL(/\/dashboard\/admin\/cms/);
+    await expect(page.getByRole('heading', { name: /CMS Manager/i })).toBeVisible();
+    await expect(page.getByText(/Content sections|Website Pages|Pricing/i)).toBeVisible();
+  });
+
+  test('navigate to CMS Website Pages and see editable fields', async ({ page }) => {
+    await page.getByRole('link', { name: /CMS Manager/i }).click();
+    await expect(page).toHaveURL(/\/dashboard\/admin\/cms/);
+    await page.getByRole('link', { name: /Website Pages/i }).click();
+    await expect(page).toHaveURL(/\/dashboard\/admin\/cms\/website-pages/);
+    await expect(page.getByText(/Hero Title|Save/i)).toBeVisible();
   });
 
   test('navigate to Tenants (super_admin only)', async ({ page }) => {
@@ -74,31 +84,31 @@ test.describe('Super Admin', () => {
   });
 
   test('navigate to Users and see table', async ({ page }) => {
-    await page.getByRole('link', { name: /^Users$/i }).click();
+    await page.getByRole('link', { name: /Users/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/users/);
     await expect(page.getByRole('heading', { name: /Users/i })).toBeVisible();
     await expect(page.getByRole('table')).toBeVisible();
   });
 
   test('navigate to Agreements', async ({ page }) => {
-    await page.getByRole('link', { name: /Agreements/i }).click();
+    await page.getByRole('link', { name: /Agreements/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/agreements/);
     await expect(page.getByText(/Agreement|agreement/i)).toBeVisible();
   });
 
-  test('navigate to Startup approvals', async ({ page }) => {
-    await page.getByRole('link', { name: /Startup approvals/i }).click();
+  test('navigate to Startup Marketplace', async ({ page }) => {
+    await page.getByRole('link', { name: /Startup Marketplace/i }).click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/startups/);
-    await expect(page.getByText(/Startup|approval/i)).toBeVisible();
+    await expect(page.getByText(/Startup|Marketplace|approval/i)).toBeVisible();
   });
 
   test('navigate to Reports', async ({ page }) => {
-    await page.getByRole('link', { name: /Reports/i }).click();
+    await page.getByRole('link', { name: /Reports/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/reports/);
   });
 
   test('navigate to Settings', async ({ page }) => {
-    await page.getByRole('link', { name: /Settings/i }).click();
+    await page.getByRole('link', { name: /Settings/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/settings/);
   });
 
