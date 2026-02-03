@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getStoredToken, api } from '@/lib/api';
 import { cmsSections, cmsSectionSlugs, type CmsFieldDef } from '@/lib/cmsSections';
 import { clearCMSCache } from '@/hooks/useCMS';

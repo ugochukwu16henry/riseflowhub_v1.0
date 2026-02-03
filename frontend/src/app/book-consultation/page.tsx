@@ -99,7 +99,7 @@ export default function BookConsultationPage() {
       const payload: ConsultationBookingBody = {
         fullName: form.fullName.trim(),
         email: form.email.trim(),
-        country: form.country.trim() || undefined,
+        country: form.country?.trim() || undefined,
         businessIdea: form.businessIdea?.trim() || undefined,
         stage: form.stage || undefined,
         mainGoal: form.mainGoal || undefined,
