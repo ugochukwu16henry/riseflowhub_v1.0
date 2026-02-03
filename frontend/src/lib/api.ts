@@ -412,6 +412,32 @@ export const api = {
     skip: (body: { reason: 'cant_afford' | 'pay_later' | 'exploring' | 'other' }, token: string) =>
       request<{ ok: boolean; setupReason: string }>('/api/v1/setup-fee/skip', { method: 'PUT', body: JSON.stringify(body), token }),
   },
+  cms: {
+    getByKey: (key: string) =>
+      request<{ key: string; value: string | unknown; type: string; page: string | null; updatedAt: string | null }>(`/api/v1/cms/${encodeURIComponent(key)}`),
+    getByPage: (pageName: string) =>
+      request<{ page: string; contents: Record<string, unknown> }>(`/api/v1/cms/page/${encodeURIComponent(pageName)}`),
+    create: (body: { key: string; value: string | unknown; type?: string; page?: string }, token: string) =>
+      request<{ key: string; value: unknown; type: string; page: string; updatedAt: string }>('/api/v1/cms', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+    update: (key: string, body: { value: string | unknown }, token: string) =>
+      request<{ key: string; value: unknown; type: string; page: string; updatedAt: string }>(`/api/v1/cms/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        token,
+      }),
+    delete: (key: string, token: string) =>
+      request<void>(`/api/v1/cms/${encodeURIComponent(key)}`, { method: 'DELETE', token }),
+    bulkUpdatePage: (pageName: string, body: { contents: Array<{ key: string; value: unknown }> }, token: string) =>
+      request<{ page: string; contents: Record<string, unknown> }>(`/api/v1/cms/page/${encodeURIComponent(pageName)}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        token,
+      }),
+  },
   superAdmin: {
     overview: (token: string) => request<SuperAdminOverview>(`/api/v1/super-admin/overview`, { token }),
     payments: (token: string, params?: { period?: string; userId?: string; paymentType?: string; format?: string }) => {

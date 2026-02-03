@@ -38,6 +38,7 @@ const adminNav = [
 
 const superAdminNav = [
   { href: '/dashboard/admin', label: 'Dashboard Overview' },
+  { href: '/dashboard/admin/cms', label: 'CMS Manager' },
   { href: '/dashboard/admin/knowledge', label: 'Internal Knowledge Center' },
   { href: '/dashboard/team', label: 'Team Dashboard' },
   { href: '/dashboard/admin/users', label: 'Users' },
