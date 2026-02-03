@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'ok' | 'fail' | null>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/health')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.statusText))))
+      .then(() => setApiStatus('ok'))
+      .catch(() => setApiStatus('fail'));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +38,12 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const msg = err instanceof Error ? err.message : 'Login failed';
+      if (msg === 'Failed to fetch' || msg.includes('fetch')) {
+        setError('Cannot reach the server. If you just opened the app, wait 30–60s (backend may be waking) and try again. Otherwise check that the backend is running and NEXT_PUBLIC_API_URL is set on Vercel, then redeploy.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -52,6 +65,11 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-primary mb-2 text-center">AfriLaunch Hub</h1>
         <p className="text-secondary text-sm mb-6 text-center">Sign in to your account</p>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {apiStatus === 'fail' && (
+            <div className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+              API unreachable. Ensure <strong>NEXT_PUBLIC_API_URL</strong> is set on Vercel and you have <strong>redeployed</strong> after adding it.
+            </div>
+          )}
           {error && (
             <div className="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>
           )}
