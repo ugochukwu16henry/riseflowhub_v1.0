@@ -40,7 +40,7 @@ export default function SuperAdminPaymentsPage() {
     if (paymentType) q.set('paymentType', paymentType);
     if (userId) q.set('userId', userId);
     q.set('format', 'csv');
-    const base = process.env.NEXT_PUBLIC_API_URL || '';
+    const base = typeof window === 'undefined' ? process.env.NEXT_PUBLIC_API_URL || '' : '';
     const res = await fetch(`${base}/api/v1/super-admin/payments?${q.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });

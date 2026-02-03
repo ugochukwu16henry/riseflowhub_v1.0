@@ -1,4 +1,9 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+// In the browser, use relative URLs so requests go to same origin and Next.js rewrites proxy to the backend (avoids CORS).
+// For server-side or when no rewrite is used, NEXT_PUBLIC_API_URL is used.
+const API_BASE =
+  typeof window === 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL || ''
+    : '';
 
 export type UserRole =
   | 'client'
