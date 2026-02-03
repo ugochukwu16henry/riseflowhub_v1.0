@@ -30,6 +30,7 @@ const adminNav = [
   { href: '/dashboard/admin/tenants', label: 'Tenants' },
   { href: '/dashboard/admin/users', label: 'Users' },
   { href: '/dashboard/admin/agreements', label: 'Agreements' },
+  { href: '/dashboard/admin/deal-tracking', label: 'Deal Tracking' },
   { href: '/dashboard/admin/startups', label: 'Startup approvals' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
   { href: '/dashboard/admin/settings', label: 'Settings' },

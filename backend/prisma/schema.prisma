@@ -141,6 +141,7 @@ model User {
   auditLogsCreated  AuditLog[]    @relation("AuditLogAdmin")
   teamInvitesSent   TeamInvite[]   @relation("TeamInvitesSent")
   projectMemberships ProjectMember[]
+  cmsContentUpdated CmsContent[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -661,4 +662,19 @@ model AuditLog {
   timestamp   DateTime @default(now()) @map("timestamp")
 
   admin User? @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+}
+
+// CMS: dynamic content editable by Super Admin (key-value by page)
+model CmsContent {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  type        String   @db.VarChar(30) // text | richtext | image | json
+  page        String   @db.VarChar(80) // home | pricing | about | dashboard | legal | email | features | system
+  updatedById String?  @map("updated_by_id")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  updatedBy User? @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@map("cms_content")
 }

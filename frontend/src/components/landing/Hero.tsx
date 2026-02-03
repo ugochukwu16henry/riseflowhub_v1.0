@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import type { HomePageContent } from '@/data/pageContent';
 
-export function Hero() {
+interface HeroProps {
+  content: HomePageContent['hero'];
+}
+
+export function Hero({ content }: HeroProps) {
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8">
       {/* Background gradient + subtle grid */}
@@ -27,25 +32,28 @@ export function Hero() {
           priority
           className="mx-auto mb-8 h-12 w-auto object-contain opacity-95"
         />
+        {/* CMS-EDITABLE: hero.headline, hero.headlineHighlight */}
         <h1 className="text-4xl font-bold tracking-tight text-text-dark sm:text-5xl md:text-6xl">
-          Where Ideas Become{' '}
-          <span className="text-primary">Real Businesses</span>
+          {content.headline}{' '}
+          <span className="text-primary">{content.headlineHighlight}</span>
         </h1>
+        {/* CMS-EDITABLE: hero.subtext */}
         <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 sm:text-xl leading-relaxed">
-          We help entrepreneurs turn their ideas into websites, apps, and scalable startups — with tech, guidance, marketing, and investor access.
+          {content.subtext}
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          {/* CMS-EDITABLE: hero.ctaPrimary, hero.ctaSecondary */}
           <Link
             href="/submit-idea"
             className="w-full sm:w-auto rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-primary/25 hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
-            Launch My Idea
+            {content.ctaPrimary}
           </Link>
           <Link
             href="/dashboard/investor/marketplace"
             className="w-full sm:w-auto rounded-xl border-2 border-secondary/30 bg-white px-8 py-3.5 text-base font-semibold text-secondary hover:bg-secondary/5 transition focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
           >
-            Explore Startups
+            {content.ctaSecondary}
           </Link>
         </div>
       </div>

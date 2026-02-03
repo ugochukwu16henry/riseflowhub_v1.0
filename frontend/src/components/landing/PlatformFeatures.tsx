@@ -1,27 +1,24 @@
 import { Section } from './Section';
+import type { HomePageContent } from '@/data/pageContent';
 
-const FEATURES = [
-  'Client dashboards',
-  'Project tracking',
-  'Milestones & tasks',
-  'Repo links',
-  'Marketing analytics',
-  'Secure agreements',
-];
+interface PlatformFeaturesProps {
+  content: HomePageContent['platformFeatures'];
+}
 
-export function PlatformFeatures() {
+export function PlatformFeatures({ content }: PlatformFeaturesProps) {
   return (
     <Section id="features" variant="muted">
       <div className="text-center">
+        {/* CMS-EDITABLE: platformFeatures.title, platformFeatures.subtext */}
         <h2 className="text-3xl font-bold tracking-tight text-text-dark sm:text-4xl">
-          Platform Features
+          {content.title}
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-          Everything you need to build, track, and scale — in one place.
+          {content.subtext}
         </p>
       </div>
       <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((item, i) => (
+        {content.features.map((item, i) => (
           <div
             key={i}
             className="flex items-center gap-4 rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm transition hover:border-primary/20 hover:shadow-md"
@@ -31,6 +28,7 @@ export function PlatformFeatures() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </span>
+            {/* CMS-EDITABLE: platformFeatures.features[] */}
             <span className="font-medium text-text-dark">{item}</span>
           </div>
         ))}
