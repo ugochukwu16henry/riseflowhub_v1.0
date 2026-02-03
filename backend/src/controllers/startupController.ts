@@ -179,7 +179,7 @@ export async function getById(req: Request, res: Response): Promise<void> {
     fullView = investor?.verified === true;
   }
 
-  const project = startup.project as {
+  const project = startup.project as unknown as {
     id: string;
     projectName: string;
     description: string | null;
