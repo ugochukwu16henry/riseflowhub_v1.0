@@ -16,7 +16,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     fetch('/api/v1/health')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.statusText))))
+      .then((r) => {
+        if (r.ok) return r.json();
+        return Promise.reject(new Error(`${r.status} ${r.statusText}`));
+      })
       .then(() => setApiStatus('ok'))
       .catch(() => setApiStatus('fail'));
   }, []);
@@ -66,8 +69,9 @@ export default function LoginPage() {
         <p className="text-secondary text-sm mb-6 text-center">Sign in to your account</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           {apiStatus === 'fail' && (
-            <div className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2 text-sm">
-              API unreachable. Ensure <strong>NEXT_PUBLIC_API_URL</strong> is set on Vercel and you have <strong>redeployed</strong> after adding it.
+            <div className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2 text-sm space-y-1">
+              <p className="font-medium">API unreachable (404 = proxy not set).</p>
+              <p>On Vercel: add <strong>NEXT_PUBLIC_API_URL</strong> = your Render URL (e.g. <code className="bg-amber-100 px-1">https://afrilauch-v1-0.onrender.com</code>), then <strong>Redeploy</strong> and turn <strong>off</strong> “Use existing Build Cache” so the rewrite is applied.</p>
             </div>
           )}
           {error && (
