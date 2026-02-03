@@ -28,7 +28,7 @@ test.describe('Client Dashboard (web)', () => {
   test('navigate to Project page', async ({ page }) => {
     await page.getByRole('link', { name: /Project/i }).click();
     await expect(page).toHaveURL(/\/dashboard\/project/);
-    await expect(page.getByText(/Project|Details/i)).toBeVisible();
+    await expect(page.getByText(/My startup workspace|Submit idea|Open workspace/i)).toBeVisible();
   });
 
   test('navigate to Tasks page', async ({ page }) => {
