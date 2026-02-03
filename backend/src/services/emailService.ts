@@ -73,7 +73,7 @@ export async function sendEmail(params: {
     toEmail,
     subject,
     status: 'pending',
-    metadata: dynamicData as object,
+    metadata: dynamicData as Record<string, unknown>,
   });
 
   const from = process.env.EMAIL_FROM || 'AfriLaunch Hub <noreply@afrilaunchhub.com>';
