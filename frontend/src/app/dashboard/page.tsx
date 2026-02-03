@@ -21,6 +21,7 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [signModal, setSignModal] = useState<AssignedToMe | null>(null);
+  const [signSuccess, setSignSuccess] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -229,7 +230,7 @@ export default function ClientDashboardPage() {
                     {a.status !== 'Signed' && (
                       <button
                         type="button"
-                        onClick={() => { setSignModal(a); setSignAgreed(false); setSignatureText(''); setSignError(''); setSignSuccess(false); }}
+                        onClick={() => setSignModal(a)}
                         className="rounded-lg bg-primary px-3 py-1.5 text-sm text-white hover:opacity-90"
                       >
                         Read & Sign

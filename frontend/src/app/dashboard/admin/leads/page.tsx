@@ -99,6 +99,32 @@ export default function AdminLeadsPage() {
       .finally(() => setSubmitting(false));
   }
 
+  function handleCreateLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (!token) return;
+    setSubmitting(true);
+    setError(null);
+    api.admin.leads.create(
+      {
+        name: addForm.name.trim(),
+        email: addForm.email.trim(),
+        country: addForm.country.trim() || undefined,
+        ideaSummary: addForm.ideaSummary.trim() || undefined,
+        stage: addForm.stage.trim() || undefined,
+        goal: addForm.goal.trim() || undefined,
+        budget: addForm.budget.trim() || undefined,
+      },
+      token
+    )
+      .then((created) => {
+        setLeads((prev) => [created, ...prev]);
+        setShowAddModal(false);
+        setAddForm({ name: '', email: '', country: '', ideaSummary: '', stage: '', goal: '', budget: '' });
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setSubmitting(false));
+  }
+
   return (
     <div className="max-w-6xl">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
