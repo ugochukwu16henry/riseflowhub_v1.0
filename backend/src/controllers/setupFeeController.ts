@@ -78,7 +78,8 @@ export async function verify(req: Request, res: Response): Promise<void> {
   }
   if (payment.status === 'completed') {
     const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { setupPaid: true } });
-    return res.json({ ok: true, setupPaid: user?.setupPaid ?? true });
+    res.json({ ok: true, setupPaid: user?.setupPaid ?? true });
+    return;
   }
   await prisma.$transaction([
     prisma.userPayment.update({

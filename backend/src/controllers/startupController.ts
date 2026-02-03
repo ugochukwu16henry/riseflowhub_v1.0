@@ -57,8 +57,8 @@ export async function publish(req: Request, res: Response): Promise<void> {
   };
   const startup = await prisma.startupProfile.upsert({
     where: { projectId },
-    create: { projectId, ...data },
-    update: data,
+    create: { projectId, ...data } as never,
+    update: data as never,
     include: { project: { select: { projectName: true, client: { select: { businessName: true } } } } },
   });
   res.status(201).json(startup);
@@ -192,7 +192,8 @@ export async function getById(req: Request, res: Response): Promise<void> {
   } | null;
 
   if (fullView && project) {
-    return res.json({ ...startup, fullView: true, project: { ...project, milestones: project.milestones ?? [] } });
+    res.json({ ...startup, fullView: true, project: { ...project, milestones: project.milestones ?? [] } as unknown as typeof project });
+    return;
   }
 
   const partial = {

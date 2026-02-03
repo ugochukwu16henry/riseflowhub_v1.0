@@ -74,12 +74,16 @@ export async function list(req: Request, res: Response): Promise<void> {
         createdAt: true,
       },
     });
-    return res.json(investors);
+    res.json(investors);
+    return;
   }
   const investor = await prisma.investor.findUnique({
     where: { userId: payload.userId },
   });
-  if (!investor) return res.status(404).json({ error: 'Investor profile not found' });
+  if (!investor) {
+    res.status(404).json({ error: 'Investor profile not found' });
+    return;
+  }
   res.json(investor);
 }
 
@@ -89,6 +93,9 @@ export async function me(req: Request, res: Response): Promise<void> {
   const investor = await prisma.investor.findUnique({
     where: { userId },
   });
-  if (!investor) return res.status(404).json({ error: 'Investor profile not found' });
+  if (!investor) {
+    res.status(404).json({ error: 'Investor profile not found' });
+    return;
+  }
   res.json(investor);
 }

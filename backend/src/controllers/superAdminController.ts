@@ -208,15 +208,17 @@ export async function payments(req: Request, res: Response): Promise<void> {
       .join('\n');
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=payments-audit.csv');
-    return res.send(header + body);
+    res.send(header + body);
+    return;
   }
 
   if (format === 'pdf') {
     res.setHeader('Content-Type', 'application/json');
-    return res.json({
+    res.json({
       message: 'PDF export: use frontend to generate PDF from data',
       rows,
     });
+    return;
   }
 
   res.json({ rows, total: rows.length });

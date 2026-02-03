@@ -40,7 +40,7 @@ export async function createAuditLog(
         actionType: params.actionType,
         entityType: params.entityType,
         entityId: params.entityId ?? null,
-        details: params.details ?? undefined,
+        details: (params.details ?? undefined) as import('@prisma/client').Prisma.InputJsonValue | undefined,
       },
     });
   } catch (e) {

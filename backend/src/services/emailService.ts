@@ -43,7 +43,7 @@ export async function logEmail(params: {
       status: params.status,
       errorMessage: params.errorMessage ?? null,
       sentAt: params.status === 'sent' ? new Date() : null,
-      metadata: params.metadata ?? undefined,
+      metadata: (params.metadata ?? undefined) as import('@prisma/client').Prisma.InputJsonValue | undefined,
     },
   });
   return created.id;
@@ -114,7 +114,7 @@ export async function sendNotificationEmail(params: {
   dynamicData?: Record<string, unknown>;
 }): Promise<void> {
   try {
-    const result = await sendEmail(params);
+    const result = await sendEmail({ ...params, toEmail: params.userEmail });
     if (!result.success) {
       console.error('[Email] Failed after retries:', result.logId, result.error);
     }

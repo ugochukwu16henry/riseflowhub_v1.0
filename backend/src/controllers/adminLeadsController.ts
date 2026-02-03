@@ -123,7 +123,8 @@ export async function updateStatus(req: Request, res: Response): Promise<void> {
         project: { select: { id: true, projectName: true } },
       },
     });
-    return res.json(updated);
+    res.json(updated);
+    return;
   }
   if (status === 'Converted') {
     const result = await convertLeadToProject(lead);
@@ -138,7 +139,8 @@ export async function updateStatus(req: Request, res: Response): Promise<void> {
         project: { select: { id: true, projectName: true } },
       },
     });
-    return res.json(updated!);
+    res.json(updated!);
+    return;
   }
   const updated = await prisma.adminLead.update({
     where: { id },

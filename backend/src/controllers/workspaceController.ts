@@ -44,11 +44,12 @@ export async function getWorkspace(req: Request, res: Response): Promise<void> {
   const result = await getProjectWithAuth(req, res);
   if (!result) return;
   const { project, access } = result;
-  const { client, projectMembers, ...rest } = project!;
+  const proj = project as typeof project & { client?: { user: { id: string; name: string; email: string } }; projectMembers?: { user: { id: string; name: string; email: string }; role: string }[] };
+  const { client, projectMembers, ...rest } = proj;
   res.json({
     ...rest,
     founder: client?.user ? { id: client.user.id, name: client.user.name, email: client.user.email } : null,
-    members: projectMembers?.map((m) => ({ userId: m.user.id, name: m.user.name, email: m.user.email, role: m.role })) ?? [],
+    members: projectMembers?.map((m: { user: { id: string; name: string; email: string }; role: string }) => ({ userId: m.user.id, name: m.user.name, email: m.user.email, role: m.role })) ?? [],
     access,
   });
 }

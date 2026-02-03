@@ -282,7 +282,6 @@ export async function getLogs(req: Request, res: Response): Promise<void> {
   }
   const logs = await prisma.agreementAuditLog.findMany({
     where: { agreementId: id },
-    include: { user: { select: { id: true, name: true, email: true } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(logs);

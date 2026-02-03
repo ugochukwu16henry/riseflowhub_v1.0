@@ -59,9 +59,11 @@ export async function expressInterest(req: Request, res: Response): Promise<void
         where: { id: existing.id },
         include: { startup: { include: { project: { select: { projectName: true } } } } },
       });
-      return res.status(200).json(updated);
+      res.status(200).json(updated);
+      return;
     }
-    return res.status(200).json(existing);
+    res.status(200).json(existing);
+    return;
   }
   const investment = await prisma.investment.create({
     data: {
@@ -160,10 +162,14 @@ export async function list(req: Request, res: Response): Promise<void> {
         startup: { include: { project: { select: { projectName: true } } } },
       },
     });
-    return res.json(investments);
+    res.json(investments);
+    return;
   }
   const investor = await prisma.investor.findUnique({ where: { userId } });
-  if (!investor) return res.status(404).json({ error: 'Investor profile not found' });
+  if (!investor) {
+    res.status(404).json({ error: 'Investor profile not found' });
+    return;
+  }
   const investments = await prisma.investment.findMany({
     where: { investorId: investor.id },
     orderBy: { createdAt: 'desc' },

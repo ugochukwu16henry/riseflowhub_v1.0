@@ -92,7 +92,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       domain: domain?.trim() || null,
       logo: logo || null,
       primaryColor: primaryColor || null,
-      planType: planType || 'free',
+      planType: (planType || 'free') as 'free' | 'starter' | 'growth' | 'enterprise',
     },
   });
   res.status(201).json(tenant);
