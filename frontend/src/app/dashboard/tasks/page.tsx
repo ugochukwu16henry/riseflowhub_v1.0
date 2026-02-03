@@ -80,8 +80,8 @@ export default function TasksPage() {
                   >
                     <p className="font-medium text-text-dark">{t.title}</p>
                     <p className="text-gray-500 text-xs mt-1">
-                      {view === 'mine' && t.project ? t.project.projectName : null}
-                      {view === 'mine' && t.project ? ' · ' : ''}
+                      {view === 'mine' ? (t as TaskWithProject).project?.projectName : null}
+                      {view === 'mine' && (t as TaskWithProject).project ? ' · ' : ''}
                       {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '—'}
                     </p>
                   </div>

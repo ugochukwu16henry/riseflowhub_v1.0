@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -98,7 +98,18 @@ function needsSetupModal(user: User): boolean {
   return !user.setupReason;
 }
 
-export default function DashboardLayout({
+function DashboardLayoutSkeleton() {
+  return (
+    <div className="min-h-screen flex bg-background text-text-dark">
+      <aside className="w-56 flex-shrink-0 border-r border-gray-200 bg-white min-h-screen animate-pulse-subtle" />
+      <main className="flex-1 flex items-center justify-center p-6">
+        <p className="text-secondary text-sm">Loading...</p>
+      </main>
+    </div>
+  );
+}
+
+function DashboardLayoutInner({
   children,
 }: {
   children: React.ReactNode;
@@ -286,6 +297,18 @@ export default function DashboardLayout({
         </div>
       )}
     </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={<DashboardLayoutSkeleton />}>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </Suspense>
   );
 }
 
