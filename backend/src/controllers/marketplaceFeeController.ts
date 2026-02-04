@@ -3,11 +3,19 @@ import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { convertUsdToCurrency } from '../services/currencyService';
 import { createAuditLog } from '../services/auditLogService';
+import { isStripeEnabled, createCheckoutSession } from '../services/stripeService';
 import { TALENT_MARKETPLACE_FEE_USD, HIRER_PLATFORM_FEE_USD } from '../config/pricing';
 
 const prisma = new PrismaClient();
 
 const FEE_TYPES = ['talent_marketplace_fee', 'hirer_platform_fee'] as const;
+
+/** Amount in smallest currency unit (cents for USD) for Stripe */
+function toSmallestUnit(amount: number, currency: string): number {
+  const code = (currency || 'USD').toUpperCase().slice(0, 3);
+  const noDecimalCurrencies = ['JPY', 'KRW', 'VND'].includes(code);
+  return Math.round(amount * (noDecimalCurrencies ? 1 : 100));
+}
 
 /** POST /api/v1/marketplace-fee/create-session — Create payment for talent ($7) or hirer ($20) fee */
 export async function createSession(req: Request, res: Response): Promise<void> {
@@ -54,7 +62,7 @@ export async function createSession(req: Request, res: Response): Promise<void> 
     }
   }
 
-  await prisma.userPayment.create({
+  const paymentRecord = await prisma.userPayment.create({
     data: {
       userId: payload.userId,
       amount: converted.amount,
@@ -62,12 +70,50 @@ export async function createSession(req: Request, res: Response): Promise<void> 
       type,
       status: 'pending',
       reference,
+      metadata: { gateway: 'stripe' },
     },
   });
 
   const baseUrl = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000';
   const successUrl = `${baseUrl}/dashboard?marketplace_fee_success=1&ref=${encodeURIComponent(reference)}&type=${type}`;
   const cancelUrl = `${baseUrl}/dashboard?marketplace_fee_cancel=1`;
+
+  if (isStripeEnabled()) {
+    try {
+      const amountCents = toSmallestUnit(converted.amount, converted.currency);
+      const session = await createCheckoutSession({
+        amountCents,
+        currency: converted.currency,
+        reference,
+        successUrl,
+        cancelUrl,
+        metadata: { type, userId: payload.userId },
+      });
+      if (session) {
+        await prisma.userPayment.update({
+          where: { id: paymentRecord.id },
+          data: { metadata: { gateway: 'stripe', sessionId: session.sessionId } },
+        });
+        res.json({
+          sessionId: reference,
+          checkoutUrl: session.url,
+          amount: converted.amount,
+          currency: converted.currency,
+          amountUsd: usdAmount,
+          type,
+          gateway: 'stripe',
+        });
+        return;
+      }
+    } catch (err) {
+      await prisma.userPayment.update({
+        where: { id: paymentRecord.id },
+        data: { status: 'failed', metadata: { gateway: 'stripe', error: String(err) } },
+      }).catch(() => {});
+      res.status(502).json({ error: 'Payment provider error', details: err instanceof Error ? err.message : 'Unknown' });
+      return;
+    }
+  }
 
   res.json({
     sessionId: reference,

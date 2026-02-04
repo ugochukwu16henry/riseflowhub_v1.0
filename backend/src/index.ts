@@ -53,6 +53,8 @@ import { legalRoutes } from './routes/legal';
 import { marketplaceFeeRoutes } from './routes/marketplaceFee';
 import { partnerRoutes } from './routes/partner';
 import { jobRequestRoutes } from './routes/jobRequests';
+import { uploadRoutes } from './routes/upload';
+import * as webhookController from './controllers/webhookController';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -61,6 +63,14 @@ const PORT = process.env.PORT || 4000;
 const frontendOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
 app.use(cors({ origin: frontendOrigin, credentials: true }));
 app.use(compression({ level: 6, threshold: 512 }));
+
+// Stripe webhook needs raw body for signature verification (must be before express.json)
+app.use(
+  '/api/v1/webhooks/stripe',
+  express.raw({ type: 'application/json' }),
+  webhookController.stripeWebhook
+);
+
 app.use(express.json({ limit: '256kb' }));
 
 // API v1 base
@@ -101,6 +111,7 @@ app.use('/api/v1/legal', legalRoutes);
 app.use('/api/v1/marketplace-fee', marketplaceFeeRoutes);
 app.use('/api/v1/partner', partnerRoutes);
 app.use('/api/v1/job-requests', jobRequestRoutes);
+app.use('/api/v1/upload', uploadRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

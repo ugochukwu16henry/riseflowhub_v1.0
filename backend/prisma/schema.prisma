@@ -762,6 +762,9 @@ model Talent {
   services        Json?              @db.JsonB // [{ title, description, rate? }]
   skillRates      Json?              @map("skill_rates") @db.JsonB // { "Frontend": "50/hr", ... }
   videoUrl        String?            @map("video_url") @db.VarChar(500)
+  hourlyRate      Decimal?           @map("hourly_rate") @db.Decimal(10, 2) // USD
+  featured        Boolean            @default(false)   // admin can feature for marketplace
+  hiddenByAdmin   Boolean            @default(false) @map("hidden_by_admin") // hide from marketplace
   status          TalentStatus       @default(pending)   // approved = true when status approved
   feePaid         Boolean            @default(false) @map("fee_paid") // marketplace_access
   averageRating   Decimal?           @map("average_rating") @db.Decimal(3, 2) // rating_avg 0–5

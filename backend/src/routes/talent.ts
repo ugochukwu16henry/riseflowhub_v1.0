@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware, requireRoles, optionalAuth } from '../middleware/auth';
+import { formRateLimiter, verifyRecaptcha } from '../middleware/antispam';
 import { UserRole } from '@prisma/client';
 import * as talentController from '../controllers/talentController';
 
@@ -8,8 +9,8 @@ const router = Router();
 // Public: list approved talents (marketplace)
 router.get('/marketplace', talentController.marketplace);
 
-// Apply: optional auth (can sign up new user or add profile to existing)
-router.post('/apply', optionalAuth, talentController.apply);
+// Apply: optional auth; rate limit + optional reCAPTCHA
+router.post('/apply', formRateLimiter, verifyRecaptcha, optionalAuth, talentController.apply);
 
 // Below: auth required
 router.use(authMiddleware);
