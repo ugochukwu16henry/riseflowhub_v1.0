@@ -28,8 +28,8 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 
-# Prisma
-backend/prisma/migrations/
+# Prisma (migrations are committed so production can run migrate deploy)
+# backend/prisma/migrations/
 
 # Python (extract script)
 __pycache__/
