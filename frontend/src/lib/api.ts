@@ -138,6 +138,8 @@ export interface ContactMessageBody {
   email: string;
   subject?: string;
   message: string;
+  phone?: string;
+  attachmentUrl?: string;
 }
 
 export interface ContactMessageResponse {

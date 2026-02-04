@@ -848,6 +848,9 @@ model ContactMessage {
   email     String
   subject   String?
   message   String   @db.Text
+  phone     String?  @db.VarChar(50)
+  attachmentUrl String? @map("attachment_url") @db.VarChar(500)
+  status    String   @default("unread") @db.VarChar(20) // unread | read | replied
   createdAt DateTime @default(now()) @map("created_at")
 }
 
