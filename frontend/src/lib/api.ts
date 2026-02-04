@@ -613,6 +613,10 @@ export const api = {
     },
     get: (id: string, token?: string) =>
       request<StartupProfileDetail>(`/api/v1/startups/${id}`, token ? { token } : {}),
+    getScore: (id: string, token?: string) =>
+      request<StartupScoreResponse>(`/api/v1/startups/${id}/score`, token ? { token } : {}),
+    recalcScore: (id: string, token: string) =>
+      request<StartupScoreResponse>(`/api/v1/startups/${id}/score/recalculate`, { method: 'POST', token }),
     approve: (id: string, token: string) =>
       request<StartupProfile>(`/api/v1/startups/${id}/approve`, { method: 'PUT', token }),
   },
@@ -779,6 +783,20 @@ export const api = {
           method: 'POST',
           token,
         }),
+    },
+    equity: {
+      company: {
+        list: (token: string) =>
+          request<CompanyEquityRow[]>(`/api/v1/super-admin/equity/company`, { token }),
+        create: (body: { personName: string; role: string; shares: number; equityPercent: number; vestingStart?: string; vestingYears: number }, token: string) =>
+          request<CompanyEquityRow>(`/api/v1/super-admin/equity/company`, { method: 'POST', body: JSON.stringify(body), token }),
+      },
+      startup: {
+        list: (startupId: string, token: string) =>
+          request<{ items: StartupEquityRow[] }>(`/api/v1/super-admin/equity/startup/${startupId}`, { token }),
+        create: (startupId: string, body: { personName: string; role: string; shares?: number; equityPercent: number; vestingStart?: string; vestingYears: number }, token: string) =>
+          request<StartupEquityRow>(`/api/v1/super-admin/equity/startup/${startupId}`, { method: 'POST', body: JSON.stringify(body), token }),
+      },
     },
   },
   team: {
@@ -980,6 +998,24 @@ export interface StartupProfileDetail extends StartupProfile {
     client: { businessName: string; industry: string | null; userId?: string; user?: { name: string } };
     milestones?: { id: string; title: string; status: string; dueDate: string | null }[];
   };
+}
+
+export interface StartupScoreBreakdown {
+  problemClarity: number;
+  marketSize: number;
+  businessModel: number;
+  innovation: number;
+  feasibility: number;
+  traction: number;
+  teamStrength: number;
+  financialLogic: number;
+  total: number;
+}
+
+export interface StartupScoreResponse {
+  scoreTotal: number;
+  breakdown: StartupScoreBreakdown | null;
+  suggestions: string[];
 }
 
 export interface StartupPublishBody {
@@ -1224,6 +1260,31 @@ export interface DealRoomAccessItem {
   createdAt: string;
   decidedAt: string | null;
   investor: { id: string; name: string; email: string };
+}
+
+export interface CompanyEquityRow {
+  id: string;
+  personName: string;
+  role: string;
+  shares: number;
+  equityPercent: number;
+  vestingStart: string | null;
+  vestingYears: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StartupEquityRow {
+  id: string;
+  startupId: string;
+  personName: string;
+  role: string;
+  shares: number | null;
+  equityPercent: number;
+  vestingStart: string | null;
+  vestingYears: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DealRoomMessage {

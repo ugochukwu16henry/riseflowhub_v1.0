@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { DealRoomStartupDetail, DealRoomMessage, InvestmentListItem } from '@/lib/api';
+import type { DealRoomStartupDetail, DealRoomMessage, InvestmentListItem, StartupScoreResponse } from '@/lib/api';
 
 export default function DealRoomStartupProfilePage() {
   const params = useParams();
@@ -23,6 +23,7 @@ export default function DealRoomStartupProfilePage() {
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [accessStatus, setAccessStatus] = useState<'none' | 'requested' | 'approved' | 'rejected'>('approved');
+  const [score, setScore] = useState<StartupScoreResponse | null>(null);
 
   const investment = startupId ? myInvestments.find((i) => i.startupId === startupId) : null;
 
@@ -34,9 +35,15 @@ export default function DealRoomStartupProfilePage() {
     if (!startupId) return;
     api.dealRoom
       .getStartup(startupId, token)
-      .then((s) => {
+      .then(async (s) => {
         setStartup(s);
         setAccessStatus('approved');
+        try {
+          const sc = await api.startups.getScore(startupId, token);
+          setScore(sc);
+        } catch {
+          setScore(null);
+        }
       })
       .catch((e) => {
         // If access denied, try to fetch access status
@@ -210,6 +217,23 @@ export default function DealRoomStartupProfilePage() {
           <h2 className="font-semibold text-secondary mb-2">Pitch summary</h2>
           <p className="text-gray-700 whitespace-pre-wrap">{startup.pitchSummary}</p>
         </section>
+
+        {score && (
+          <section className="rounded-xl border border-gray-200 bg-white p-6">
+            <h2 className="font-semibold text-secondary mb-2">Startup score</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Overall rating based on problem clarity, market, business model, traction, team, and risk.
+            </p>
+            <p className="text-3xl font-bold text-primary mb-2">{score.scoreTotal}/100</p>
+            {score.suggestions && score.suggestions.length > 0 && (
+              <ul className="list-disc list-inside text-sm text-gray-700">
+                {score.suggestions.slice(0, 3).map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
 
         {project?.problemStatement && (
           <section className="rounded-xl border border-gray-200 bg-white p-6">
