@@ -510,6 +510,8 @@ model StartupProfile {
   dealRoomViews DealRoomView[]
   savedStartups SavedStartup[]
   dealRoomAccess DealRoomAccess[]
+  score         StartupScore?
+  equity        StartupEquity[]
 }
 
 model Investment {
@@ -583,6 +585,51 @@ model DealRoomAccess {
 
   @@unique([investorId, startupId])
   @@map("deal_room_access")
+}
+
+// Automated Startup Scoring Engine
+model StartupScore {
+  startupId  String   @id @map("startup_id")
+  scoreTotal Int      @map("score_total")
+  breakdown  Json     @map("breakdown_json") @db.JsonB
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@map("startup_scores")
+}
+
+// Platform-level equity (company cap table)
+model CompanyEquity {
+  id            String   @id @default(uuid())
+  personName    String   @map("person_name")
+  role          String
+  shares        Decimal  @db.Decimal(18, 4)
+  equityPercent Decimal  @map("equity_percent") @db.Decimal(6, 3)
+  vestingStart  DateTime? @map("vesting_start") @db.Date
+  vestingYears  Int      @map("vesting_years")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("company_equity")
+}
+
+// Startup-specific equity breakdown
+model StartupEquity {
+  id            String         @id @default(uuid())
+  startupId     String         @map("startup_id")
+  personName    String         @map("person_name")
+  role          String
+  shares        Decimal?       @db.Decimal(18, 4)
+  equityPercent Decimal        @map("equity_percent") @db.Decimal(6, 3)
+  vestingStart  DateTime?      @map("vesting_start") @db.Date
+  vestingYears  Int            @map("vesting_years")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@map("startup_equity")
 }
 
 // Marketing Analytics & Campaign Engine

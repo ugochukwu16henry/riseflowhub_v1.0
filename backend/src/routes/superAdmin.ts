@@ -3,6 +3,7 @@ import { authMiddleware, requireSuperAdmin } from '../middleware/auth';
 import * as superAdminController from '../controllers/superAdminController';
 import * as adminSkillsController from '../controllers/adminSkillsController';
 import * as emailLogsController from '../controllers/emailLogsController';
+import * as equityController from '../controllers/equityController';
 
 const router = Router();
 
@@ -25,5 +26,17 @@ router.get('/skills', adminSkillsController.list);
 router.post('/skills', adminSkillsController.create);
 router.put('/skills/:id', adminSkillsController.update);
 router.delete('/skills/:id', adminSkillsController.remove);
+
+// Company equity (platform cap table)
+router.get('/equity/company', equityController.listCompany);
+router.post('/equity/company', equityController.createCompany);
+router.put('/equity/company/:id', equityController.updateCompany);
+router.delete('/equity/company/:id', equityController.deleteCompany);
+
+// Startup equity (per startup cap table)
+router.get('/equity/startup/:startupId', equityController.listStartup);
+router.post('/equity/startup/:startupId', equityController.createStartup);
+router.put('/equity/startup/:startupId/:id', equityController.updateStartup);
+router.delete('/equity/startup/:startupId/:id', equityController.deleteStartup);
 
 export { router as superAdminRoutes };

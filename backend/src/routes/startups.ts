@@ -3,6 +3,7 @@ import { body, param, validationResult } from 'express-validator';
 import { authMiddleware, requireRoles, requireSetupPaid } from '../middleware/auth';
 import { UserRole } from '@prisma/client';
 import * as startupController from '../controllers/startupController';
+import * as startupScoreController from '../controllers/startupScoreController';
 
 const router = Router();
 
@@ -37,6 +38,10 @@ router.get('/marketplace', (req, res) => startupController.marketplace(req, res)
 
 // GET /api/v1/startups/:id — Get startup by StartupProfile id
 router.get('/:id', (req, res) => startupController.getById(req, res));
+
+// Startup scoring
+router.get('/:id/score', authMiddleware, (req, res) => startupScoreController.getScore(req, res));
+router.post('/:id/score/recalculate', authMiddleware, (req, res) => startupScoreController.recalculate(req, res));
 
 // PUT /api/v1/startups/:id/approve — Admin approve visibility
 router.put(
