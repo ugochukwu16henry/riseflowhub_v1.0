@@ -188,6 +188,8 @@ model User {
   privacySettings   PrivacySettings?
   settingsActivity  SettingsActivityLog[]
   businessModuleAccessGranted BusinessModuleAccess[] @relation("BusinessModuleAccessGranted")
+  helpAiLogs        HelpAiLog[]
+  tourProgress      UserTourProgress[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -937,6 +939,35 @@ model FaqItem {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("faq_items")
+}
+
+// AI Help assistant logs (how-to questions from Help Guide)
+model HelpAiLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  pagePath  String?  @map("page_path") @db.VarChar(200)
+  question  String   @db.Text
+  answer    String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("help_ai_logs")
+}
+
+// Interactive tour / onboarding progress per user
+model UserTourProgress {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tourName  String   @map("tour_name") @db.VarChar(80)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tourName])
+  @@map("user_tour_progress")
 }
 
 // Admin Leads (track and manage incoming leads; convert to project)
