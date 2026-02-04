@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { HomePageContent } from '@/data/pageContent';
+import { ShareButtons } from '@/components/common/ShareButtons';
 
 interface HeroProps {
   content: HomePageContent['hero'];
@@ -55,6 +56,9 @@ export function Hero({ content }: HeroProps) {
           >
             {content.ctaSecondary}
           </Link>
+        </div>
+        <div className="mt-6 flex justify-center">
+          <ShareButtons title={content.headline} text={content.subtext} />
         </div>
       </div>
     </section>

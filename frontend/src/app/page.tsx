@@ -15,6 +15,8 @@ import {
 import { api, type FaqItem } from '@/lib/api';
 import { pageContentFallback } from '@/data/pageContent';
 import type { HomePageContent } from '@/data/pageContent';
+import type { Metadata } from 'next';
+import { api } from '@/lib/api';
 
 /**
  * Fetch page content from CMS API. Falls back to static content when API returns 404.
@@ -41,6 +43,43 @@ async function getHighlightedFaqs(): Promise<Pick<FaqItem, 'id' | 'question' | '
     return data.items.map((i) => ({ id: i.id, question: i.question, answer: i.answer }));
   } catch {
     return [];
+  }
+}
+
+// Dynamic social share metadata for home page.
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/share-meta/home`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('No share meta');
+    const meta = (await res.json()) as {
+      title: string;
+      description: string;
+      imageUrl: string;
+      canonicalUrl: string;
+    };
+    return {
+      title: meta.title,
+      description: meta.description,
+      alternates: { canonical: meta.canonicalUrl },
+      openGraph: {
+        title: meta.title,
+        description: meta.description,
+        url: meta.canonicalUrl,
+        images: [{ url: meta.imageUrl }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: meta.title,
+        description: meta.description,
+        images: [meta.imageUrl],
+      },
+    };
+  } catch {
+    // Fallback to layout defaults if share meta not configured yet.
+    return {};
   }
 }
 
