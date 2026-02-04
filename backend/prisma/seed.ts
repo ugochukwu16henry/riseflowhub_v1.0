@@ -1,6 +1,8 @@
-import 'dotenv/config';
-// Prefer .env.local if present (e.g. Supabase DATABASE_URL)
-require('dotenv').config({ path: '.env.local', override: true });
+import path from 'path';
+// Load .env from backend folder (so seed works from repo root or backend)
+const backendDir = path.resolve(__dirname, '..');
+require('dotenv').config({ path: path.join(backendDir, '.env') });
+require('dotenv').config({ path: path.join(backendDir, '.env.local'), override: true });
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
