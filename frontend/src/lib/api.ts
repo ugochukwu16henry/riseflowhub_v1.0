@@ -1025,6 +1025,10 @@ export interface SuperAdminOverview {
   setupFeesCollectedUsd: number;
   consultationPaymentsUsd: number;
   investorFeesUsd: number;
+  pendingManualPayments: number;
+  pendingTalents: number;
+  pendingStartups: number;
+  earlyFounderCount: number;
 }
 
 export interface SuperAdminPaymentRow {

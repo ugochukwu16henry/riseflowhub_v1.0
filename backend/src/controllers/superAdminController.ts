@@ -14,6 +14,10 @@ export async function overview(_req: Request, res: Response): Promise<void> {
     agreementsSignedCount,
     userPaymentsCompleted,
     projectPaymentsPaid,
+    pendingManualPayments,
+    pendingTalents,
+    pendingStartups,
+    earlyFounderCount,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.client.count(),
@@ -27,6 +31,12 @@ export async function overview(_req: Request, res: Response): Promise<void> {
     prisma.payment.findMany({
       where: { status: 'Paid' },
       select: { amount: true },
+    }),
+    prisma.manualPayment.count({ where: { status: 'Pending' } }),
+    prisma.talent.count({ where: { status: 'pending' } }),
+    prisma.startupProfile.count({ where: { visibilityStatus: 'pending_approval' } }),
+    prisma.earlyAccessUser.count({
+      where: { status: { in: ['active', 'completed'] } },
     }),
   ]);
 
@@ -93,6 +103,11 @@ export async function overview(_req: Request, res: Response): Promise<void> {
     setupFeesCollectedUsd: Math.round(setupFeesUsd * 100) / 100,
     consultationPaymentsUsd: Math.round(consultationPaymentsUsd * 100) / 100,
     investorFeesUsd: 0, // placeholder until investor fee model exists
+    // New: operational overview for Super Admin Master Control System
+    pendingManualPayments,
+    pendingTalents,
+    pendingStartups,
+    earlyFounderCount,
   });
 }
 

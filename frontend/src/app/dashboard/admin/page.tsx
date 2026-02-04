@@ -55,20 +55,28 @@ export default function SuperAdminDashboardPage() {
       </p>
 
       {isSuperAdmin && overview && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-          <MetricCard label="Total Users" value={overview.totalUsers} />
-          <MetricCard label="Total Clients" value={overview.totalClients} />
-          <MetricCard label="Total Investors" value={overview.totalInvestors} />
-          <MetricCard label="Ideas Submitted" value={overview.ideasSubmitted} />
-          <MetricCard label="Active Projects" value={overview.activeProjects} />
-          <MetricCard label="Agreements Signed" value={overview.agreementsSigned} />
-          <MetricCard label="Total Revenue (USD)" value={`$${overview.totalRevenueUsd.toFixed(2)}`} />
-          <MetricCard label="Revenue (Month)" value={`$${overview.revenueMonthlyUsd.toFixed(2)}`} />
-          <MetricCard label="Revenue (Year)" value={`$${overview.revenueYearlyUsd.toFixed(2)}`} />
-          <MetricCard label="Setup Fees (USD)" value={`$${overview.setupFeesCollectedUsd.toFixed(2)}`} />
-          <MetricCard label="Consultation (USD)" value={`$${overview.consultationPaymentsUsd.toFixed(2)}`} />
-          <MetricCard label="Investor Fees (USD)" value={`$${overview.investorFeesUsd.toFixed(2)}`} />
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            <MetricCard label="Total Users" value={overview.totalUsers} />
+            <MetricCard label="Total Clients" value={overview.totalClients} />
+            <MetricCard label="Total Investors" value={overview.totalInvestors} />
+            <MetricCard label="Ideas Submitted" value={overview.ideasSubmitted} />
+            <MetricCard label="Active Projects" value={overview.activeProjects} />
+            <MetricCard label="Agreements Signed" value={overview.agreementsSigned} />
+            <MetricCard label="Total Revenue (USD)" value={`$${overview.totalRevenueUsd.toFixed(2)}`} />
+            <MetricCard label="Revenue (Month)" value={`$${overview.revenueMonthlyUsd.toFixed(2)}`} />
+            <MetricCard label="Revenue (Year)" value={`$${overview.revenueYearlyUsd.toFixed(2)}`} />
+            <MetricCard label="Setup Fees (USD)" value={`$${overview.setupFeesCollectedUsd.toFixed(2)}`} />
+            <MetricCard label="Consultation (USD)" value={`$${overview.consultationPaymentsUsd.toFixed(2)}`} />
+            <MetricCard label="Investor Fees (USD)" value={`$${overview.investorFeesUsd.toFixed(2)}`} />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <MetricCard label="Pending manual payments" value={overview.pendingManualPayments} />
+            <MetricCard label="Talents awaiting approval" value={overview.pendingTalents} />
+            <MetricCard label="Startups pending review" value={overview.pendingStartups} />
+            <MetricCard label="Early Founder users" value={overview.earlyFounderCount} />
+          </div>
+        </>
       )}
 
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-8">
