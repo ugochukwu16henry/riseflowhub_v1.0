@@ -11,6 +11,7 @@ import {
   FinalCTA,
   Footer,
   FAQPreview,
+  SupportBanner,
 } from '@/components/landing';
 import { type FaqItem } from '@/lib/api';
 import { pageContentFallback } from '@/data/pageContent';
@@ -102,6 +103,7 @@ export default async function HomePage() {
         <FinalCTA content={content.finalCta} />
         <Footer />
       </main>
+      <SupportBanner />
     </div>
   );
 }

@@ -383,6 +383,13 @@ export const api = {
         body: JSON.stringify(body),
       }),
   },
+  supportBanner: {
+    logEvent: (eventType: 'shown' | 'clicked_support' | 'closed' | 'dont_show_again', metadata?: Record<string, unknown>) =>
+      request<{ ok: boolean }>('/api/v1/support-banner/events', {
+        method: 'POST',
+        body: JSON.stringify({ eventType, metadata }),
+      }),
+  },
   manualPayments: {
     create: (
       body: { amount: number; currency: 'NGN' | 'USD'; paymentType: 'platform_fee' | 'donation'; notes?: string; proofUrl?: string },

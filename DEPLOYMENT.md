@@ -171,7 +171,8 @@ pnpm run db:seed
 ### Backend (Railway / Render / Fly.io / Node host)
 
 1. Set root/build to **`backend`**.
-2. **Build:** `pnpm install && pnpm prisma generate && pnpm run build`
+2. **Build:** `pnpm install && pnpm prisma generate && pnpm prisma migrate deploy && pnpm run build`  
+   - **Important:** `prisma migrate deploy` applies pending migrations to the production database (e.g. `blocked_ips`, `security_events`, `support_banner_events`). Ensure `DATABASE_URL` is set in the host's environment so migrations run during build.
 3. **Start:** `pnpm start` (runs `node dist/index.js`)
 4. **Environment variables:**
    - `DATABASE_URL` — production PostgreSQL (e.g. Supabase connection string)
@@ -186,7 +187,9 @@ pnpm run db:seed
 
 1. Create a Supabase project → **Project Settings → Database** → copy the **Connection string (URI)**.
 2. Put it in `backend/.env` as `DATABASE_URL` (use the **pooler** URI, port 6543, for production).
-3. Run: `cd backend && pnpm prisma generate && pnpm prisma db push && pnpm run db:seed`.
+3. **Apply schema:**  
+   - **Production (e.g. Render):** Use migrations. Ensure build runs `pnpm prisma migrate deploy` so tables like `blocked_ips`, `security_events`, `support_banner_events` exist.  
+   - **Local / one-off:** `cd backend && pnpm prisma generate && pnpm prisma db push && pnpm run db:seed`.
 4. Optional: enable Storage for file uploads; configure RLS if desired.
 
 ---
@@ -194,7 +197,7 @@ pnpm run db:seed
 ## 12. Pre-deploy checklist
 
 - [ ] **Supabase or Postgres** project created; `DATABASE_URL` set in backend `.env`
-- [ ] **Backend:** `pnpm prisma generate`, `pnpm prisma db push` (or `migrate deploy`), `pnpm run db:seed`
+- [ ] **Backend:** `pnpm prisma generate`, `pnpm prisma migrate deploy` (production) or `db push` (local), `pnpm run db:seed` if needed
 - [ ] **Frontend:** Tailwind and Next.js build succeed (`pnpm run build` in `frontend`)
 - [ ] **API routes** working: CMS, auth, startups, investors, payments (manual or E2E)
 - [ ] **Stripe (optional):** Test keys in backend env; integrate in `setupFeeController` for production payments
