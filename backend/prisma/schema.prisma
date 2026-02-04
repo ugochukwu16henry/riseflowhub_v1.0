@@ -223,6 +223,7 @@ model User {
   birthdayWishes    BirthdayWishLog[]
   securityEvents    SecurityEvent[]
   ipsBlocked        BlockedIp[]       @relation("BlockedIpCreatedBy")
+  supportBannerEvents SupportBannerEvent[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -1325,6 +1326,26 @@ model BlockedIp {
 
   @@index([ip])
   @@map("blocked_ips")
+}
+
+enum SupportBannerEventType {
+  shown
+  clicked_support
+  closed
+  dont_show_again
+}
+
+model SupportBannerEvent {
+  id        String                @id @default(uuid())
+  userId    String?               @map("user_id")
+  eventType SupportBannerEventType @map("event_type")
+  metadata  Json?
+  createdAt DateTime              @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("support_banner_events")
 }
 
 // —— Hiring & Talent Marketplace ——
