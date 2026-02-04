@@ -1013,6 +1013,26 @@ export const api = {
           request<StartupEquityRow>(`/api/v1/super-admin/equity/startup/${startupId}`, { method: 'POST', body: JSON.stringify(body), token }),
       },
     },
+    security: {
+      overview: (token: string) =>
+        request<SecurityOverview>(`/api/v1/super-admin/security/overview`, { token }),
+      events: (token: string, params?: { type?: string; severity?: string; limit?: number }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ items: SecurityEventItem[] }>(
+          `/api/v1/super-admin/security/events${q ? `?${q}` : ''}`,
+          { token }
+        );
+      },
+      blockedIps: (token: string) =>
+        request<{ items: BlockedIpRow[] }>(`/api/v1/super-admin/security/blocked-ips`, {
+          token,
+        }),
+      unblockIp: (id: string, token: string) =>
+        request<{ ok: boolean }>(`/api/v1/super-admin/security/blocked-ips/${id}`, {
+          method: 'DELETE',
+          token,
+        }),
+    },
   },
   team: {
     list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
@@ -1138,6 +1158,38 @@ export interface SuperAdminAuditLogsResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface SecurityOverview {
+  eventsLast24h: number;
+  eventsLast7d: number;
+  blockedActive: number;
+  topIps: { ip: string | null; count: number }[];
+}
+
+export interface SecurityEventItem {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  ip: string | null;
+  createdAt: string;
+  autoBlocked: boolean;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: UserRole;
+  } | null;
+}
+
+export interface BlockedIpRow {
+  id: string;
+  ip: string;
+  reason: string | null;
+  source: string;
+  blockedAt: string;
+  expiresAt: string | null;
 }
 
 export interface SuperAdminReportsResponse {

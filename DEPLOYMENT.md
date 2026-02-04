@@ -145,6 +145,16 @@ pnpm run db:seed
 - **Passwords:** bcrypt hashed; JWT in Authorization header
 - **Env:** Never commit `.env`; use `.env.example` as template
 - **Database:** If using Supabase, enable **Row Level Security (RLS)** on tables and define policies; current app uses application-level checks in Express middleware
+- **App-layer protections (backend):**
+  - Global API rate limiting via `apiRateLimiter` middleware (configurable with `SECURITY_API_WINDOW_MS` / `SECURITY_API_MAX_REQUESTS`).
+  - Login-specific rate limiting via `loginRateLimiter` and auto IP blocking on repeated failures.
+  - `SecurityEvent` & `BlockedIp` tables store intrusion events and blocked sources.
+  - Super Admin **Security Dashboard** at `/api/v1/super-admin/security/*` (frontend consumes this for an admin UI).
+- **Infrastructure hardening (recommended):**
+  - Put backend behind a WAF (Cloudflare WAF, AWS WAF, Fastly) with managed rulesets for SQLi/XSS/bot/DDoS.
+  - Enforce HTTPS/TLS 1.2+ (prefer 1.3) and enable HSTS at the edge once stable.
+  - Restrict database access to private networks / VPC; do not expose Postgres directly to the internet.
+
 
 ---
 
