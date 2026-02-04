@@ -962,6 +962,20 @@ export const api = {
     },
     consultations: (token: string) =>
       request<SuperAdminConsultationRow[]>(`/api/v1/super-admin/consultations`, { token }),
+    messages: {
+      list: (token: string, params?: { status?: string; limit?: number }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ items: AdminMessageRow[] }>(`/api/v1/super-admin/messages${q ? `?${q}` : ''}`, {
+          token,
+        });
+      },
+      updateStatus: (id: string, status: string, token: string) =>
+        request<AdminMessageRow>(`/api/v1/super-admin/messages/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status }),
+          token,
+        }),
+    },
     skills: {
       list: (token: string, params?: { category?: string }) => {
         const q = new URLSearchParams(params as Record<string, string>).toString();
@@ -1069,6 +1083,18 @@ export interface SuperAdminConsultationRow {
   preferredDate: string | null;
   preferredTime: string | null;
   timezone: string | null;
+  createdAt: string;
+}
+
+export interface AdminMessageRow {
+  id: string;
+  name: string;
+  email: string;
+  subject: string | null;
+  message: string;
+  phone: string | null;
+  attachmentUrl: string | null;
+  status: string;
   createdAt: string;
 }
 
