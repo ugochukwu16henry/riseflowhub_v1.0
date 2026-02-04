@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { convertUsdToCurrency } from '../services/currencyService';
 import { createAuditLog } from '../services/auditLogService';
+import { notify } from '../services/notificationService';
+import { sendNotificationEmail } from '../services/emailService';
 import { getPricingConfig, IDEA_STARTER_SETUP_FEE_USD, INVESTOR_SETUP_FEE_USD } from '../config/pricing';
 
 const prisma = new PrismaClient();
@@ -31,14 +33,25 @@ export async function quote(req: Request, res: Response): Promise<void> {
   }
 }
 
-/** POST /api/v1/setup-fee/create-session — create payment (simulated or gateway); returns checkout URL or session */
+/** Amount in smallest currency unit (cents for USD) for Stripe */
+function toSmallestUnit(amount: number, currency: string): number {
+  const code = (currency || 'USD').toUpperCase().slice(0, 3);
+  const noDecimalCurrencies = ['JPY', 'KRW', 'VND'].includes(code);
+  return Math.round(amount * (noDecimalCurrencies ? 1 : 100));
+}
+
+/** POST /api/v1/setup-fee/create-session — create payment (Stripe or simulated); returns checkout URL */
 export async function createSession(req: Request, res: Response): Promise<void> {
   const payload = (req as unknown as { user: AuthPayload }).user;
   const { currency = 'USD' } = req.body as { currency?: string };
   const usdAmount = payload.role === 'investor' ? INVESTOR_SETUP_FEE_USD : IDEA_STARTER_SETUP_FEE_USD;
   const converted = await convertUsdToCurrency(usdAmount, currency);
   const reference = `setup_${payload.userId}_${Date.now()}`;
-  await prisma.userPayment.create({
+
+  const { isStripeEnabled, createCheckoutSession } = await import('../services/stripeService');
+  const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { email: true } });
+
+  const paymentRecord = await prisma.userPayment.create({
     data: {
       userId: payload.userId,
       amount: converted.amount,
@@ -46,12 +59,51 @@ export async function createSession(req: Request, res: Response): Promise<void> 
       type: 'setup_fee',
       status: 'pending',
       reference,
+      metadata: { gateway: 'stripe' },
     },
   });
-  // Simulated: in production replace with Stripe Checkout / Paystack etc.
+
   const baseUrl = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000';
   const successUrl = `${baseUrl}/dashboard?setup_success=1&ref=${encodeURIComponent(reference)}`;
   const cancelUrl = `${baseUrl}/dashboard?setup_cancel=1`;
+
+  if (isStripeEnabled()) {
+    try {
+      const amountCents = toSmallestUnit(converted.amount, converted.currency);
+      const session = await createCheckoutSession({
+        amountCents,
+        currency: converted.currency,
+        reference,
+        successUrl,
+        cancelUrl,
+        metadata: { type: 'setup_fee', userId: payload.userId },
+        customerEmail: user?.email ?? undefined,
+      });
+      if (session) {
+        await prisma.userPayment.update({
+          where: { id: paymentRecord.id },
+          data: { metadata: { gateway: 'stripe', sessionId: session.sessionId } },
+        });
+        res.json({
+          sessionId: reference,
+          checkoutUrl: session.url,
+          amount: converted.amount,
+          currency: converted.currency,
+          amountUsd: usdAmount,
+          gateway: 'stripe',
+        });
+        return;
+      }
+    } catch (err) {
+      await prisma.userPayment.update({
+        where: { id: paymentRecord.id },
+        data: { status: 'failed', metadata: { gateway: 'stripe', error: String(err) } },
+      }).catch(() => {});
+      res.status(502).json({ error: 'Payment provider error', details: err instanceof Error ? err.message : 'Unknown' });
+      return;
+    }
+  }
+
   res.json({
     sessionId: reference,
     checkoutUrl: `${baseUrl}/setup-payment?ref=${encodeURIComponent(reference)}&amount=${converted.amount}&currency=${converted.currency}&success=${encodeURIComponent(successUrl)}&cancel=${encodeURIComponent(cancelUrl)}`,
@@ -98,6 +150,21 @@ export async function verify(req: Request, res: Response): Promise<void> {
     entityId: payment.id,
     details: { type: 'setup_fee' },
   }).catch(() => {});
+  const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { name: true, email: true } });
+  notify({
+    userId: payload.userId,
+    type: 'payment',
+    title: 'Setup fee paid',
+    message: 'Your setup payment was successful. You now have full access to your dashboard.',
+    link: '/dashboard',
+  }).catch(() => {});
+  if (user?.email) {
+    sendNotificationEmail({
+      type: 'payment_confirmation',
+      userEmail: user.email,
+      dynamicData: { name: user.name, description: 'Setup fee', amount: `${payment.amount} ${payment.currency}` },
+    }).catch(() => {});
+  }
   res.json({ ok: true, setupPaid: true });
 }
 

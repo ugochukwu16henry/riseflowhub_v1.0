@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authMiddleware, requireSuperAdmin } from '../middleware/auth';
 import * as superAdminController from '../controllers/superAdminController';
+import * as adminSkillsController from '../controllers/adminSkillsController';
+import * as emailLogsController from '../controllers/emailLogsController';
 
 const router = Router();
 
@@ -13,5 +15,15 @@ router.get('/activity', superAdminController.activity);
 router.get('/audit-logs', superAdminController.auditLogs);
 router.get('/reports', superAdminController.reports);
 router.get('/consultations', superAdminController.consultations);
+
+// Email logs (view + resend)
+router.get('/email-logs', emailLogsController.list);
+router.post('/email-logs/:id/resend', emailLogsController.resend);
+
+// Skill management (dynamic skills for talent forms and marketplace filters)
+router.get('/skills', adminSkillsController.list);
+router.post('/skills', adminSkillsController.create);
+router.put('/skills/:id', adminSkillsController.update);
+router.delete('/skills/:id', adminSkillsController.remove);
 
 export { router as superAdminRoutes };

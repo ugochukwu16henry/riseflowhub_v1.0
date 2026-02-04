@@ -272,12 +272,18 @@ function SignAgreementModal({
   const [signature, setSignature] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [contentHtml, setContentHtml] = useState<string | null>(null);
   const token = getStoredToken();
 
-  // Log "viewed" when modal opens (audit trail)
+  // Log "viewed" and load content when modal opens (audit trail)
   useEffect(() => {
     if (token && assignment?.agreement?.id) {
-      api.agreements.view(assignment.agreement.id, token).catch(() => {});
+      api.agreements
+        .view(assignment.agreement.id, token)
+        .then((data) => setContentHtml(data.contentHtml ?? null))
+        .catch(() => {});
+    } else {
+      setContentHtml(null);
     }
   }, [token, assignment?.agreement?.id]);
 
@@ -289,8 +295,9 @@ function SignAgreementModal({
     }
     setError('');
     setLoading(true);
+    const deviceInfo = typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : undefined;
     api.agreements
-      .sign(assignment.agreement.id, { signatureText: signature.trim() }, token)
+      .sign(assignment.agreement.id, { signatureText: signature.trim(), deviceInfo }, token)
       .then(() => {
         onSigned();
         onClose();
@@ -304,14 +311,16 @@ function SignAgreementModal({
       <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-lg max-h-[90vh] overflow-auto">
         <h2 className="text-lg font-semibold text-secondary mb-2">Read & Sign: {assignment.agreement.title}</h2>
         <p className="text-sm text-gray-600 mb-4">Type: {assignment.agreement.type}</p>
-        {assignment.agreement.templateUrl ? (
+        {contentHtml ? (
+          <div className="mb-4 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: contentHtml }} />
+        ) : assignment.agreement.templateUrl ? (
           <p className="text-sm text-gray-600 mb-4">
             <a href={assignment.agreement.templateUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">
               Open agreement document (PDF/link)
             </a>
           </p>
         ) : (
-          <p className="text-sm text-gray-500 mb-4 italic">No document link. Please confirm you have read the agreement.</p>
+          <p className="text-sm text-gray-500 mb-4 italic">No document content. Please confirm you have read the agreement.</p>
         )}
         <form onSubmit={handleSubmit}>
           <label className="flex items-center gap-2 mb-4 cursor-pointer">

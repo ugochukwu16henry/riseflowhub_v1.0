@@ -10,7 +10,13 @@ export type UserRole =
   | 'project_manager'
   | 'finance_admin'
   | 'super_admin'
-  | 'investor';
+  | 'investor'
+  | 'talent'
+  | 'hirer'
+  | 'hiring_company'
+  | 'hr_manager'
+  | 'legal_team'
+  | 'cofounder';
 
 export interface PricingConfig {
   ideaStarterSetupFeeUsd: number;
@@ -139,6 +145,154 @@ export interface ContactMessageResponse {
   message: string;
 }
 
+export interface TalentApplyBody {
+  name?: string;
+  email?: string;
+  password?: string;
+  skills: string[];
+  customRole?: string;
+  roleCategory?: string;
+  yearsExperience: number;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  cvUrl?: string;
+  pastProjects?: Array<{ title: string; description?: string; url?: string }>;
+  shortBio?: string;
+  availability?: 'full_time' | 'part_time' | 'freelance';
+  country?: string;
+  phone?: string;
+  services?: Array<{ title: string; description?: string; rate?: string }>;
+  skillRates?: Record<string, string>;
+  videoUrl?: string;
+}
+
+export interface TalentApplyResponse {
+  talent: { id: string; status: string; skills: string[]; yearsExperience: number; portfolioUrl?: string | null; user: { id: string; name: string; email: string; role: string } };
+  token?: string;
+}
+
+export interface TalentMarketplaceItem {
+  id: string;
+  name: string;
+  skills: string[];
+  customRole: string | null;
+  yearsExperience: number;
+  portfolioUrl: string | null;
+  pastProjects: unknown;
+  averageRating: number | null;
+  ratingCount: number;
+}
+
+export interface TalentProfile {
+  id: string;
+  status: string;
+  skills: string[];
+  customRole: string | null;
+  yearsExperience: number;
+  portfolioUrl: string | null;
+  resumeUrl: string | null;
+  pastProjects: unknown;
+  feePaid: boolean;
+  averageRating: number | null;
+  ratingCount: number;
+  user: { id: string; name: string; email: string; role: string };
+  createdAt: string;
+  approvedAt: string | null;
+}
+
+export interface TalentListItem {
+  id: string;
+  status: string;
+  skills: string[];
+  customRole: string | null;
+  yearsExperience: number;
+  portfolioUrl: string | null;
+  feePaid: boolean;
+  averageRating: number | null;
+  ratingCount: number;
+  createdAt: string;
+  approvedAt: string | null;
+  user: { id: string; name: string; email: string; createdAt: string };
+}
+
+export interface HirerRegisterBody {
+  name?: string;
+  email?: string;
+  password?: string;
+  companyName: string;
+  hiringNeeds?: string;
+  budget?: string;
+}
+
+export interface HirerRegisterResponse {
+  hirer: { id: string; companyName: string; hiringNeeds?: string | null; budget?: string | null; feePaid: boolean; fairTreatmentSignedAt?: string | null; user: { id: string; name: string; email: string; role: string } };
+  token?: string;
+}
+
+export interface HirerProfile {
+  id: string;
+  companyName: string;
+  hiringNeeds: string | null;
+  budget: string | null;
+  feePaid: boolean;
+  fairTreatmentSignedAt: string | null;
+  user: { id: string; name: string; email: string; role: string };
+  createdAt: string;
+}
+
+export interface HirerListItem {
+  id: string;
+  companyName: string;
+  hiringNeeds: string | null;
+  budget: string | null;
+  feePaid: boolean;
+  fairTreatmentSignedAt: string | null;
+  user: { id: string; name: string; email: string; createdAt: string };
+  createdAt: string;
+}
+
+export interface HireResponse {
+  id: string;
+  talentId: string;
+  hirerId: string;
+  projectTitle: string;
+  projectDescription?: string | null;
+  status: string;
+  talent: { name: string; email: string };
+  hirer: { name: string; email: string };
+  createdAt: string;
+}
+
+export interface HireListItem {
+  id: string;
+  talentId: string;
+  hirerId: string;
+  projectTitle: string;
+  projectDescription?: string | null;
+  agreementId?: string | null;
+  status: string;
+  talent: { id: string; name: string; email: string };
+  hirer: { id: string; name: string; email: string };
+  agreement?: { id: string; title: string; type: string } | null;
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export interface RatingItem {
+  id: string;
+  fromUser?: { id: string; name: string };
+  toUserId: string;
+  hireId: string | null;
+  score: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface LegalAgreementsResponse {
+  assignments: unknown[];
+  hireContracts: unknown[];
+}
+
 export const api = {
   ideaSubmissions: {
     submit: (body: IdeaSubmissionBody) =>
@@ -182,6 +336,64 @@ export const api = {
       });
     },
     logout: (token: string) => request<{ message: string }>('/api/v1/auth/logout', { method: 'POST', token }),
+  },
+  talent: {
+    apply: (body: TalentApplyBody, token?: string) =>
+      request<TalentApplyResponse>('/api/v1/talent/apply', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...(token && { token }),
+      }),
+    marketplace: (skills?: string[]) =>
+      request<{ items: TalentMarketplaceItem[] }>(
+        `/api/v1/talent/marketplace${skills?.length ? `?skills=${skills.map(encodeURIComponent).join(',')}` : ''}`
+      ),
+    profile: (token: string) => request<TalentProfile>('/api/v1/talent/profile', { token }),
+    updateProfile: (body: Partial<TalentApplyBody>, token: string) =>
+      request<TalentProfile>('/api/v1/talent/profile', { method: 'PUT', body: JSON.stringify(body), token }),
+    list: (token: string, status?: string) =>
+      request<{ items: TalentListItem[] }>(`/api/v1/talent${status ? `?status=${encodeURIComponent(status)}` : ''}`, { token }),
+    approve: (id: string, status: 'approved' | 'rejected', token: string) =>
+      request<{ ok: boolean; status: string }>(`/api/v1/talent/${id}/approve`, { method: 'PUT', body: JSON.stringify({ status }), token }),
+  },
+  hirer: {
+    register: (body: HirerRegisterBody, token?: string) =>
+      request<HirerRegisterResponse>('/api/v1/hirer/register', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...(token && { token }),
+      }),
+    profile: (token: string) => request<HirerProfile>('/api/v1/hirer/profile', { token }),
+    signFairTreatment: (token: string) =>
+      request<{ ok: boolean; fairTreatmentSignedAt?: string }>('/api/v1/hirer/fair-treatment/sign', { method: 'POST', token }),
+    list: (token: string) => request<{ items: HirerListItem[] }>('/api/v1/hirer', { token }),
+  },
+  hiring: {
+    hire: (talentId: string, body: { projectTitle: string; projectDescription?: string }, token: string) =>
+      request<HireResponse>(`/api/v1/hiring/hire/${talentId}`, { method: 'POST', body: JSON.stringify(body), token }),
+    listHires: (token: string) => request<{ items: HireListItem[] }>('/api/v1/hiring/hires', { token }),
+    createAgreement: (body: { hireId: string; title?: string }, token: string) =>
+      request<{ agreement: { id: string; title: string; type: string }; hireId: string }>('/api/v1/hiring/agreement', { method: 'POST', body: JSON.stringify(body), token }),
+    updateHireStatus: (hireId: string, status: 'in_progress' | 'completed' | 'cancelled', token: string) =>
+      request<{ ok: boolean; status: string }>(`/api/v1/hiring/hires/${hireId}`, { method: 'PATCH', body: JSON.stringify({ status }), token }),
+  },
+  ratings: {
+    list: (query: { toUserId?: string; hireId?: string }) =>
+      request<{ items: RatingItem[] }>(`/api/v1/ratings?${new URLSearchParams(query as Record<string, string>).toString()}`),
+    create: (body: { toUserId: string; hireId?: string; score: number; comment?: string }, token: string) =>
+      request<RatingItem>('/api/v1/ratings', { method: 'POST', body: JSON.stringify(body), token }),
+  },
+  legal: {
+    agreements: (token: string, params?: { type?: string; status?: string; documentStatus?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<LegalAgreementsResponse>(`/api/v1/legal/agreements${q ? `?${q}` : ''}`, { token });
+    },
+  },
+  marketplaceFee: {
+    createSession: (body: { type: 'talent_marketplace_fee' | 'hirer_platform_fee'; currency?: string }, token: string) =>
+      request<{ checkoutUrl: string; sessionId: string; amount: number; currency: string; type: string }>('/api/v1/marketplace-fee/create-session', { method: 'POST', body: JSON.stringify(body), token }),
+    verify: (body: { reference: string }, token: string) =>
+      request<{ ok: boolean; feePaid: boolean }>('/api/v1/marketplace-fee/verify', { method: 'POST', body: JSON.stringify(body), token }),
   },
   tenants: {
     current: (token: string) => request<{ tenant: { id: string; orgName: string; domain: string | null; planType: string } | null; branding: { logo: string | null; primaryColor: string | null } | null }>('/api/v1/tenants/current', { token }),
@@ -252,7 +464,20 @@ export const api = {
     myTasks: (token: string) => request<TaskWithProject[]>(`/api/v1/tasks/me`, { token }),
   },
   notifications: {
-    list: (token: string) => request<{ notifications: NotificationItem[] }>('/api/v1/notifications', { token }),
+    list: (token: string, params?: { limit?: number; unreadOnly?: boolean }) => {
+      const q = new URLSearchParams();
+      if (params?.limit != null) q.set('limit', String(params.limit));
+      if (params?.unreadOnly) q.set('unreadOnly', 'true');
+      const query = q.toString();
+      return request<{ notifications: NotificationItem[]; unreadCount: number }>(
+        `/api/v1/notifications${query ? `?${query}` : ''}`,
+        { token }
+      );
+    },
+    markRead: (id: string, token: string) =>
+      request<{ ok: boolean }>(`/api/v1/notifications/${id}/read`, { method: 'PATCH', token }),
+    markAllRead: (token: string) =>
+      request<{ ok: boolean; count?: number }>('/api/v1/notifications/mark-all-read', { method: 'POST', token }),
   },
   payments: {
     list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
@@ -307,22 +532,42 @@ export const api = {
       request<Agreement>(`/api/v1/agreements/${id}`, { method: 'PUT', body: JSON.stringify(body), token }),
     delete: (id: string, token: string) =>
       request<void>(`/api/v1/agreements/${id}`, { method: 'DELETE', token }),
-    listAssignments: (token: string, params?: { status?: string; type?: string }) => {
+    listAssignments: (token: string, params?: { status?: string; type?: string; documentStatus?: string }) => {
       const q = new URLSearchParams(params as Record<string, string>).toString();
       return request<AssignedAgreementRow[]>(`/api/v1/agreements/assignments${q ? `?${q}` : ''}`, { token });
     },
-    assign: (agreementId: string, body: { userId?: string; userIds?: string[]; deadline?: string }, token: string) =>
+    assign: (agreementId: string, body: { userId?: string; userIds?: string[]; deadline?: string; roles?: Record<string, string> | string }, token: string) =>
       request<{ assigned: { id: string; userId: string; deadline: string | null }[] }>(`/api/v1/agreements/${agreementId}/assign`, {
         method: 'POST',
         body: JSON.stringify(body),
         token,
       }),
-    view: (id: string, token: string) => request<{ id: string; title: string; type: string; templateUrl: string | null }>(`/api/v1/agreements/${id}/view`, { token }),
-    sign: (id: string, body: { signatureText?: string; signatureUrl?: string }, token: string) =>
-      request<{ message: string; assignment: unknown }>(`/api/v1/agreements/${id}/sign`, { method: 'POST', body: JSON.stringify(body), token }),
+    view: (id: string, token: string) =>
+      request<{ id: string; title: string; type: string; templateUrl: string | null; contentHtml: string | null }>(`/api/v1/agreements/${id}/view`, { token }),
+    sign: (id: string, body: { signatureText?: string; signatureUrl?: string; deviceInfo?: string }, token: string) =>
+      request<{ message: string; assignment: unknown; allSigned?: boolean }>(`/api/v1/agreements/${id}/sign`, { method: 'POST', body: JSON.stringify(body), token }),
     status: (id: string, token: string) => request<unknown[]>(`/api/v1/agreements/${id}/status`, { token }),
     logs: (id: string, token: string) => request<AgreementAuditLog[]>(`/api/v1/agreements/${id}/logs`, { token }),
     listAssignedToMe: (token: string) => request<AssignedToMe[]>(`/api/v1/agreements/assigned`, { token }),
+    /** Fetch agreement HTML and trigger download (uses fetch + blob so auth is sent). */
+    exportDownload: async (id: string, token: string): Promise<void> => {
+      const base = API_BASE || '';
+      const res = await fetch(`${base}/api/v1/agreements/${id}/export`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(res.statusText);
+      const blob = await res.blob();
+      const name = res.headers.get('Content-Disposition')?.match(/filename="?([^";]+)/)?.[1] || `agreement-${id}.html`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    createFromTemplate: (
+      body: { title: string; type: string; dynamicData?: Record<string, string> },
+      token: string
+    ) =>
+      request<Agreement>(`/api/v1/agreements/from-template`, { method: 'POST', body: JSON.stringify(body), token }),
   },
   investors: {
     register: (body: InvestorRegisterBody) =>
@@ -460,6 +705,43 @@ export const api = {
     },
     consultations: (token: string) =>
       request<SuperAdminConsultationRow[]>(`/api/v1/super-admin/consultations`, { token }),
+    skills: {
+      list: (token: string, params?: { category?: string }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ items: { id: string; name: string; category: string | null; createdAt: string }[] }>(
+          `/api/v1/super-admin/skills${q ? `?${q}` : ''}`,
+          { token }
+        );
+      },
+      create: (body: { name: string; category?: string }, token: string) =>
+        request<{ id: string; name: string; category: string | null; createdAt: string }>(`/api/v1/super-admin/skills`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          token,
+        }),
+      update: (id: string, body: { name?: string; category?: string }, token: string) =>
+        request<{ id: string; name: string; category: string | null; createdAt: string }>(`/api/v1/super-admin/skills/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(body),
+          token,
+        }),
+      delete: (id: string, token: string) =>
+        request<{ ok: boolean; id: string }>(`/api/v1/super-admin/skills/${id}`, { method: 'DELETE', token }),
+    },
+    emailLogs: {
+      list: (token: string, params?: { page?: number; limit?: number; status?: string; type?: string; toEmail?: string }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ rows: EmailLogRow[]; total: number; page: number; limit: number }>(
+          `/api/v1/super-admin/email-logs${q ? `?${q}` : ''}`,
+          { token }
+        );
+      },
+      resend: (id: string, token: string) =>
+        request<{ ok: boolean; message: string; logId?: string }>(`/api/v1/super-admin/email-logs/${id}/resend`, {
+          method: 'POST',
+          token,
+        }),
+    },
   },
   team: {
     list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
@@ -495,6 +777,18 @@ export interface SuperAdminConsultationRow {
   preferredTime: string | null;
   timezone: string | null;
   createdAt: string;
+}
+
+export interface EmailLogRow {
+  id: string;
+  type: string;
+  toEmail: string;
+  subject: string;
+  status: string;
+  errorMessage: string | null;
+  sentAt: string | null;
+  createdAt: string;
+  metadata: Record<string, unknown> | null;
 }
 
 export interface TeamMemberRow {
@@ -685,13 +979,17 @@ export interface InvestmentListItem extends Investment {
   };
 }
 
-export type AgreementType = 'NDA' | 'MOU' | 'CoFounder' | 'Terms';
+export type AgreementType = 'NDA' | 'MOU' | 'CoFounder' | 'Terms' | 'FairTreatment' | 'HireContract' | 'Partnership' | 'Investor';
 
 export interface Agreement {
   id: string;
   title: string;
   type: AgreementType;
-  templateUrl: string | null;
+  templateUrl?: string | null;
+  contentHtml?: string | null;
+  createdById?: string | null;
+  status?: string;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -939,8 +1237,10 @@ export interface NotificationItem {
   id: string;
   type: string;
   title: string;
-  createdAt: string;
+  message?: string;
   link?: string;
+  read: boolean;
+  createdAt: string;
 }
 
 export interface PaymentRow {

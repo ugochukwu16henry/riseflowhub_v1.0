@@ -10,6 +10,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Core roles for hiring/talent: talent, hiring_company, hr_manager, legal_team, super_admin, cofounder
+// Legacy: client, developer, designer, marketer, project_manager, finance_admin, investor, hirer (alias hiring_company)
 enum UserRole {
   client
   developer
@@ -19,6 +21,12 @@ enum UserRole {
   finance_admin
   super_admin
   investor
+  talent
+  hirer           // same as hiring_company
+  hiring_company  // alias for hirer (spec naming)
+  hr_manager
+  legal_team
+  cofounder       // talent approval, marketplace moderation
 }
 
 enum ProjectStage {
@@ -68,12 +76,24 @@ enum AgreementType {
   MOU
   CoFounder
   Terms
+  FairTreatment
+  HireContract
+  Partnership
+  Investor
+}
+
+// Document-level status: Pending until all signers have signed, then Completed
+enum AgreementDocumentStatus {
+  Pending
+  Completed
 }
 
 enum AssignedAgreementStatus {
-  Pending
-  Signed
-  Overdue
+  Draft    // company drafts contract
+  Pending  // awaiting signature
+  Signed   // both signed
+  Overdue  // past deadline
+  Disputed // legal team monitors
 }
 
 // Multi-tenant white-label
@@ -113,10 +133,13 @@ model TenantBilling {
 model User {
   id              String    @id @default(uuid())
   tenantId        String?   @map("tenant_id")
-  name            String
+  name            String    // full_name in spec (stored as name)
   email           String    @unique
   passwordHash    String    @map("password_hash")
   role            UserRole  @default(client)
+  country         String?   @db.VarChar(100)
+  phone           String?   @db.VarChar(50)
+  verified        Boolean   @default(false)
   setupPaid       Boolean   @default(false) @map("setup_paid")
   setupReason     String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
   avatarUrl       String?   @map("avatar_url")
@@ -142,6 +165,12 @@ model User {
   teamInvitesSent   TeamInvite[]   @relation("TeamInvitesSent")
   projectMemberships ProjectMember[]
   cmsContentUpdated CmsContent[]
+  talentProfile     Talent?
+  hirerProfile      Hirer?
+  talentRatingsGiven   TalentRating[] @relation("TalentRatingFrom")
+  talentRatingsReceived TalentRating[] @relation("TalentRatingTo")
+  notifications     Notification[]
+  agreementsCreated Agreement[]   @relation("AgreementCreatedBy")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -353,30 +382,39 @@ model MaintenanceLog {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
-// Agreement Signing Feature
+// Agreement Signing Feature — digital document with tracked signatures
 model Agreement {
   id          String   @id @default(uuid())
   title       String
   type        AgreementType
   templateUrl String?  @map("template_url")
+  contentHtml String?  @map("content_html") @db.Text  // filled document content (no editing after any signature)
+  createdById String?  @map("created_by")
+  status      AgreementDocumentStatus @default(Pending) @map("status")  // Pending | Completed (all signed)
+  version     Int      @default(1) @map("version")  // version control
+  pdfHash     String?  @map("pdf_hash") @db.VarChar(64)  // SHA-256 of exported PDF for verification
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  createdBy   User?    @relation("AgreementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   assignedAgreements AssignedAgreement[]
   auditLogs          AgreementAuditLog[]
+  hires              Hire[]
 }
 
 model AssignedAgreement {
   id          String                 @id @default(uuid())
   agreementId String                 @map("agreement_id")
   userId      String                 @map("user_id")
+  role        String?                @map("role") @db.VarChar(80)  // signer type e.g. "Founder", "Investor"
   status      AssignedAgreementStatus @default(Pending)
   signedAt    DateTime?              @map("signed_at")
   signatureUrl String?              @map("signature_url")
-  ipAddress  String?                @map("ip_address")
-  deadline   DateTime?              @map("deadline") @db.Date
-  createdAt  DateTime               @default(now()) @map("created_at")
-  updatedAt  DateTime               @updatedAt @map("updated_at")
+  ipAddress   String?                @map("ip_address")
+  deviceInfo  String?                @map("device_info") @db.VarChar(500)  // user agent / device
+  deadline    DateTime?              @map("deadline") @db.Date
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
 
   agreement Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -595,6 +633,22 @@ model EmailLog {
   createdAt   DateTime @default(now()) @map("created_at")
 }
 
+// In-app notifications (payment, approval, message, hiring, agreement, rating, etc.)
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String   @db.VarChar(60) // payment, approval, message, hiring, agreement, rating, project_update
+  title     String   @db.VarChar(200)
+  message   String   @db.Text
+  link      String?  @db.VarChar(500) // optional deep link
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
 // User-level payments (setup fee, etc.)
 model UserPayment {
   id          String   @id @default(uuid())
@@ -677,4 +731,171 @@ model CmsContent {
   updatedBy User? @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@map("cms_content")
+}
+
+// —— Hiring & Talent Marketplace ——
+enum TalentStatus {
+  pending
+  approved
+  rejected
+}
+
+enum HireStatus {
+  requested
+  agreement_sent
+  signed
+  in_progress
+  completed
+  cancelled
+}
+
+enum TalentAvailability {
+  full_time
+  part_time
+  freelance
+}
+
+// Skills table (id, name, category) — CMS-editable; many-to-many with talents
+model Skill {
+  id         String        @id @default(uuid())
+  name       String        @db.VarChar(120)
+  category   String?       @db.VarChar(80) // Tech | Creative | Business
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  talentSkills TalentSkill[]
+}
+
+// Talent_Skills many-to-many
+model TalentSkill {
+  talentId   String   @map("talent_id")
+  skillId    String   @map("skill_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  talent Talent @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  skill  Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([talentId, skillId])
+  @@map("talent_skills")
+}
+
+model Talent {
+  id              String             @id @default(uuid())
+  userId          String             @unique @map("user_id")
+  skills          String[]           // denormalized for filter; sync from TalentSkill or CMS list
+  customRole      String?            @map("custom_role") @db.VarChar(120)
+  roleCategory    String?            @map("role_category") @db.VarChar(100) // Tech / Creative / Business from CMS
+  yearsExperience Int                @map("years_experience")
+  portfolioUrl    String?            @map("portfolio_url") @db.VarChar(500)
+  resumeUrl       String?            @map("resume_url") @db.VarChar(500)
+  cvUrl           String?            @map("cv_url") @db.VarChar(500)
+  pastProjects    Json?              @map("past_projects") @db.JsonB // [{ title, description, url? }]
+  shortBio        String?            @map("short_bio") @db.Text
+  availability    TalentAvailability? @map("availability")
+  country         String?            @db.VarChar(100)
+  phone           String?            @db.VarChar(50)
+  services        Json?              @db.JsonB // [{ title, description, rate? }]
+  skillRates      Json?              @map("skill_rates") @db.JsonB // { "Frontend": "50/hr", ... }
+  videoUrl        String?            @map("video_url") @db.VarChar(500)
+  hourlyRate      Decimal?           @map("hourly_rate") @db.Decimal(10, 2) // USD
+  featured        Boolean            @default(false)   // admin can feature for marketplace
+  hiddenByAdmin   Boolean            @default(false) @map("hidden_by_admin") // hide from marketplace
+  status          TalentStatus       @default(pending)   // approved = true when status approved
+  feePaid         Boolean            @default(false) @map("fee_paid") // marketplace_access
+  averageRating   Decimal?           @map("average_rating") @db.Decimal(3, 2) // rating_avg 0–5
+  ratingCount     Int                @default(0) @map("rating_count")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  approvedAt      DateTime?          @map("approved_at")
+  approvedById    String?            @map("approved_by_id")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hires        Hire[]
+  talentSkills TalentSkill[]
+}
+
+model Hirer {
+  id                      String    @id @default(uuid())
+  userId                  String    @unique @map("user_id")
+  companyName             String    @map("company_name")
+  website                 String?   @db.VarChar(500)
+  verified                Boolean   @default(false) // verified_company after platform fee
+  hiringNeeds             String?   @map("hiring_needs") @db.Text
+  budget                  String?   @db.VarChar(100)
+  feePaid                 Boolean   @default(false) @map("fee_paid")
+  fairTreatmentSignedAt   DateTime? @map("fair_treatment_signed_at")
+  fairTreatmentAgreementId String?  @map("fair_treatment_agreement_id")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hires        Hire[]
+  jobRequests  JobRequest[]
+}
+
+model Hire {
+  id                String     @id @default(uuid())
+  talentId          String     @map("talent_id")
+  hirerId            String     @map("hirer_id")
+  projectTitle       String     @map("project_title")
+  projectDescription String?   @map("project_description") @db.Text
+  role               String?    @db.VarChar(120) // agreed role
+  pay                String?    @db.VarChar(100) // agreed pay
+  workTerms          Json?      @map("work_terms") @db.JsonB // terms text or structured
+  agreementId        String?    @map("agreement_id")
+  status             HireStatus @default(requested)
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  completedAt       DateTime?  @map("completed_at")
+
+  talent    Talent     @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  hirer     Hirer      @relation(fields: [hirerId], references: [id], onDelete: Cascade)
+  agreement Agreement? @relation(fields: [agreementId], references: [id], onDelete: SetNull)
+  ratings   TalentRating[]
+}
+
+// Partner With Us — investors, organizations, recruiters, agencies
+model PartnerInquiry {
+  id              String   @id @default(uuid())
+  companyName     String   @map("company_name")
+  website         String?  @db.VarChar(500)
+  partnershipType String   @map("partnership_type") @db.VarChar(80) // Investor | Organization | Recruiter | Agency
+  servicesOffered String?  @map("services_offered") @db.Text
+  message         String   @db.Text
+  contactEmail    String?  @map("contact_email")
+  contactName     String?  @map("contact_name")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("partner_inquiries")
+}
+
+// Job requests posted by hiring companies (browse by talents)
+model JobRequest {
+  id          String   @id @default(uuid())
+  hirerId     String   @map("hirer_id")
+  title       String
+  description String?  @db.Text
+  roleCategory String? @map("role_category") @db.VarChar(100)
+  skills      String[] // desired skills
+  budget      String?  @db.VarChar(100)
+  status      String   @default("open") @db.VarChar(30) // open | filled | closed
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  hirer Hirer @relation(fields: [hirerId], references: [id], onDelete: Cascade)
+}
+
+model TalentRating {
+  id           String   @id @default(uuid())
+  fromUserId   String   @map("from_user_id")
+  toUserId     String   @map("to_user_id")
+  hireId       String?  @map("hire_id")
+  score        Int      // 1–5
+  comment      String?  @db.Text
+  skillRating  String?  @map("skill_rating") @db.VarChar(100) // optional skill tag for skill-based rating
+  adminFlagged Boolean  @default(false) @map("admin_flagged") // fraud/moderation
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  fromUser User  @relation("TalentRatingFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User  @relation("TalentRatingTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  hire     Hire? @relation(fields: [hireId], references: [id], onDelete: SetNull)
 }

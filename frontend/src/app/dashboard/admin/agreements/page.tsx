@@ -10,7 +10,7 @@ import type {
 } from '@/lib/api';
 import { api } from '@/lib/api';
 
-const AGREEMENT_TYPES: AgreementType[] = ['NDA', 'MOU', 'CoFounder', 'Terms'];
+const AGREEMENT_TYPES: AgreementType[] = ['NDA', 'MOU', 'CoFounder', 'Terms', 'FairTreatment', 'HireContract', 'Partnership', 'Investor'];
 const STATUS_OPTIONS = ['Pending', 'Signed', 'Overdue'];
 
 export default function AdminAgreementsPage() {

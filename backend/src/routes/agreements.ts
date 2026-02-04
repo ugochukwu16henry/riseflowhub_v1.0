@@ -24,7 +24,7 @@ router.get(
 router.post(
   '/',
   requireRoles(UserRole.super_admin),
-  [body('title').trim().notEmpty(), body('type').isIn(['NDA', 'MOU', 'CoFounder', 'Terms']), body('templateUrl').optional().trim()],
+  [body('title').trim().notEmpty(), body('type').isIn(['NDA', 'MOU', 'CoFounder', 'Terms', 'FairTreatment', 'HireContract', 'Partnership', 'Investor']), body('templateUrl').optional().trim(), body('contentHtml').optional().trim(), body('createdById').optional().isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -32,7 +32,14 @@ router.post(
   }
 );
 
-// GET /api/v1/agreements — List templates
+// POST /api/v1/agreements/from-template — Create from template (Super Admin)
+router.post(
+  '/from-template',
+  requireRoles(UserRole.super_admin),
+  (req, res) => agreementController.createFromTemplate(req, res)
+);
+
+// GET /api/v1/agreements — List templates (optional query: type, status)
 router.get(
   '/',
   requireRoles(UserRole.super_admin, UserRole.project_manager, UserRole.finance_admin),
@@ -50,7 +57,7 @@ router.get(
 router.put(
   '/:id',
   requireRoles(UserRole.super_admin),
-  [param('id').isUUID(), body('title').optional().trim(), body('type').optional().isIn(['NDA', 'MOU', 'CoFounder', 'Terms']), body('templateUrl').optional().trim()],
+  [param('id').isUUID(), body('title').optional().trim(), body('type').optional().isIn(['NDA', 'MOU', 'CoFounder', 'Terms', 'FairTreatment', 'HireContract']), body('templateUrl').optional().trim()],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -108,6 +115,13 @@ router.get(
   '/:id/logs',
   requireRoles(UserRole.super_admin),
   (req, res) => agreementController.getLogs(req, res)
+);
+
+// GET /api/v1/agreements/:id/export — Export as HTML for download/Print to PDF (Legal/Admin)
+router.get(
+  '/:id/export',
+  requireRoles(UserRole.super_admin, UserRole.project_manager, UserRole.finance_admin, UserRole.legal_team),
+  (req, res) => agreementController.exportAgreement(req, res)
 );
 
 export { router as agreementRoutes };
