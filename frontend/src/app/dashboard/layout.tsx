@@ -176,6 +176,10 @@ function DashboardLayoutInner({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpQuestion, setHelpQuestion] = useState('');
+  const [helpAnswer, setHelpAnswer] = useState<string | null>(null);
+  const [helpLoading, setHelpLoading] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -319,10 +323,6 @@ function DashboardLayoutInner({
   const logoUrl = user.tenant?.logo || '/Afrilauch_logo.png';
   const showSetupModal = needsSetupModal(user);
   const showWelcomePanel = isTeamMember(user.role) && user.welcomePanelSeen === false;
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [helpQuestion, setHelpQuestion] = useState('');
-  const [helpAnswer, setHelpAnswer] = useState<string | null>(null);
-  const [helpLoading, setHelpLoading] = useState(false);
 
   function handleSetupComplete(updated: User) {
     setUser(updated);
