@@ -70,6 +70,14 @@ import { socialLinksAdminRoutes } from './routes/socialLinksAdmin';
 import { shareMetaRoutes } from './routes/shareMeta';
 import { shareMetaAdminRoutes } from './routes/shareMetaAdmin';
 import { birthdayWishesRoutes } from './routes/birthdayWishes';
+import { openAiFreeRoutes } from './routes/openAiFree';
+import { chatFreeRoutes } from './routes/chatFree';
+import { translateRoutes } from './routes/translate';
+import { currencyOpenRoutes } from './routes/currencyOpen';
+import { embeddingsRoutes } from './routes/embeddings';
+import { imagesRoutes } from './routes/images';
+import { publicDataRoutes } from './routes/publicData';
+import { seoRoutes } from './routes/seo';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -144,6 +152,16 @@ app.use('/api/v1/super-admin/social-links', socialLinksAdminRoutes);
 app.use('/api/v1/share-meta', shareMetaRoutes);
 app.use('/api/v1/super-admin/share-meta', shareMetaAdminRoutes);
 app.use('/api/v1/super-admin/birthday-wishes', birthdayWishesRoutes);
+
+// Open / free helper APIs (no versioned path on purpose for flexibility)
+app.use('/api/openai/free', openAiFreeRoutes);
+app.use('/api/chat/free', chatFreeRoutes);
+app.use('/api/translate', translateRoutes);
+app.use('/api/currency', currencyOpenRoutes);
+app.use('/api/embeddings', embeddingsRoutes);
+app.use('/api/images', imagesRoutes);
+app.use('/api/public-data', publicDataRoutes);
+app.use('/api/seo', seoRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');
