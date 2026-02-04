@@ -181,6 +181,13 @@ export default function SuperAdminDashboardPage() {
               <h3 className="font-semibold text-secondary mb-1">Audit Logs</h3>
               <p className="text-sm text-gray-500">Platform audit trail</p>
             </Link>
+            <Link
+              href="/dashboard/admin/security"
+              className="rounded-xl border border-gray-200 bg-white p-6 hover:border-primary/30 transition"
+            >
+              <h3 className="font-semibold text-secondary mb-1">Security</h3>
+              <p className="text-sm text-gray-500">Threats, blocked IPs, alerts</p>
+            </Link>
           </>
         )}
         <Link

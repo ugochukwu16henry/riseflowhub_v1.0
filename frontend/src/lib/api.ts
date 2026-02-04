@@ -1660,6 +1660,17 @@ export interface SocialMediaLink {
   updatedAt?: string;
 }
 
+export interface SocialShareMeta {
+  id: string;
+  pageName: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  canonicalUrl: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ForumPost {
   id: string;
   userId: string;

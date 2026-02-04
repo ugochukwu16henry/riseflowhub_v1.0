@@ -12,11 +12,10 @@ import {
   Footer,
   FAQPreview,
 } from '@/components/landing';
-import { api, type FaqItem } from '@/lib/api';
+import { type FaqItem } from '@/lib/api';
 import { pageContentFallback } from '@/data/pageContent';
 import type { HomePageContent } from '@/data/pageContent';
 import type { Metadata } from 'next';
-import { api } from '@/lib/api';
 
 /**
  * Fetch page content from CMS API. Falls back to static content when API returns 404.
