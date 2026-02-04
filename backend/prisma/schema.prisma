@@ -96,6 +96,25 @@ enum AssignedAgreementStatus {
   Disputed // legal team monitors
 }
 
+// Security event types for intrusion detection and monitoring
+enum SecurityEventType {
+  login_failed
+  login_suspicious
+  rate_limit_exceeded
+  ip_blocked
+  anomaly_detected
+  mfa_challenge_failed
+  mfa_required
+}
+
+// Severity levels for security events
+enum SecuritySeverity {
+  low
+  medium
+  high
+  critical
+}
+
 // Multi-tenant white-label
 enum TenantPlanType {
   free
@@ -202,6 +221,8 @@ model User {
   manualPaymentNotifications ManualPaymentNotification[]
   earlyAccess       EarlyAccessUser?
   birthdayWishes    BirthdayWishLog[]
+  securityEvents    SecurityEvent[]
+  ipsBlocked        BlockedIp[]       @relation("BlockedIpCreatedBy")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -1264,6 +1285,43 @@ model BirthdayWishLog {
 
   @@index([userId, sentAt])
   @@map("birthday_wishes_log")
+}
+
+// Centralised security events log for intrusion detection & anomaly tracking
+model SecurityEvent {
+  id          String            @id @default(uuid())
+  userId      String?           @map("user_id")
+  ip          String?           @db.VarChar(64)
+  userAgent   String?           @map("user_agent") @db.VarChar(255)
+  type        SecurityEventType @map("event_type")
+  severity    SecuritySeverity  @default(medium)
+  message     String            @db.VarChar(500)
+  metadata    Json?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  resolvedAt  DateTime?         @map("resolved_at")
+  autoBlocked Boolean           @default(false) @map("auto_blocked")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+  @@map("security_events")
+}
+
+// Blocked IPs (auto or manual) for request-level protection
+model BlockedIp {
+  id          String   @id @default(uuid())
+  ip          String   @db.VarChar(64)
+  reason      String?  @db.VarChar(255)
+  source      String   @db.VarChar(60) // brute_force | anomaly | manual | waf_sync
+  blockedAt   DateTime @default(now()) @map("blocked_at")
+  expiresAt   DateTime? @map("expires_at")
+  createdById String?  @map("created_by_id")
+
+  createdBy User? @relation("BlockedIpCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([ip])
+  @@map("blocked_ips")
 }
 
 // —— Hiring & Talent Marketplace ——

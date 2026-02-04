@@ -70,6 +70,8 @@ import { socialLinksAdminRoutes } from './routes/socialLinksAdmin';
 import { shareMetaRoutes } from './routes/shareMeta';
 import { shareMetaAdminRoutes } from './routes/shareMetaAdmin';
 import { birthdayWishesRoutes } from './routes/birthdayWishes';
+import { blockedIpMiddleware } from './middleware/blockedIp';
+import { apiRateLimiter } from './middleware/rateLimit';
 import { openAiFreeRoutes } from './routes/openAiFree';
 import { chatFreeRoutes } from './routes/chatFree';
 import { translateRoutes } from './routes/translate';
@@ -87,6 +89,10 @@ const PORT = process.env.PORT || 4000;
 const frontendOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
 app.use(cors({ origin: frontendOrigin, credentials: true }));
 app.use(compression({ level: 6, threshold: 512 }));
+
+// App-layer security: block known-bad IPs and apply global rate limiter
+app.use(blockedIpMiddleware);
+app.use(apiRateLimiter);
 
 // Stripe webhook needs raw body for signature verification (must be before express.json)
 app.use(

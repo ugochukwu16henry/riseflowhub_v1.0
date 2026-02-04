@@ -14,6 +14,7 @@ import { birthdayWishEmail } from './birthdayWishEmail';
 import { talentApprovalEmail } from './talentApprovalEmail';
 import { interviewInviteEmail } from './interviewInviteEmail';
 import { passwordResetEmail } from './passwordResetEmail';
+import { securityAlertEmail } from './securityAlertEmail';
 
 export type EmailType =
   | 'account_created'
@@ -31,7 +32,8 @@ export type EmailType =
   | 'talent_approval'
   | 'interview_invite'
   | 'password_reset'
-  | 'birthday_wish';
+  | 'birthday_wish'
+  | 'security_alert';
 
 export interface EmailPayload {
   type: EmailType;
@@ -56,6 +58,7 @@ const TEMPLATES: Record<EmailType, (data: Record<string, unknown>) => { subject:
   interview_invite: interviewInviteEmail,
   password_reset: passwordResetEmail,
   birthday_wish: birthdayWishEmail,
+  security_alert: securityAlertEmail,
 };
 
 export function getEmailContent(type: EmailType, dynamicData: Record<string, unknown> = {}): { subject: string; html: string } {
@@ -64,4 +67,4 @@ export function getEmailContent(type: EmailType, dynamicData: Record<string, unk
   return fn(dynamicData);
 }
 
-export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail, paymentConfirmationEmail, talentApprovalEmail, interviewInviteEmail, passwordResetEmail, birthdayWishEmail };
+export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail, paymentConfirmationEmail, talentApprovalEmail, interviewInviteEmail, passwordResetEmail, birthdayWishEmail, securityAlertEmail };

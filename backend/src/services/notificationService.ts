@@ -18,7 +18,8 @@ export type NotificationType =
   | 'hire_request'
   | 'interview_invite'
   | 'investor_interest'
-  | 'startup_submitted';
+  | 'startup_submitted'
+  | 'security_alert';
 
 export interface CreateNotificationParams {
   userId: string;

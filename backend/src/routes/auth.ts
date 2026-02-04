@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import * as authController from '../controllers/authController';
+import { loginRateLimiter } from '../middleware/rateLimit';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post(
 
 router.post(
   '/login',
-  [body('email').isEmail().normalizeEmail(), body('password').notEmpty()],
+  [loginRateLimiter, body('email').isEmail().normalizeEmail(), body('password').notEmpty()],
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
