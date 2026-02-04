@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   getStoredToken,
   api,
@@ -12,10 +12,11 @@ import {
   type AISmartMilestonesResponse,
 } from '@/lib/api';
 
-type Tab = 'chat' | 'cofounder' | 'business-plan' | 'market' | 'risk' | 'milestones';
+type Tab = 'chat' | 'ai-cofounder' | 'cofounder' | 'business-plan' | 'market' | 'risk' | 'milestones';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'chat', label: 'Idea validation' },
+  { id: 'ai-cofounder', label: 'AI Co-Founder' },
   { id: 'cofounder', label: 'Cofounder fit' },
   { id: 'business-plan', label: 'Business plan' },
   { id: 'market', label: 'Market insights' },
@@ -64,7 +65,25 @@ export default function MentorPage() {
   const [msResult, setMsResult] = useState<AISmartMilestonesResponse | null>(null);
   const [msLoading, setMsLoading] = useState(false);
 
+  // AI Co-Founder tab
+  const [cfIdea, setCfIdea] = useState('');
+  const [cfIndustry, setCfIndustry] = useState('');
+  const [cfCountry, setCfCountry] = useState('');
+  const [cfOutput, setCfOutput] = useState<Record<string, unknown> | null>(null);
+  const [cfLoading, setCfLoading] = useState(false);
+  const [cfModule, setCfModule] = useState<string | null>(null);
+
   const token = typeof window !== 'undefined' ? getStoredToken() : null;
+
+  // Load persistent chat on mount
+  useEffect(() => {
+    if (!token || tab !== 'chat') return;
+    api.ai.conversations(token).then((r) => {
+      setChatMessages(
+        (r.messages || []).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.message }))
+      );
+    }).catch(() => {});
+  }, [token, tab]);
 
   function handleSendChat() {
     if (!chatInput.trim() || !token) return;
@@ -74,13 +93,8 @@ export default function MentorPage() {
     setChatLoading(true);
     setError(null);
     api.ai
-      .ideaChat(
-        {
-          messages: [...chatMessages, userMsg].map((m) => ({ role: m.role, content: m.content })),
-        },
-        token
-      )
-      .then((res: AIIdeaChatResponse) => {
+      .sendConversation({ message: userMsg.content }, token)
+      .then((res) => {
         setChatMessages((prev) => [...prev, { role: 'assistant', content: res.message }]);
       })
       .catch((e) => setError(e?.message ?? 'Chat failed'))
@@ -148,6 +162,32 @@ export default function MentorPage() {
       .then(setMsResult)
       .catch((e) => setError(e?.message ?? 'Request failed'))
       .finally(() => setMsLoading(false));
+  }
+
+  const cfBody = () => ({ idea: cfIdea.trim(), industry: cfIndustry || undefined, country: cfCountry || undefined });
+  function runCofounderModule(
+    name: string,
+    fn: () => Promise<Record<string, unknown>>
+  ) {
+    if (!cfIdea.trim() || !token) return;
+    setCfLoading(true);
+    setError(null);
+    setCfModule(name);
+    fn()
+      .then(setCfOutput)
+      .catch((e) => setError(e?.message ?? 'Request failed'))
+      .finally(() => setCfLoading(false));
+  }
+  function handleFullBusinessPlan() {
+    if (!cfIdea.trim() || !token) return;
+    setCfLoading(true);
+    setError(null);
+    setCfModule('full-business-plan');
+    api.ai
+      .fullBusinessPlan(cfBody(), token)
+      .then(setCfOutput)
+      .catch((e) => setError(e?.message ?? 'Request failed'))
+      .finally(() => setCfLoading(false));
   }
 
   return (
@@ -227,6 +267,66 @@ export default function MentorPage() {
               Send
             </button>
           </div>
+        </div>
+      )}
+
+      {/* AI Co-Founder: modules + full business plan */}
+      {tab === 'ai-cofounder' && (
+        <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">AI Co-Founder</h2>
+            <p className="text-sm text-gray-600 mt-1">Turn your idea into a structured plan. Free: Idea Clarifier, Business Model, Roadmap. Paid: Pricing, Marketing, Pitch, Risk.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Your idea</label>
+              <textarea
+                value={cfIdea}
+                onChange={(e) => setCfIdea(e.target.value)}
+                rows={3}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                placeholder="Describe your startup idea…"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Context (optional)</label>
+              <input
+                type="text"
+                value={cfIndustry}
+                onChange={(e) => setCfIndustry(e.target.value)}
+                placeholder="Industry"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+              <input
+                type="text"
+                value={cfCountry}
+                onChange={(e) => setCfCountry(e.target.value)}
+                placeholder="Country / region"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Generate section</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => runCofounderModule('idea_clarified', () => api.ai.ideaClarify(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 disabled:opacity-50">Idea Clarifier</button>
+              <button type="button" onClick={() => runCofounderModule('business_model', () => api.ai.businessModel(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 disabled:opacity-50">Business Model</button>
+              <button type="button" onClick={() => runCofounderModule('roadmap', () => api.ai.roadmap(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 disabled:opacity-50">Roadmap</button>
+              <button type="button" onClick={() => runCofounderModule('pricing', () => api.ai.cofounderPricing(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-200 disabled:opacity-50" title="Paid">Pricing <span className="text-xs">🔒</span></button>
+              <button type="button" onClick={() => runCofounderModule('marketing', () => api.ai.cofounderMarketing(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-200 disabled:opacity-50" title="Paid">Marketing <span className="text-xs">🔒</span></button>
+              <button type="button" onClick={() => runCofounderModule('pitch', () => api.ai.cofounderPitch(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-200 disabled:opacity-50" title="Paid">Pitch <span className="text-xs">🔒</span></button>
+              <button type="button" onClick={() => runCofounderModule('risk_analysis', () => api.ai.cofounderRiskAnalysis(cfBody(), token!))} disabled={cfLoading || !cfIdea.trim()} className="rounded-lg bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-200 disabled:opacity-50" title="Paid">Risk <span className="text-xs">🔒</span></button>
+            </div>
+            <button type="button" onClick={handleFullBusinessPlan} disabled={cfLoading || !cfIdea.trim()} className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">Generate full business plan</button>
+          </div>
+          {cfOutput && (
+            <div className="border-t border-gray-200 pt-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">{cfModule === 'full-business-plan' ? 'Full plan' : cfModule}</p>
+              <pre className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm overflow-auto max-h-[400px] whitespace-pre-wrap">
+                {JSON.stringify(cfOutput, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
       )}
 

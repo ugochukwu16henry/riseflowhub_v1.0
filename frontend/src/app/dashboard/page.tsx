@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getStoredToken, api } from '@/lib/api';
-import type { Project, AssignedToMe, ProjectStatus } from '@/lib/api';
+import { getStoredToken, api, type UserFeatureState } from '@/lib/api';
+import type {
+  Project,
+  AssignedToMe,
+  ProjectStatus,
+  UserBadge,
+  FounderReputationBreakdown,
+} from '@/lib/api';
 
 const PROJECT_STATUS_FLOW: { value: ProjectStatus; label: string }[] = [
   { value: 'IdeaSubmitted', label: 'Idea Submitted' },
@@ -22,16 +28,34 @@ export default function ClientDashboardPage() {
   const [error, setError] = useState('');
   const [signModal, setSignModal] = useState<AssignedToMe | null>(null);
   const [signSuccess, setSignSuccess] = useState(false);
+  const [badges, setBadges] = useState<UserBadge[]>([]);
+  const [reputation, setReputation] = useState<FounderReputationBreakdown | null>(null);
+  const [features, setFeatures] = useState<UserFeatureState | null>(null);
 
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
     Promise.all([
       fetch('/api/v1/projects', { headers: { Authorization: `Bearer ${token}` } })
-        .then((res) => res.ok ? res.json() : Promise.reject(new Error('Failed to load')))
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to load'))))
         .then(setProjects)
         .catch(() => setError('Could not load projects')),
-      api.agreements.listAssignedToMe(token).then(setAgreements).catch(() => setAgreements([])),
+      api.agreements
+        .listAssignedToMe(token)
+        .then(setAgreements)
+        .catch(() => setAgreements([])),
+      api.badges
+        .list(token)
+        .then((res) => setBadges(res.items))
+        .catch(() => setBadges([])),
+      api.founders
+        .meReputation(token)
+        .then(setReputation)
+        .catch(() => setReputation(null)),
+      api.users
+        .meFeatures(token)
+        .then(setFeatures)
+        .catch(() => setFeatures(null)),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -51,6 +75,85 @@ export default function ClientDashboardPage() {
       <p className="text-gray-600 mb-8">
         Here’s an overview of your project and next steps.
       </p>
+
+      {/* Smart feature access grid */}
+      {features && (
+        <div className="mb-6 space-y-3">
+          {features.hasPendingManualPayment && features.pendingManualPayment && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              We’ve received your bank transfer of{' '}
+              <span className="font-semibold">
+                {Number(features.pendingManualPayment.amount).toLocaleString()}{' '}
+                {features.pendingManualPayment.currency}
+              </span>
+              . It is currently <span className="font-semibold">pending verification</span>. You’ll get a notification
+              once it is confirmed and your features are unlocked.
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Idea workspace / dashboard */}
+            <FeatureCard
+              title="Idea workspace"
+              description="Plan, validate, and manage your startup in one place."
+              href="/dashboard/project"
+              unlocked={features.hasSetupAccess}
+              primaryCtaLabel={features.hasSetupAccess ? 'Open workspace' : 'Unlock with setup fee'}
+              lockedHint="Pay or claim your Early Founder scholarship to unlock your idea dashboard and workspace."
+            />
+
+            {/* AI Co‑Founder */}
+            <FeatureCard
+              title="AI Co‑Founder"
+              description="Ask questions and get structured guidance for your idea."
+              href="/dashboard/ai"
+              unlocked={features.unlockedFeatures.includes('ai_guidance')}
+              primaryCtaLabel={features.unlockedFeatures.includes('ai_guidance') ? 'Chat with AI' : 'Unlock AI guidance'}
+              lockedHint="Unlock your setup to access AI Co‑Founder guidance for validation, strategy, and planning."
+            />
+
+            {/* Consultation booking */}
+            <FeatureCard
+              title="1:1 Consultation"
+              description="Book a session to review your idea, pricing, or roadmap."
+              href="/dashboard/consultation"
+              unlocked={features.unlockedFeatures.includes('consultations')}
+              primaryCtaLabel={features.unlockedFeatures.includes('consultations') ? 'Book consultation' : 'Unlock consultation'}
+              lockedHint="Once your setup is active, you can book a founder consultation."
+            />
+
+            {/* Marketplace access */}
+            <FeatureCard
+              title="Marketplace access"
+              description="Hire vetted talent or showcase your skills for paid projects."
+              href="/dashboard/marketplace"
+              unlocked={features.hasMarketplaceAccess}
+              primaryCtaLabel={features.hasMarketplaceAccess ? 'Go to marketplace' : 'Unlock marketplace'}
+              lockedHint="Pay the small marketplace fee or complete required steps to unlock hiring and talent opportunities."
+            />
+
+            {/* Donor / supporter */}
+            <FeatureCard
+              title="Donor & supporter badge"
+              description="Support the platform and display your donor badge on your profile."
+              href="/dashboard/payments"
+              unlocked={features.hasDonorBadge}
+              primaryCtaLabel={features.hasDonorBadge ? 'View payments' : 'Donate or support'}
+              lockedHint="Send a voluntary donation to unlock your donor badge and help other founders get started."
+            />
+
+            {/* Early Founder program */}
+            <FeatureCard
+              title="Early Founder program"
+              description="Limited scholarship seats with sponsored starter access."
+              href="/invite/founder-early-access"
+              unlocked={features.isEarlyFounder}
+              primaryCtaLabel={features.isEarlyFounder ? 'View my benefits' : 'Check availability'}
+              lockedHint="If seats are still open, you can join via the Early Founder invite link and unlock sponsored starter access."
+            />
+          </div>
+        </div>
+      )}
 
       {loading && <p className="text-gray-500">Loading...</p>}
       {error && (
@@ -103,20 +206,60 @@ export default function ClientDashboardPage() {
             </div>
           </div>
 
-          {/* Project status timeline */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
-            <h2 className="text-lg font-semibold text-secondary mb-3">Project timeline</h2>
-            <div className="flex flex-wrap gap-2">
-              {PROJECT_STATUS_FLOW.map((s, i) => (
-                <span
-                  key={s.value}
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                    i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  {s.label}
-                </span>
-              ))}
+          {/* Project status timeline + Founder reputation */}
+          <div className="grid gap-4 lg:grid-cols-3 mb-6">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 lg:col-span-2">
+              <h2 className="text-lg font-semibold text-secondary mb-3">Project timeline</h2>
+              <div className="flex flex-wrap gap-2">
+                {PROJECT_STATUS_FLOW.map((s, i) => (
+                  <span
+                    key={s.value}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                      i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h2 className="text-sm font-semibold text-secondary mb-1">Founder reputation</h2>
+              {reputation ? (
+                <>
+                  <p className="text-xs text-gray-600 mb-2">
+                    Your trust & professionalism score based on profile, progress, investor activity, and milestones.
+                  </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700">
+                      {reputation.level}
+                    </span>
+                    <span className="text-sm font-semibold text-secondary">{reputation.total}/100</span>
+                  </div>
+                  <dl className="space-y-1 text-[11px] text-gray-600">
+                    <div className="flex justify-between">
+                      <dt>Profile</dt>
+                      <dd>{reputation.profileCompleteness}/10</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Idea clarity</dt>
+                      <dd>{reputation.ideaClarity}/10</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Progress</dt>
+                      <dd>{reputation.projectProgress}/20</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Investor feedback</dt>
+                      <dd>{reputation.investorFeedback}/15</dd>
+                    </div>
+                  </dl>
+                </>
+              ) : (
+                <p className="text-xs text-gray-500">
+                  Your founder reputation will appear here once your profile, projects, and milestones are more active.
+                </p>
+              )}
             </div>
           </div>
 
@@ -138,6 +281,40 @@ export default function ClientDashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Achievements & referrals */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+            <h2 className="text-lg font-semibold text-secondary mb-3">Your achievements</h2>
+            {badges.length === 0 ? (
+              <p className="text-gray-500 text-sm">Complete actions like submitting ideas, refining with AI, and logging revenue to unlock badges.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {badges.map((b) => (
+                  <span
+                    key={`${b.badgeName}-${b.dateAwarded}`}
+                    className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
+                  >
+                    {b.badgeName
+                      .split('_')
+                      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                      .join(' ')}
+                  </span>
+                ))}
+              </div>
+            )}
+            {badges.some((b) => b.badgeName === 'early_founder') && (
+              <p className="mt-3 text-xs text-gray-600">
+                You joined as an <span className="font-semibold text-secondary">Early Founder</span>. Your starter access was sponsored by the scholarship program. To keep unlocking advanced features, continue progressing through your roadmap and later choose a growth plan.
+              </p>
+            )}
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <p className="text-sm font-medium text-secondary mb-1">Invite a founder friend</p>
+              <p className="text-xs text-gray-500 mb-2">
+                Share your personal link. When they submit an idea and launch, you both unlock extra perks in AfriLaunch Hub.
+              </p>
+              <ReferralShare />
+            </div>
+          </div>
 
           {/* Milestones & Tasks */}
           <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
@@ -259,6 +436,48 @@ export default function ClientDashboardPage() {
   );
 }
 
+function FeatureCard({
+  title,
+  description,
+  href,
+  unlocked,
+  primaryCtaLabel,
+  lockedHint,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  unlocked: boolean;
+  primaryCtaLabel: string;
+  lockedHint: string;
+}) {
+  return (
+    <div
+      className={`rounded-xl border px-4 py-4 text-sm ${
+        unlocked
+          ? 'border-emerald-200 bg-white'
+          : 'border-dashed border-gray-200 bg-gray-50 text-gray-500'
+      }`}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-secondary mb-1">{title}</p>
+      <p className="text-xs mb-3">{description}</p>
+      <div className="flex items-center justify-between gap-2">
+        <Link
+          href={href}
+          className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium ${
+            unlocked
+              ? 'bg-primary text-white hover:opacity-90'
+              : 'bg-white text-primary border border-primary/30 hover:bg-primary/5'
+          }`}
+        >
+          {primaryCtaLabel}
+        </Link>
+        <span className="text-[10px] text-gray-500 max-w-[55%]">{lockedHint}</span>
+      </div>
+    </div>
+  );
+}
+
 function SignAgreementModal({
   assignment,
   onClose,
@@ -350,6 +569,92 @@ function SignAgreementModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function ReferralShare() {
+  const [copied, setCopied] = useState(false);
+  const [link, setLink] = useState('');
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (typeof window === 'undefined' || !token) return;
+    // We only need the raw token payload's userId, which is already encoded into signup ref query on backend
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = JSON.parse(atob(payloadBase64));
+      const userId = payloadJson.userId as string | undefined;
+      if (!userId) return;
+      const origin = window.location.origin;
+      setLink(`${origin}/signup?ref=${encodeURIComponent(userId)}`);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function handleCopy() {
+    if (!link) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(
+        () => setCopied(true),
+        () => setCopied(false)
+      );
+    }
+  }
+
+  if (!link) {
+    return <p className="text-xs text-gray-400">Sign in to see your referral link.</p>;
+  }
+
+  const shareText = encodeURIComponent(
+    'I’m building my startup on AfriLaunch Hub. Use my link to submit your idea and unlock founder tools:'
+  );
+  const encodedUrl = encodeURIComponent(link);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          readOnly
+          value={link}
+          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-700 bg-gray-50"
+        />
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+        >
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs">
+        <a
+          href={`https://wa.me/?text=${shareText}%20${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-green-50 px-3 py-1 text-green-700 hover:bg-green-100"
+        >
+          Share on WhatsApp
+        </a>
+        <a
+          href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-sky-50 px-3 py-1 text-sky-700 hover:bg-sky-100"
+        >
+          Share on X
+        </a>
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-blue-50 px-3 py-1 text-blue-700 hover:bg-blue-100"
+        >
+          Share on LinkedIn
+        </a>
       </div>
     </div>
   );

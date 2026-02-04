@@ -38,6 +38,9 @@ function runAIEvaluation(ideaDescription: string, industry: string, country: str
 
 import { sendNotificationEmail } from '../services/emailService';
 import { createAuditLog } from '../services/auditLogService';
+import { awardBadge } from '../services/badgeService';
+import { recordSignupReferral, recordReferralStage } from '../services/referralService';
+import { enrollEarlyAccessOnIdeaSubmission, EARLY_ACCESS_REF } from '../services/earlyAccessService';
 
 /** POST /api/v1/idea-submissions — Public: create User + Client + Project, trigger AI, return token */
 export async function submit(req: Request, res: Response): Promise<void> {
@@ -89,6 +92,25 @@ export async function submit(req: Request, res: Response): Promise<void> {
     },
     select: { id: true, name: true, email: true, role: true, tenantId: true, setupPaid: true, setupReason: true, createdAt: true },
   });
+
+  const ref = (req.query.ref as string | undefined) || (req.body as { ref?: string }).ref;
+  if (ref) {
+    recordSignupReferral(prisma, { referrerId: ref, referredUserId: user.id }).catch(() => {});
+  }
+
+  // Founder Early Access Scholarship — first 300 signups with the special ref
+  if (ref === EARLY_ACCESS_REF) {
+    const enrolled = await enrollEarlyAccessOnIdeaSubmission(prisma, { userId: user.id });
+    if (enrolled) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          setupPaid: true,
+          setupReason: 'early_access_scholarship',
+        },
+      });
+    }
+  }
 
   const businessName = ideaDescription.trim().slice(0, 80) || `${name.trim()}'s Venture`;
   const ideaSummary = [
@@ -152,6 +174,10 @@ export async function submit(req: Request, res: Response): Promise<void> {
     entityId: project.id,
     details: { email: user.email, name: user.name },
   }).catch(() => {});
+
+  // Achievements & referrals
+  awardBadge(prisma, { userId: user.id, badge: 'idea_starter' }).catch(() => {});
+  recordReferralStage(prisma, { referredUserId: user.id, stage: 'idea_submitted' }).catch(() => {});
 
   runAIEvaluation(ideaDescription.trim(), industry?.trim() || '', country?.trim() || '');
   sendNotificationEmail({

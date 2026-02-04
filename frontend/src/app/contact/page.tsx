@@ -47,6 +47,7 @@ const defaultForm: ContactMessageBody = {
   email: '',
   subject: '',
   message: '',
+  phone: '',
 };
 
 const FOOTER_LINKS = [
@@ -219,15 +220,27 @@ export default function ContactPage() {
                 placeholder="you@example.com"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-              <input
-                type="text"
-                value={form.subject}
-                onChange={(e) => update('subject', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                placeholder="e.g. Partnership inquiry"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone / WhatsApp (optional)</label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => update('phone', e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  placeholder="+234 901 234 5678"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <input
+                  type="text"
+                  value={form.subject}
+                  onChange={(e) => update('subject', e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  placeholder="e.g. Partnership inquiry"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
@@ -247,6 +260,14 @@ export default function ContactPage() {
             >
               {submitting ? 'Sending...' : 'Send message'}
             </button>
+            <a
+              href="https://wa.me/2349015718484?text=Hello,%20I%20am%20contacting%20you%20through%20your%20platform."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 text-sm text-primary hover:underline"
+            >
+              <span>Chat with us on WhatsApp</span>
+            </a>
           </form>
         </div>
       </Section>

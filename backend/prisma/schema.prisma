@@ -96,6 +96,25 @@ enum AssignedAgreementStatus {
   Disputed // legal team monitors
 }
 
+// Security event types for intrusion detection and monitoring
+enum SecurityEventType {
+  login_failed
+  login_suspicious
+  rate_limit_exceeded
+  ip_blocked
+  anomaly_detected
+  mfa_challenge_failed
+  mfa_required
+}
+
+// Severity levels for security events
+enum SecuritySeverity {
+  low
+  medium
+  high
+  critical
+}
+
 // Multi-tenant white-label
 enum TenantPlanType {
   free
@@ -140,9 +159,18 @@ model User {
   country         String?   @db.VarChar(100)
   phone           String?   @db.VarChar(50)
   verified        Boolean   @default(false)
+  birthday        DateTime? @db.Date
   setupPaid       Boolean   @default(false) @map("setup_paid")
   setupReason     String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
   avatarUrl       String?   @map("avatar_url")
+  displayName     String?   @map("display_name") @db.VarChar(120)
+  bio             String?   @db.Text
+  jobTitle        String?   @map("job_title") @db.VarChar(120)
+  website         String?   @db.VarChar(500)
+  linkedinUrl     String?   @map("linkedin_url") @db.VarChar(500)
+  twitterUrl      String?   @map("twitter_url") @db.VarChar(500)
+  timezone        String?   @db.VarChar(80)
+  twoFactorEnabled Boolean  @default(false) @map("two_factor_enabled")
   lastLoginAt     DateTime? @map("last_login_at")
   welcomePanelSeen Boolean   @default(false) @map("welcome_panel_seen")
   customRoleId    String?   @map("custom_role_id")
@@ -171,6 +199,30 @@ model User {
   talentRatingsReceived TalentRating[] @relation("TalentRatingTo")
   notifications     Notification[]
   agreementsCreated Agreement[]   @relation("AgreementCreatedBy")
+  aiConversations   AiConversation[]
+  aiGeneratedOutputs AiGeneratedOutput[]
+  accountStatuses   AccountStatus[]
+  statusesSet       AccountStatus[] @relation("AccountStatusSetBy")
+  notificationSettings NotificationSettings?
+  preferences       UserPreferences?
+  privacySettings   PrivacySettings?
+  settingsActivity  SettingsActivityLog[]
+  businessModuleAccessGranted BusinessModuleAccess[] @relation("BusinessModuleAccessGranted")
+  helpAiLogs        HelpAiLog[]
+  tourProgress      UserTourProgress[]
+  userBadges        UserBadge[]
+  referralsSent     Referral[] @relation("ReferralReferrer")
+  referralsReceived Referral[] @relation("ReferralReferred")
+  founderReputation FounderReputation?
+  forumPosts        ForumPost[]
+  forumComments     ForumComment[]
+  forumLikes        ForumLike[]
+  manualPayments    ManualPayment[]
+  manualPaymentNotifications ManualPaymentNotification[]
+  earlyAccess       EarlyAccessUser?
+  birthdayWishes    BirthdayWishLog[]
+  securityEvents    SecurityEvent[]
+  ipsBlocked        BlockedIp[]       @relation("BlockedIpCreatedBy")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -205,6 +257,10 @@ model Client {
   userId        String   @unique @map("user_id")
   businessName  String   @map("business_name")
   industry      String?
+  companySize   String?  @map("company_size") @db.VarChar(50)
+  headquarters  String?  @db.VarChar(200)
+  logoUrl       String?  @map("logo_url") @db.VarChar(500)
+  coverImageUrl String?  @map("cover_image_url") @db.VarChar(500)
   ideaSummary   String?  @map("idea_summary") @db.Text
   budgetRange   String?  @map("budget_range")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -249,6 +305,8 @@ model Project {
   ideaVaultItems  IdeaVaultItem[]
   businessModel   BusinessModel?
   projectMembers  ProjectMember[]
+  aiConversations   AiConversation[]
+  aiGeneratedOutputs AiGeneratedOutput[]
 }
 
 model Milestone {
@@ -452,6 +510,13 @@ enum InvestmentStatus {
   withdrawn
 }
 
+// Access control for Investor Deal Room
+enum DealRoomAccessStatus {
+  requested
+  approved
+  rejected
+}
+
 model Investor {
   id                   String   @id @default(uuid())
   userId               String   @unique @map("user_id")
@@ -470,6 +535,7 @@ model Investor {
   investments    Investment[]
   dealRoomViews  DealRoomView[]
   savedStartups  SavedStartup[]
+  dealRoomAccess DealRoomAccess[]
 }
 
 model StartupProfile {
@@ -497,6 +563,62 @@ model StartupProfile {
   investments   Investment[]
   dealRoomViews DealRoomView[]
   savedStartups SavedStartup[]
+  dealRoomAccess DealRoomAccess[]
+  score         StartupScore?
+  equity        StartupEquity[]
+  businessAccess   BusinessModuleAccess?
+  businessGrowth   BusinessGrowth?
+  businessFinancials BusinessFinancialSnapshot[]
+  milestoneTriggers MilestoneTrigger[]
+}
+
+// Business module access (premium founder feature)
+model BusinessModuleAccess {
+  id            String   @id @default(uuid())
+  startupId     String   @unique @map("startup_id")
+  autoUnlocked  Boolean  @default(false) @map("auto_unlocked")
+  grantedById   String?  @map("granted_by_id")
+  reason        String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  startup   StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  grantedBy User?          @relation("BusinessModuleAccessGranted", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@map("business_module_access")
+}
+
+// Business growth journey checklist per startup
+model BusinessGrowth {
+  startupId         String   @id @map("startup_id")
+  ideaValidated     Boolean  @default(false) @map("idea_validated")
+  mvpBuilt          Boolean  @default(false) @map("mvp_built")
+  firstCustomer     Boolean  @default(false) @map("first_customer")
+  revenueGenerated  Boolean  @default(false) @map("revenue_generated")
+  investorOnboarded Boolean  @default(false) @map("investor_onboarded")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@map("business_growth")
+}
+
+// Financial snapshots per startup (monthly)
+model BusinessFinancialSnapshot {
+  id          String   @id @default(uuid())
+  startupId   String   @map("startup_id")
+  periodMonth DateTime @map("period_month") @db.Date
+  revenue     Decimal  @default(0) @db.Decimal(14, 2)
+  expenses    Decimal  @default(0) @db.Decimal(14, 2)
+  assets      Decimal  @default(0) @db.Decimal(14, 2)
+  liabilities Decimal  @default(0) @db.Decimal(14, 2)
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, periodMonth])
+  @@map("business_financial_snapshots")
 }
 
 model Investment {
@@ -554,6 +676,114 @@ model DealRoomMessage {
   sender     User       @relation("DealRoomMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@map("deal_room_messages")
+}
+
+// Investor Deal Room: access requests and approvals
+model DealRoomAccess {
+  id         String              @id @default(uuid())
+  investorId String              @map("investor_id")
+  startupId  String              @map("startup_id")
+  status     DealRoomAccessStatus @default(requested)
+  createdAt  DateTime            @default(now()) @map("created_at")
+  decidedAt  DateTime?           @map("decided_at")
+
+  investor Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  startup  StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([investorId, startupId])
+  @@map("deal_room_access")
+}
+
+// Automated Startup Scoring Engine
+model StartupScore {
+  startupId  String   @id @map("startup_id")
+  scoreTotal Int      @map("score_total")
+  breakdown  Json     @map("breakdown_json") @db.JsonB
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@map("startup_scores")
+}
+
+// Platform-level equity (company cap table)
+model CompanyEquity {
+  id            String   @id @default(uuid())
+  personName    String   @map("person_name")
+  role          String
+  shares        Decimal  @db.Decimal(18, 4)
+  equityPercent Decimal  @map("equity_percent") @db.Decimal(6, 3)
+  vestingStart  DateTime? @map("vesting_start") @db.Date
+  vestingYears  Int      @map("vesting_years")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("company_equity")
+}
+
+// Startup-specific equity breakdown
+model StartupEquity {
+  id            String         @id @default(uuid())
+  startupId     String         @map("startup_id")
+  personName    String         @map("person_name")
+  role          String
+  shares        Decimal?       @db.Decimal(18, 4)
+  equityPercent Decimal        @map("equity_percent") @db.Decimal(6, 3)
+  vestingStart  DateTime?      @map("vesting_start") @db.Date
+  vestingYears  Int            @map("vesting_years")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@map("startup_equity")
+}
+
+// Account status history (admin-enforced locks, suspensions, deletion)
+enum UserAccountStatus {
+  active
+  suspended
+  locked
+  pending_deletion
+  banned
+}
+
+model AccountStatus {
+  id        String            @id @default(uuid())
+  userId    String            @map("user_id")
+  status    UserAccountStatus @map("status")
+  reason    String?           @db.Text
+  setById   String?           @map("set_by")
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  setBy User? @relation("AccountStatusSetBy", fields: [setById], references: [id], onDelete: SetNull)
+
+  @@map("account_status")
+}
+
+// Early access founder scholarship program (first 300)
+enum EarlyAccessStatus {
+  active
+  inactive
+  completed
+  revoked
+}
+
+model EarlyAccessUser {
+  id                    String            @id @default(uuid())
+  userId                String            @unique @map("user_id")
+  signupOrder           Int               @map("signup_order")
+  referralLink          String            @map("referral_link")
+  consultationCompleted Boolean           @default(false) @map("consultation_completed")
+  ideaSubmitted         Boolean           @default(false) @map("idea_submitted")
+  status                EarlyAccessStatus @default(active)
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("early_access_users")
 }
 
 // Marketing Analytics & Campaign Engine
@@ -618,6 +848,9 @@ model ContactMessage {
   email     String
   subject   String?
   message   String   @db.Text
+  phone     String?  @db.VarChar(50)
+  attachmentUrl String? @map("attachment_url") @db.VarChar(500)
+  status    String   @default("unread") @db.VarChar(20) // unread | read | replied
   createdAt DateTime @default(now()) @map("created_at")
 }
 
@@ -649,6 +882,53 @@ model Notification {
   @@map("notifications")
 }
 
+// Per-user notification preferences
+model NotificationSettings {
+  userId             String   @id @map("user_id")
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  inAppNotifications Boolean  @default(true) @map("in_app_notifications")
+  dealUpdates        Boolean  @default(true) @map("deal_updates")
+  investorMessages   Boolean  @default(true) @map("investor_messages")
+  projectAlerts      Boolean  @default(true) @map("project_alerts")
+  marketingEmails    Boolean  @default(false) @map("marketing_emails")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+// AI Co-Founder: persistent chat per user/project
+model AiConversation {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  projectId  String?  @map("project_id")
+  message    String   @db.Text
+  role       String   @db.VarChar(20) // user | ai
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("ai_conversations")
+}
+
+// AI Co-Founder: generated outputs (business model, roadmap, pricing, pitch, etc.)
+model AiGeneratedOutput {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  projectId String?  @map("project_id")
+  type      String   @db.VarChar(60) // business_model | roadmap | pricing | pitch | marketing | idea_clarified | risk_analysis
+  content   Json     @db.JsonB // structured or text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("ai_generated_outputs")
+}
+
 // User-level payments (setup fee, etc.)
 model UserPayment {
   id          String   @id @default(uuid())
@@ -663,6 +943,239 @@ model UserPayment {
   completedAt DateTime? @map("completed_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Manual bank transfer payments (platform fee or donation)
+enum ManualPaymentStatus {
+  Pending
+  Confirmed
+  Rejected
+}
+
+model ManualPayment {
+  id          String              @id @default(uuid())
+  userId      String              @map("user_id")
+  amount      Decimal             @db.Decimal(12, 2)
+  currency    String              @db.VarChar(6) // NGN | USD
+  paymentType String              @map("payment_type") @db.VarChar(40) // platform_fee | donation
+  status      ManualPaymentStatus @default(Pending)
+  submittedAt DateTime            @default(now()) @map("submitted_at")
+  confirmedAt DateTime?           @map("confirmed_at")
+  notes       String?             @db.Text
+  proofUrl    String?             @map("proof_url") @db.VarChar(500)
+
+  user   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications ManualPaymentNotification[]
+
+  @@map("manual_payments")
+}
+
+// Admin-side notifications/logs for manual payments
+model ManualPaymentNotification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  adminId   String?  @map("admin_id")
+  paymentId String   @map("payment_id")
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment ManualPayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("manual_payment_notifications")
+}
+
+// Settings activity log (per-user settings changes)
+model SettingsActivityLog {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  action       String   @db.VarChar(100)
+  fieldChanged String?  @map("field_changed") @db.VarChar(120)
+  oldValue     String?  @map("old_value") @db.Text
+  newValue     String?  @map("new_value") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settings_activity_log")
+}
+
+// User preferences (theme, language, dashboard layout)
+model UserPreferences {
+  userId          String   @id @map("user_id")
+  theme           String   @default("system") @db.VarChar(20) // light | dark | system
+  language        String   @default("en") @db.VarChar(10)
+  dashboardLayout String   @default("default") @map("dashboard_layout") @db.VarChar(40)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// Privacy controls
+model PrivacySettings {
+  userId           String   @id @map("user_id")
+  profileVisibility String  @default("public") @map("profile_visibility") @db.VarChar(20) // public | private
+  messagePreference String  @default("anyone") @map("message_preference") @db.VarChar(30) // anyone | investors_only | no_one
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
+}
+
+// Dynamic FAQ items (homepage + /faq + CMS)
+model FaqItem {
+  id            String   @id @default(uuid())
+  question      String
+  answer        String   @db.Text
+  category      String   @db.VarChar(50) // general | founders | investors | pricing | security | process | benefits | vision
+  order         Int      @default(0)
+  isActive      Boolean  @default(true) @map("is_active")
+  isHighlighted Boolean  @default(false) @map("is_highlighted")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("faq_items")
+}
+
+// AI Help assistant logs (how-to questions from Help Guide)
+model HelpAiLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  pagePath  String?  @map("page_path") @db.VarChar(200)
+  question  String   @db.Text
+  answer    String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("help_ai_logs")
+}
+
+// Interactive tour / onboarding progress per user
+model UserTourProgress {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tourName  String   @map("tour_name") @db.VarChar(80)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tourName])
+  @@map("user_tour_progress")
+}
+
+// User achievement badges
+model UserBadge {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  badgeName   String   @map("badge_name") @db.VarChar(80)
+  dateAwarded DateTime @default(now()) @map("date_awarded")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeName])
+  @@map("user_badges")
+}
+
+// Referral tracking (viral growth)
+model Referral {
+  id              String   @id @default(uuid())
+  referrerId      String   @map("referrer_id")
+  referredUserId  String?  @map("referred_user_id")
+  stageCompleted  String?  @map("stage_completed") @db.VarChar(40) // signed_up | idea_submitted | startup_launched
+  rewardGiven     Boolean  @default(false) @map("reward_given")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  referrer  User @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred  User? @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: SetNull)
+
+  @@unique([referrerId, referredUserId])
+  @@map("referrals")
+}
+
+// Founder reputation score (trust & professionalism)
+model FounderReputation {
+  userId      String   @id @map("user_id")
+  scoreTotal  Int      @map("score_total")
+  breakdown   Json?    @map("breakdown_json") @db.JsonB
+  lastUpdated DateTime @default(now()) @map("last_updated")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("founder_reputation")
+}
+
+// Milestone funding triggers (notify investors when startups hit key events)
+model MilestoneTrigger {
+  id               String   @id @default(uuid())
+  startupId        String   @map("startup_id")
+  milestone        String   @db.VarChar(60) // mvp_launched | first_revenue | 100_users | high_success_score | investor_ready_score
+  triggeredAt      DateTime @default(now()) @map("triggered_at")
+  investorNotified Boolean  @default(false) @map("investor_notified")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId, milestone])
+  @@map("milestone_triggers")
+}
+
+// Community forum: posts, comments, likes
+model ForumPost {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  title        String   @db.VarChar(200)
+  body         String   @db.Text
+  category     String   @db.VarChar(60) // startup_help | funding | tech | marketing | founder_stories
+  isPinned     Boolean  @default(false) @map("is_pinned")
+  isLocked     Boolean  @default(false) @map("is_locked")
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments ForumComment[]
+  likes    ForumLike[]
+
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  body      String   @db.Text
+  isDeleted Boolean  @default(false) @map("is_deleted")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("forum_comments")
+}
+
+model ForumLike {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("forum_likes")
 }
 
 // Admin Leads (track and manage incoming leads; convert to project)
@@ -731,6 +1244,87 @@ model CmsContent {
   updatedBy User? @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@map("cms_content")
+}
+
+// Global social media handles managed by Super Admin
+model SocialMediaLink {
+  id           String   @id @default(uuid())
+  platformName String   @map("platform_name") @db.VarChar(80) // Facebook, Instagram, LinkedIn, X, YouTube, etc.
+  url          String   @db.VarChar(500)
+  iconUrl      String?  @map("icon_url") @db.VarChar(500) // optional custom icon
+  active       Boolean  @default(true)
+  clickCount   Int      @default(0) @map("click_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("social_media_links")
+}
+
+// Per-page social share metadata for Open Graph and Twitter cards
+model SocialShareMeta {
+  id           String   @id @default(uuid())
+  pageName     String   @map("page_name") @db.VarChar(120)
+  title        String
+  description  String   @db.Text
+  imageUrl     String   @map("image_url") @db.VarChar(500)
+  canonicalUrl String   @map("canonical_url") @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([pageName])
+  @@map("social_share_meta")
+}
+
+// Log of birthday wishes sent per user per day
+model BirthdayWishLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  sentEmail  Boolean  @default(false) @map("sent_email")
+  sentInApp  Boolean  @default(false) @map("sent_in_app")
+  sentPush   Boolean  @default(false) @map("sent_push")
+  sentAt     DateTime @default(now()) @map("sent_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sentAt])
+  @@map("birthday_wishes_log")
+}
+
+// Centralised security events log for intrusion detection & anomaly tracking
+model SecurityEvent {
+  id          String            @id @default(uuid())
+  userId      String?           @map("user_id")
+  ip          String?           @db.VarChar(64)
+  userAgent   String?           @map("user_agent") @db.VarChar(255)
+  type        SecurityEventType @map("event_type")
+  severity    SecuritySeverity  @default(medium)
+  message     String            @db.VarChar(500)
+  metadata    Json?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  resolvedAt  DateTime?         @map("resolved_at")
+  autoBlocked Boolean           @default(false) @map("auto_blocked")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+  @@map("security_events")
+}
+
+// Blocked IPs (auto or manual) for request-level protection
+model BlockedIp {
+  id          String   @id @default(uuid())
+  ip          String   @db.VarChar(64)
+  reason      String?  @db.VarChar(255)
+  source      String   @db.VarChar(60) // brute_force | anomaly | manual | waf_sync
+  blockedAt   DateTime @default(now()) @map("blocked_at")
+  expiresAt   DateTime? @map("expires_at")
+  createdById String?  @map("created_by_id")
+
+  createdBy User? @relation("BlockedIpCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([ip])
+  @@map("blocked_ips")
 }
 
 // —— Hiring & Talent Marketplace ——

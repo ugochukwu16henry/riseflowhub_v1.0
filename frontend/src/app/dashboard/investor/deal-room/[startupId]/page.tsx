@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { DealRoomStartupDetail, DealRoomMessage, InvestmentListItem } from '@/lib/api';
+import type {
+  DealRoomStartupDetail,
+  DealRoomMessage,
+  InvestmentListItem,
+  StartupScoreResponse,
+  FounderReputationBreakdown,
+} from '@/lib/api';
 
 export default function DealRoomStartupProfilePage() {
   const params = useParams();
@@ -22,6 +28,9 @@ export default function DealRoomStartupProfilePage() {
   const [commitEquity, setCommitEquity] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<'none' | 'requested' | 'approved' | 'rejected'>('approved');
+  const [score, setScore] = useState<StartupScoreResponse | null>(null);
+  const [founderRep, setFounderRep] = useState<FounderReputationBreakdown | null>(null);
 
   const investment = startupId ? myInvestments.find((i) => i.startupId === startupId) : null;
 
@@ -33,8 +42,37 @@ export default function DealRoomStartupProfilePage() {
     if (!startupId) return;
     api.dealRoom
       .getStartup(startupId, token)
-      .then(setStartup)
-      .catch((e) => setError(e.message ?? 'Not found'))
+      .then(async (s) => {
+        setStartup(s);
+        setAccessStatus('approved');
+        try {
+          const sc = await api.startups.getScore(startupId, token);
+          setScore(sc);
+        } catch {
+          setScore(null);
+        }
+        const founderId = s.project?.client?.userId;
+        if (founderId) {
+          try {
+            const rep = await api.founders.getReputation(founderId, token);
+            setFounderRep(rep);
+          } catch {
+            setFounderRep(null);
+          }
+        }
+      })
+      .catch((e) => {
+        // If access denied, try to fetch access status
+        if (e instanceof Error && e.message.includes('Deal Room access required')) {
+          api.dealRoom
+            .accessStatus(startupId, token)
+            .then((r) => setAccessStatus(r.status))
+            .catch(() => setAccessStatus('none'));
+          setStartup(null);
+        } else {
+          setError(e instanceof Error ? e.message : 'Not found');
+        }
+      })
       .finally(() => setLoading(false));
   }, [startupId, token, router]);
 
@@ -119,7 +157,7 @@ export default function DealRoomStartupProfilePage() {
   }
 
   if (!token) return null;
-  if (loading || !startup) {
+  if (loading) {
     return (
       <div className="max-w-4xl">
         {loading ? <p className="text-gray-500">Loading...</p> : error ? (
@@ -129,7 +167,43 @@ export default function DealRoomStartupProfilePage() {
               ← Back to Deal Room
             </Link>
           </div>
+        ) : accessStatus !== 'approved' ? (
+          <div className="rounded-lg bg-amber-50 text-amber-800 p-4 space-y-3">
+            <p className="font-medium">
+              Deal Room access is {accessStatus === 'none' ? 'not granted yet.' : accessStatus === 'requested' ? 'pending founder approval.' : 'rejected.'}
+            </p>
+            {(accessStatus === 'none' || accessStatus === 'rejected') && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!token || !startupId) return;
+                  try {
+                    const r = await api.dealRoom.requestAccess(startupId, token);
+                    setAccessStatus(r.status);
+                  } catch {
+                    setError('Failed to request access');
+                  }
+                }}
+                className="rounded-lg bg-primary px-4 py-2 text-white text-sm font-medium hover:opacity-90"
+              >
+                Request access
+              </button>
+            )}
+          </div>
         ) : null}
+      </div>
+    );
+  }
+
+  if (!startup) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Link href="/dashboard/investor/deal-room" className="text-sm text-primary hover:underline mb-4 inline-block">
+          ← Back to Deal Room
+        </Link>
+        <div className="rounded-lg bg-red-50 text-red-700 p-4">
+          <p>{error || 'Startup not found or access not granted.'}</p>
+        </div>
       </div>
     );
   }
@@ -156,7 +230,21 @@ export default function DealRoomStartupProfilePage() {
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-secondary">{project?.projectName ?? 'Startup'}</h1>
-          <p className="text-gray-600">{project?.client?.businessName} · {project?.client?.industry ?? '—'}</p>
+          <p className="text-gray-600">
+            {project?.client?.businessName} · {project?.client?.industry ?? '—'}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1">
+            {startup.investorReady && (
+              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                Investor ready
+              </span>
+            )}
+            {founderRep && (
+              <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700">
+                Founder: {founderRep.level} ({founderRep.total}/100)
+              </span>
+            )}
+          </div>
         </div>
         <button
           type="button"
@@ -172,6 +260,55 @@ export default function DealRoomStartupProfilePage() {
           <h2 className="font-semibold text-secondary mb-2">Pitch summary</h2>
           <p className="text-gray-700 whitespace-pre-wrap">{startup.pitchSummary}</p>
         </section>
+
+        {score && (
+          <section className="rounded-xl border border-gray-200 bg-white p-6">
+            <h2 className="font-semibold text-secondary mb-2">Startup success score</h2>
+            <p className="text-sm text-gray-600 mb-3">
+              Overall rating across **Clarity, Market, Execution, Traction, Team, Financials, Investor Readiness**.
+            </p>
+            <p className="text-3xl font-bold text-primary mb-3">{score.scoreTotal}/100</p>
+            {score.breakdown && (
+              <dl className="grid gap-2 text-xs text-gray-700 sm:grid-cols-2">
+                <div className="flex justify-between">
+                  <dt>Clarity</dt>
+                  <dd className="font-semibold">{score.breakdown.problemClarity}/10</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Market</dt>
+                  <dd className="font-semibold">{score.breakdown.marketSize}/15</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Execution</dt>
+                  <dd className="font-semibold">{score.breakdown.businessModel + score.breakdown.feasibility}/30</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Traction</dt>
+                  <dd className="font-semibold">{score.breakdown.traction}/15</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Team</dt>
+                  <dd className="font-semibold">{score.breakdown.teamStrength}/10</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Financials</dt>
+                  <dd className="font-semibold">{score.breakdown.financialLogic}/10</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Investor Readiness</dt>
+                  <dd className="font-semibold">{score.breakdown.innovation}/10</dd>
+                </div>
+              </dl>
+            )}
+            {score.suggestions && score.suggestions.length > 0 && (
+              <ul className="mt-3 list-disc list-inside text-sm text-gray-700">
+                {score.suggestions.slice(0, 3).map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
 
         {project?.problemStatement && (
           <section className="rounded-xl border border-gray-200 bg-white p-6">

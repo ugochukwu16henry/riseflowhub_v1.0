@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
+import { awardBadge } from '../services/badgeService';
+import { recordReferralStage } from '../services/referralService';
 
 const prisma = new PrismaClient();
 
@@ -61,6 +63,13 @@ export async function publish(req: Request, res: Response): Promise<void> {
     update: data as never,
     include: { project: { select: { projectName: true, client: { select: { businessName: true } } } } },
   });
+  // Badge: Product Builder when live or repo URL provided
+  if ((data.liveUrl || data.repoUrl) && project.client.userId) {
+    awardBadge(prisma, { userId: project.client.userId, badge: 'product_builder' }).catch(() => {});
+    recordReferralStage(prisma, { referredUserId: project.client.userId, stage: 'startup_launched' }).catch(
+      () => {}
+    );
+  }
   res.status(201).json(startup);
 }
 
@@ -224,7 +233,10 @@ export async function getById(req: Request, res: Response): Promise<void> {
 /** PUT /api/v1/startups/:id/approve — Admin approve startup visibility */
 export async function approve(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
-  const startup = await prisma.startupProfile.findUnique({ where: { id } });
+  const startup = await prisma.startupProfile.findUnique({
+    where: { id },
+    include: { project: { include: { client: true } } },
+  });
   if (!startup) {
     res.status(404).json({ error: 'Startup not found' });
     return;
@@ -232,7 +244,11 @@ export async function approve(req: Request, res: Response): Promise<void> {
   const updated = await prisma.startupProfile.update({
     where: { id },
     data: { visibilityStatus: 'approved', investorReady: true },
-    include: { project: { select: { projectName: true } } },
+    include: { project: { include: { client: true } } },
   });
+  const ownerId = updated.project?.client?.userId;
+  if (ownerId) {
+    awardBadge(prisma, { userId: ownerId, badge: 'investor_ready' }).catch(() => {});
+  }
   res.json(updated);
 }

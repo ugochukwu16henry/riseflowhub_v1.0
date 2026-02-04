@@ -25,7 +25,19 @@ export type AuditActionType =
   | 'hire_agreement_created'
   | 'marketplace_fee_paid';
 
-export type AuditEntityType = 'user' | 'payment' | 'agreement' | 'project' | 'idea' | 'consultation' | 'investment' | 'startup' | 'talent' | 'hirer' | 'hire';
+export type AuditEntityType =
+  | 'user'
+  | 'payment'
+  | 'agreement'
+  | 'project'
+  | 'idea'
+  | 'consultation'
+  | 'investment'
+  | 'startup'
+  | 'talent'
+  | 'hirer'
+  | 'hire'
+  | 'settings';
 
 export interface CreateAuditLogParams {
   adminId?: string | null;

@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { authMiddleware, requireRoles } from '../middleware/auth';
 import { UserRole } from '@prisma/client';
 import * as authController from '../controllers/authController';
+import * as featureController from '../controllers/featureController';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -11,6 +12,9 @@ router.use(authMiddleware);
 
 // GET /api/v1/users/me — Logged-in user profile (same as GET /auth/me)
 router.get('/me', (req, res) => authController.me(req, res));
+
+// GET /api/v1/users/me/features — Logged-in user's feature unlock state (dashboard gating).
+router.get('/me/features', featureController.meFeatures);
 
 // PATCH /api/v1/users/me — Update own profile (welcomePanelSeen, etc.)
 router.patch('/me', async (req, res) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getStoredToken, api, type Project, type StartupProfile, type StartupPublishBody } from '@/lib/api';
+import { getStoredToken, api, type Project, type StartupProfile, type StartupPublishBody, type StartupScoreResponse } from '@/lib/api';
 
 const STAGES = ['Planning', 'Development', 'Testing', 'Live'];
 
@@ -20,12 +20,14 @@ export default function PublishToMarketplacePage() {
     equityOffer: undefined,
     stage: '',
   });
+  const [score, setScore] = useState<StartupScoreResponse | null>(null);
+  const [scoreLoading, setScoreLoading] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
     Promise.all([api.projects.list(token), api.startups.myProfiles(token)])
-      .then(([projList, profileList]) => {
+      .then(async ([projList, profileList]) => {
         setProjects(projList);
         setMyProfiles(Array.isArray(profileList) ? profileList : []);
         if (projList.length > 0 && !form.projectId) {
@@ -42,6 +44,14 @@ export default function PublishToMarketplacePage() {
             equityOffer: existing?.equityOffer ?? undefined,
             stage: existing?.stage ?? first.stage ?? '',
           }));
+          if (existing) {
+            setScoreLoading(true);
+            api.startups
+              .getScore(existing.id, token)
+              .then(setScore)
+              .catch(() => setScore(null))
+              .finally(() => setScoreLoading(false));
+          }
         }
       })
       .catch(() => setError('Failed to load projects or profiles'))
@@ -60,6 +70,15 @@ export default function PublishToMarketplacePage() {
         equityOffer: existing.equityOffer != null ? Number(existing.equityOffer) : undefined,
         stage: existing.stage,
       }));
+      const token = getStoredToken();
+      if (token) {
+        setScoreLoading(true);
+        api.startups
+          .getScore(existing.id, token)
+          .then(setScore)
+          .catch(() => setScore(null))
+          .finally(() => setScoreLoading(false));
+      }
     }
   }, [form.projectId, myProfiles]);
 
@@ -158,6 +177,77 @@ export default function PublishToMarketplacePage() {
               </p>
             )}
           </div>
+          {currentProfile && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-gray-800">Startup success score</span>
+                {scoreLoading ? (
+                  <span className="text-gray-500 text-xs">Calculating…</span>
+                ) : score ? (
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    {score.scoreTotal}/100
+                  </span>
+                ) : (
+                  <span className="text-gray-500 text-xs">Not calculated yet</span>
+                )}
+              </div>
+              {score?.suggestions && score.suggestions.length > 0 && (
+                <ul className="list-disc list-inside text-gray-600 text-xs">
+                  {score.suggestions.slice(0, 3).map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              )}
+              {score?.breakdown && (
+                <dl className="mt-2 grid gap-1 text-[11px] text-gray-600 sm:grid-cols-2">
+                  <div className="flex justify-between">
+                    <dt>Clarity</dt>
+                    <dd className="font-semibold">{score.breakdown.problemClarity}/10</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Market</dt>
+                    <dd className="font-semibold">{score.breakdown.marketSize}/15</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Execution</dt>
+                    <dd className="font-semibold">{score.breakdown.businessModel + score.breakdown.feasibility}/30</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Traction</dt>
+                    <dd className="font-semibold">{score.breakdown.traction}/15</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Team</dt>
+                    <dd className="font-semibold">{score.breakdown.teamStrength}/10</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Financials</dt>
+                    <dd className="font-semibold">{score.breakdown.financialLogic}/10</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Investor readiness</dt>
+                    <dd className="font-semibold">{score.breakdown.innovation}/10</dd>
+                  </div>
+                </dl>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const token = getStoredToken();
+                  if (!token || !currentProfile) return;
+                  setScoreLoading(true);
+                  api.startups
+                    .recalcScore(currentProfile.id, token)
+                    .then(setScore)
+                    .catch(() => setScore(null))
+                    .finally(() => setScoreLoading(false));
+                }}
+                className="mt-2 inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Recalculate score
+              </button>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Pitch summary *</label>

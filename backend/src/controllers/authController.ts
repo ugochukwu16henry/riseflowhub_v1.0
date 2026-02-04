@@ -7,6 +7,8 @@ import type { AuthPayload } from '../middleware/auth';
 import { sendNotificationEmail } from '../services/emailService';
 import { notify } from '../services/notificationService';
 import { createAuditLog } from '../services/auditLogService';
+import { getClientIp, getUserAgent, recordFailedLoginAttempt } from '../services/securityService';
+import { recordSignupReferral } from '../services/referralService';
 
 const prisma = new PrismaClient();
 
@@ -48,6 +50,10 @@ export async function signup(req: Request, res: Response): Promise<void> {
     data: { name, email, passwordHash, role, tenantId },
     select: { id: true, name: true, email: true, role: true, tenantId: true, setupPaid: true, setupReason: true, createdAt: true },
   });
+  const ref = (req.query.ref as string | undefined) || (req.body as { ref?: string }).ref;
+  if (ref) {
+    recordSignupReferral(prisma, { referrerId: ref, referredUserId: user.id }).catch(() => {});
+  }
   const token = signToken({
     userId: user.id,
     email: user.email,
@@ -77,6 +83,14 @@ export async function login(req: Request, res: Response): Promise<void> {
   const { email, password } = req.body as { email: string; password: string };
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !(await comparePassword(password, user.passwordHash))) {
+    const ip = getClientIp(req);
+    const ua = getUserAgent(req);
+    await recordFailedLoginAttempt({
+      email,
+      ip,
+      userAgent: ua ?? null,
+      userId: user?.id ?? null,
+    }).catch(() => {});
     res.status(401).json({ error: 'Invalid email or password' });
     return;
   }

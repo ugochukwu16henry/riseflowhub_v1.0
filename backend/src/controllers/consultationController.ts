@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { createAuditLog } from '../services/auditLogService';
+import { markEarlyAccessConsultationCompleted } from '../services/earlyAccessService';
 
 const prisma = new PrismaClient();
 
@@ -42,10 +43,12 @@ export async function create(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   const booking = await prisma.consultationBooking.create({
     data: {
       fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       country: country?.trim() || null,
       businessIdea: businessIdea?.trim() || null,
       stage: stage?.trim() || null,
@@ -68,7 +71,7 @@ export async function create(req: Request, res: Response): Promise<void> {
 
   sendNotificationEmail({
     type: 'consultation_booked',
-    userEmail: body.email.trim().toLowerCase(),
+    userEmail: normalizedEmail,
     dynamicData: {
       name: body.fullName.trim(),
       preferredDate: body.preferredDate,
@@ -76,6 +79,15 @@ export async function create(req: Request, res: Response): Promise<void> {
       timezone: body.timezone,
     },
   }).catch((e) => console.error('[Consultation] Email error:', e));
+
+  // If this email belongs to an early-access founder, mark their consultation as completed
+  const user = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true },
+  });
+  if (user) {
+    markEarlyAccessConsultationCompleted(prisma, { userId: user.id }).catch(() => {});
+  }
 
   res.status(201).json({
     id: booking.id,

@@ -41,6 +41,7 @@ import { contactRoutes } from './routes/contact';
 import { adminLeadsRoutes } from './routes/adminLeads';
 import { setupFeeRoutes } from './routes/setupFee';
 import { superAdminRoutes } from './routes/superAdmin';
+import { securityAdminRoutes } from './routes/securityAdmin';
 import { teamRoutes } from './routes/team';
 import { workspaceRoutes } from './routes/workspace';
 import { dealRoomRoutes } from './routes/dealRoom';
@@ -54,6 +55,32 @@ import { marketplaceFeeRoutes } from './routes/marketplaceFee';
 import { partnerRoutes } from './routes/partner';
 import { jobRequestRoutes } from './routes/jobRequests';
 import { uploadRoutes } from './routes/upload';
+import { businessRoutes } from './routes/business';
+import { faqRoutes } from './routes/faq';
+import { helpAiRoutes } from './routes/helpAi';
+import { tourRoutes } from './routes/tours';
+import { badgeRoutes } from './routes/badges';
+import { settingsRoutes } from './routes/settings';
+import { foundersRoutes } from './routes/founders';
+import { forumRoutes } from './routes/forum';
+import { earlyAccessRoutes } from './routes/earlyAccess';
+import { manualPaymentRoutes } from './routes/manualPayments';
+import { manualPaymentAdminRoutes } from './routes/manualPaymentsAdmin';
+import { socialLinksRoutes } from './routes/socialLinks';
+import { socialLinksAdminRoutes } from './routes/socialLinksAdmin';
+import { shareMetaRoutes } from './routes/shareMeta';
+import { shareMetaAdminRoutes } from './routes/shareMetaAdmin';
+import { birthdayWishesRoutes } from './routes/birthdayWishes';
+import { blockedIpMiddleware } from './middleware/blockedIp';
+import { apiRateLimiter } from './middleware/rateLimit';
+import { openAiFreeRoutes } from './routes/openAiFree';
+import { chatFreeRoutes } from './routes/chatFree';
+import { translateRoutes } from './routes/translate';
+import { currencyOpenRoutes } from './routes/currencyOpen';
+import { embeddingsRoutes } from './routes/embeddings';
+import { imagesRoutes } from './routes/images';
+import { publicDataRoutes } from './routes/publicData';
+import { seoRoutes } from './routes/seo';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -63,6 +90,10 @@ const PORT = process.env.PORT || 4000;
 const frontendOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
 app.use(cors({ origin: frontendOrigin, credentials: true }));
 app.use(compression({ level: 6, threshold: 512 }));
+
+// App-layer security: block known-bad IPs and apply global rate limiter
+app.use(blockedIpMiddleware);
+app.use(apiRateLimiter);
 
 // Stripe webhook needs raw body for signature verification (must be before express.json)
 app.use(
@@ -99,6 +130,7 @@ app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/admin/leads', adminLeadsRoutes);
 app.use('/api/v1/setup-fee', setupFeeRoutes);
 app.use('/api/v1/super-admin', superAdminRoutes);
+app.use('/api/v1/super-admin/security', securityAdminRoutes);
 app.use('/api/v1/team', teamRoutes);
 app.use('/api/v1/workspace', workspaceRoutes);
 app.use('/api/v1/deal-room', dealRoomRoutes);
@@ -112,6 +144,32 @@ app.use('/api/v1/marketplace-fee', marketplaceFeeRoutes);
 app.use('/api/v1/partner', partnerRoutes);
 app.use('/api/v1/job-requests', jobRequestRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/business', businessRoutes);
+app.use('/api/v1/faq', faqRoutes);
+app.use('/api/v1/help-ai', helpAiRoutes);
+app.use('/api/v1/tours', tourRoutes);
+app.use('/api/v1/badges', badgeRoutes);
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/founders', foundersRoutes);
+app.use('/api/v1/forum', forumRoutes);
+app.use('/api/v1/early-access', earlyAccessRoutes);
+app.use('/api/v1/manual-payments', manualPaymentRoutes);
+app.use('/api/v1/super-admin/manual-payments', manualPaymentAdminRoutes);
+app.use('/api/v1/social-links', socialLinksRoutes);
+app.use('/api/v1/super-admin/social-links', socialLinksAdminRoutes);
+app.use('/api/v1/share-meta', shareMetaRoutes);
+app.use('/api/v1/super-admin/share-meta', shareMetaAdminRoutes);
+app.use('/api/v1/super-admin/birthday-wishes', birthdayWishesRoutes);
+
+// Open / free helper APIs (no versioned path on purpose for flexibility)
+app.use('/api/openai/free', openAiFreeRoutes);
+app.use('/api/chat/free', chatFreeRoutes);
+app.use('/api/translate', translateRoutes);
+app.use('/api/currency', currencyOpenRoutes);
+app.use('/api/embeddings', embeddingsRoutes);
+app.use('/api/images', imagesRoutes);
+app.use('/api/public-data', publicDataRoutes);
+app.use('/api/seo', seoRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

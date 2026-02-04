@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { StartupProfileDetail } from '@/lib/api';
+import type { StartupProfileDetail, FounderReputationBreakdown } from '@/lib/api';
 
 export default function StartupDetailPage() {
   const params = useParams();
@@ -17,12 +17,24 @@ export default function StartupDetailPage() {
   const [commitAmount, setCommitAmount] = useState('');
   const [commitEquity, setCommitEquity] = useState('');
   const token = getStoredToken();
+  const [founderRep, setFounderRep] = useState<FounderReputationBreakdown | null>(null);
 
   useEffect(() => {
     if (!id) return;
     api.startups
       .get(id, token ?? undefined)
-      .then(setStartup)
+      .then(async (s) => {
+        setStartup(s);
+        const founderId = s.project?.client?.userId;
+        if (founderId && token) {
+          try {
+            const rep = await api.founders.getReputation(founderId, token);
+            setFounderRep(rep);
+          } catch {
+            setFounderRep(null);
+          }
+        }
+      })
       .catch((e) => setError(e.message ?? 'Not found'))
       .finally(() => setLoading(false));
   }, [id, token]);
@@ -78,8 +90,17 @@ export default function StartupDetailPage() {
       <Link href="/dashboard/investor/marketplace" className="text-sm text-primary hover:underline mb-4 inline-block">
         ← Back to Marketplace
       </Link>
-      <h1 className="text-2xl font-bold text-secondary mb-2">{project?.projectName ?? 'Startup'}</h1>
-      <p className="text-gray-600 mb-6">{project?.client?.businessName} · {project?.client?.industry ?? '—'}</p>
+      <h1 className="text-2xl font-bold text-secondary mb-1">{project?.projectName ?? 'Startup'}</h1>
+      <p className="text-gray-600">
+        {project?.client?.businessName} · {project?.client?.industry ?? '—'}
+      </p>
+      {founderRep && (
+        <p className="mt-2 text-xs text-gray-500">
+          Founder reputation: <span className="font-semibold text-secondary">{founderRep.level}</span>{' '}
+          ({founderRep.total}/100)
+        </p>
+      )}
+      <div className="h-4" />
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
         <h2 className="font-semibold text-secondary mb-2">Pitch summary</h2>

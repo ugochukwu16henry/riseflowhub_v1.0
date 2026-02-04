@@ -138,11 +138,79 @@ export interface ContactMessageBody {
   email: string;
   subject?: string;
   message: string;
+  phone?: string;
+  attachmentUrl?: string;
 }
 
 export interface ContactMessageResponse {
   id: string;
   message: string;
+}
+
+export interface EarlyAccessStatusSummary {
+  limit: number;
+  total: number;
+  remaining: number;
+  enabled: boolean;
+}
+
+export interface EarlyAccessMeResponse {
+  enrolled: boolean;
+  status?: 'active' | 'inactive' | 'completed' | 'revoked';
+  signupOrder?: number;
+  ideaSubmitted?: boolean;
+  consultationCompleted?: boolean;
+}
+
+export type DashboardFeatureKey =
+  | 'idea_workspace'
+  | 'ai_guidance'
+  | 'consultations'
+  | 'marketplace'
+  | 'donor_badge'
+  | 'early_founder'
+  | 'admin_dashboard';
+
+export interface UserFeatureState {
+  userId: string;
+  role: UserRole;
+  hasSetupAccess: boolean;
+  hasMarketplaceAccess: boolean;
+  isEarlyFounder: boolean;
+  hasDonorBadge: boolean;
+  hasPendingManualPayment: boolean;
+  pendingManualPayment?: {
+    id: string;
+    amount: number;
+    currency: string;
+    paymentType: 'platform_fee' | 'donation';
+    submittedAt: string;
+  };
+  earlyAccess?:
+    | {
+        status: 'active' | 'inactive' | 'completed' | 'revoked';
+        signupOrder: number;
+        ideaSubmitted: boolean;
+        consultationCompleted: boolean;
+      }
+    | null;
+  badges: UserBadge[];
+  unlockedFeatures: DashboardFeatureKey[];
+}
+
+export interface ManualPayment {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  paymentType: 'platform_fee' | 'donation';
+  status: 'Pending' | 'Confirmed' | 'Rejected';
+  submittedAt: string;
+  confirmedAt: string | null;
+  notes: string | null;
+  userName?: string;
+  userEmail?: string;
+  proofUrl?: string | null;
 }
 
 export interface TalentApplyBody {
@@ -315,6 +383,21 @@ export const api = {
         body: JSON.stringify(body),
       }),
   },
+  manualPayments: {
+    create: (
+      body: { amount: number; currency: 'NGN' | 'USD'; paymentType: 'platform_fee' | 'donation'; notes?: string; proofUrl?: string },
+      token: string
+    ) =>
+      request<ManualPayment>('/api/v1/manual-payments', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+  },
+  earlyAccess: {
+    status: () => request<EarlyAccessStatusSummary>('/api/v1/early-access/status'),
+    me: (token: string) => request<EarlyAccessMeResponse>('/api/v1/early-access/me', { token }),
+  },
   auth: {
     register: (body: { name: string; email: string; password: string; role?: UserRole }, tenantDomain?: string) =>
       request<AuthResponse>('/api/v1/auth/register', {
@@ -479,6 +562,68 @@ export const api = {
     markAllRead: (token: string) =>
       request<{ ok: boolean; count?: number }>('/api/v1/notifications/mark-all-read', { method: 'POST', token }),
   },
+  faq: {
+    list: (params?: { category?: string; q?: string; highlighted?: boolean; limit?: number }) => {
+      const usp = new URLSearchParams();
+      if (params?.category) usp.set('category', params.category);
+      if (params?.q) usp.set('q', params.q);
+      if (params?.highlighted) usp.set('highlighted', 'true');
+      if (params?.limit) usp.set('limit', String(params.limit));
+      const qs = usp.toString();
+      return request<{ items: FaqItem[] }>(`/api/v1/faq${qs ? `?${qs}` : ''}`);
+    },
+  },
+  badges: {
+    list: (token: string) =>
+      request<{ items: UserBadge[] }>('/api/v1/badges', { token }),
+  },
+  founders: {
+    meReputation: (token: string) =>
+      request<FounderReputationBreakdown>('/api/v1/founders/me/reputation', { token }),
+    getReputation: (userId: string, token: string) =>
+      request<FounderReputationBreakdown>(`/api/v1/founders/${userId}/reputation`, { token }),
+  },
+  forum: {
+    list: (
+      params: { category?: string; search?: string; page?: number; pageSize?: number } = {},
+      token?: string
+    ) => {
+      const usp = new URLSearchParams();
+      if (params.category) usp.set('category', params.category);
+      if (params.search) usp.set('search', params.search);
+      if (params.page) usp.set('page', String(params.page));
+      if (params.pageSize) usp.set('pageSize', String(params.pageSize));
+      const qs = usp.toString();
+      return request<{ items: ForumPost[]; total: number; page: number; pageSize: number }>(
+        `/api/v1/forum/posts${qs ? `?${qs}` : ''}`,
+        token ? { token } : {}
+      );
+    },
+    get: (id: string, token?: string) =>
+      request<ForumPost & { comments: ForumComment[] }>(`/api/v1/forum/posts/${id}`, token ? { token } : {}),
+    create: (body: { title: string; content: string; category?: string }, token: string) =>
+      request<ForumPost>('/api/v1/forum/posts', {
+        method: 'POST',
+        token,
+        body: JSON.stringify({ title: body.title, body: body.content, category: body.category }),
+      }),
+    comment: (postId: string, content: string, token: string) =>
+      request<ForumComment>(`/api/v1/forum/posts/${postId}/comments`, {
+        method: 'POST',
+        token,
+        body: JSON.stringify({ body: content }),
+      }),
+    toggleLike: (postId: string, token: string) =>
+      request<{ liked: boolean }>(`/api/v1/forum/posts/${postId}/like`, {
+        method: 'POST',
+        token,
+      }),
+    remove: (postId: string, token: string) =>
+      request<{ ok: boolean }>(`/api/v1/forum/posts/${postId}`, {
+        method: 'DELETE',
+        token,
+      }),
+  },
   payments: {
     list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
     create: (body: { projectId: string; amount: number; currency?: string; type?: string }, token: string) =>
@@ -508,6 +653,33 @@ export const api = {
       request<AIIdeaChatResponse>('/api/v1/ai/idea-chat', { method: 'POST', body: JSON.stringify(body), token }),
     smartMilestones: (body: { ideaSummary?: string; projectId?: string; horizonWeeks?: number }, token: string) =>
       request<AISmartMilestonesResponse>('/api/v1/ai/smart-milestones', { method: 'POST', body: JSON.stringify(body), token }),
+    // AI Co-Founder (persistent chat + outputs; paid gate for pricing/marketing/pitch/risk)
+    ideaClarify: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/idea-clarify', { method: 'POST', body: JSON.stringify(body), token }),
+    businessModel: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/business-model', { method: 'POST', body: JSON.stringify(body), token }),
+    roadmap: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/roadmap', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderPricing: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/pricing', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderMarketing: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/marketing', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderPitch: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/pitch', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderRiskAnalysis: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/risk-analysis', { method: 'POST', body: JSON.stringify(body), token }),
+    conversations: (token: string, params?: { projectId?: string; limit?: number }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<{ messages: { id: string; message: string; role: string; createdAt: string }[] }>(`/api/v1/ai/conversations${q ? `?${q}` : ''}`, { token });
+    },
+    sendConversation: (body: { message: string; projectId?: string }, token: string) =>
+      request<{ message: string; id: string; createdAt: string }>('/api/v1/ai/conversations', { method: 'POST', body: JSON.stringify(body), token }),
+    outputs: (token: string, params?: { projectId?: string; type?: string; limit?: number }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<{ outputs: { id: string; type: string; content: unknown; createdAt: string; projectId: string | null }[] }>(`/api/v1/ai/outputs${q ? `?${q}` : ''}`, { token });
+    },
+    fullBusinessPlan: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/full-business-plan', { method: 'POST', body: JSON.stringify(body), token }),
   },
   campaigns: {
     create: (body: { projectId: string; platform: string; budget: number; startDate: string; endDate: string }, token: string) =>
@@ -586,6 +758,10 @@ export const api = {
     },
     get: (id: string, token?: string) =>
       request<StartupProfileDetail>(`/api/v1/startups/${id}`, token ? { token } : {}),
+    getScore: (id: string, token?: string) =>
+      request<StartupScoreResponse>(`/api/v1/startups/${id}/score`, token ? { token } : {}),
+    recalcScore: (id: string, token: string) =>
+      request<StartupScoreResponse>(`/api/v1/startups/${id}/score/recalculate`, { method: 'POST', token }),
     approve: (id: string, token: string) =>
       request<StartupProfile>(`/api/v1/startups/${id}/approve`, { method: 'PUT', token }),
   },
@@ -612,6 +788,17 @@ export const api = {
     listMessages: (investmentId: string, token: string) =>
       request<DealRoomMessage[]>(`/api/v1/deal-room/messages/${investmentId}`, { token }),
     adminDeals: (token: string) => request<DealRoomAdminDeal[]>(`/api/v1/deal-room/admin/deals`, { token }),
+    requestAccess: (startupId: string, token: string) =>
+      request<{ status: 'requested' | 'approved' | 'rejected' }>(`/api/v1/deal-room/${startupId}/request-access`, {
+        method: 'POST',
+        token,
+      }),
+    accessStatus: (startupId: string, token: string) =>
+      request<{ status: 'none' | 'requested' | 'approved' | 'rejected' }>(`/api/v1/deal-room/${startupId}/access-status`, {
+        token,
+      }),
+    listAccessRequests: (startupId: string, token: string) =>
+      request<{ items: DealRoomAccessItem[] }>(`/api/v1/deal-room/${startupId}/access-requests`, { token }),
   },
   admin: {
     leads: {
@@ -640,6 +827,7 @@ export const api = {
         `/api/v1/users/me`,
         { method: 'PATCH', body: JSON.stringify(body), token }
       ),
+    meFeatures: (token: string) => request<UserFeatureState>('/api/v1/users/me/features', { token }),
   },
   setupFee: {
     config: () =>
@@ -685,6 +873,75 @@ export const api = {
         token,
       }),
   },
+  socialLinks: {
+    list: () => request<SocialMediaLink[]>('/api/v1/social-links'),
+    adminList: (token: string) =>
+      request<SocialMediaLink[]>('/api/v1/super-admin/social-links', { token }),
+    create: (
+      body: { platformName: string; url: string; iconUrl?: string; active?: boolean },
+      token: string
+    ) =>
+      request<SocialMediaLink>('/api/v1/super-admin/social-links', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+    update: (
+      id: string,
+      body: { platformName?: string; url?: string; iconUrl?: string | null; active?: boolean },
+      token: string
+    ) =>
+      request<SocialMediaLink>(`/api/v1/super-admin/social-links/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        token,
+      }),
+    remove: (id: string, token: string) =>
+      request<void>(`/api/v1/super-admin/social-links/${id}`, {
+        method: 'DELETE',
+        token,
+      }),
+    toggle: (id: string, token: string) =>
+      request<SocialMediaLink>(`/api/v1/super-admin/social-links/${id}/toggle`, {
+        method: 'PATCH',
+        token,
+      }),
+    trackClick: (id: string) =>
+      fetch(`${API_BASE}/api/v1/social-links/${id}/click`, {
+        method: 'POST',
+        keepalive: true,
+      }).catch(() => {}),
+  },
+  shareMeta: {
+    getByPage: (page: string) =>
+      request<SocialShareMeta>(`/api/v1/share-meta/${encodeURIComponent(page)}`),
+    adminList: (token: string) =>
+      request<SocialShareMeta[]>('/api/v1/super-admin/share-meta', { token }),
+    create: (
+      body: { pageName: string; title: string; description: string; imageUrl: string; canonicalUrl: string },
+      token: string
+    ) =>
+      request<SocialShareMeta>('/api/v1/super-admin/share-meta', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+    update: (
+      id: string,
+      body: Partial<{ pageName: string; title: string; description: string; imageUrl: string; canonicalUrl: string }>,
+      token: string
+    ) =>
+      request<SocialShareMeta>(`/api/v1/super-admin/share-meta/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        token,
+      }),
+    remove: (id: string, token: string) =>
+      request<void>(`/api/v1/super-admin/share-meta/${id}`, {
+        method: 'DELETE',
+        token,
+      }),
+  },
   superAdmin: {
     overview: (token: string) => request<SuperAdminOverview>(`/api/v1/super-admin/overview`, { token }),
     payments: (token: string, params?: { period?: string; userId?: string; paymentType?: string; format?: string }) => {
@@ -705,6 +962,20 @@ export const api = {
     },
     consultations: (token: string) =>
       request<SuperAdminConsultationRow[]>(`/api/v1/super-admin/consultations`, { token }),
+    messages: {
+      list: (token: string, params?: { status?: string; limit?: number }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ items: AdminMessageRow[] }>(`/api/v1/super-admin/messages${q ? `?${q}` : ''}`, {
+          token,
+        });
+      },
+      updateStatus: (id: string, status: string, token: string) =>
+        request<AdminMessageRow>(`/api/v1/super-admin/messages/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status }),
+          token,
+        }),
+    },
     skills: {
       list: (token: string, params?: { category?: string }) => {
         const q = new URLSearchParams(params as Record<string, string>).toString();
@@ -728,6 +999,8 @@ export const api = {
       delete: (id: string, token: string) =>
         request<{ ok: boolean; id: string }>(`/api/v1/super-admin/skills/${id}`, { method: 'DELETE', token }),
     },
+    userFeatures: (userId: string, token: string) =>
+      request<UserFeatureState>(`/api/v1/super-admin/users/${userId}/features`, { token }),
     emailLogs: {
       list: (token: string, params?: { page?: number; limit?: number; status?: string; type?: string; toEmail?: string }) => {
         const q = new URLSearchParams(params as Record<string, string>).toString();
@@ -739,6 +1012,40 @@ export const api = {
       resend: (id: string, token: string) =>
         request<{ ok: boolean; message: string; logId?: string }>(`/api/v1/super-admin/email-logs/${id}/resend`, {
           method: 'POST',
+          token,
+        }),
+    },
+    equity: {
+      company: {
+        list: (token: string) =>
+          request<CompanyEquityRow[]>(`/api/v1/super-admin/equity/company`, { token }),
+        create: (body: { personName: string; role: string; shares: number; equityPercent: number; vestingStart?: string; vestingYears: number }, token: string) =>
+          request<CompanyEquityRow>(`/api/v1/super-admin/equity/company`, { method: 'POST', body: JSON.stringify(body), token }),
+      },
+      startup: {
+        list: (startupId: string, token: string) =>
+          request<{ items: StartupEquityRow[] }>(`/api/v1/super-admin/equity/startup/${startupId}`, { token }),
+        create: (startupId: string, body: { personName: string; role: string; shares?: number; equityPercent: number; vestingStart?: string; vestingYears: number }, token: string) =>
+          request<StartupEquityRow>(`/api/v1/super-admin/equity/startup/${startupId}`, { method: 'POST', body: JSON.stringify(body), token }),
+      },
+    },
+    security: {
+      overview: (token: string) =>
+        request<SecurityOverview>(`/api/v1/super-admin/security/overview`, { token }),
+      events: (token: string, params?: { type?: string; severity?: string; limit?: number }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ items: SecurityEventItem[] }>(
+          `/api/v1/super-admin/security/events${q ? `?${q}` : ''}`,
+          { token }
+        );
+      },
+      blockedIps: (token: string) =>
+        request<{ items: BlockedIpRow[] }>(`/api/v1/super-admin/security/blocked-ips`, {
+          token,
+        }),
+      unblockIp: (id: string, token: string) =>
+        request<{ ok: boolean }>(`/api/v1/super-admin/security/blocked-ips/${id}`, {
+          method: 'DELETE',
           token,
         }),
     },
@@ -776,6 +1083,18 @@ export interface SuperAdminConsultationRow {
   preferredDate: string | null;
   preferredTime: string | null;
   timezone: string | null;
+  createdAt: string;
+}
+
+export interface AdminMessageRow {
+  id: string;
+  name: string;
+  email: string;
+  subject: string | null;
+  message: string;
+  phone: string | null;
+  attachmentUrl: string | null;
+  status: string;
   createdAt: string;
 }
 
@@ -823,6 +1142,10 @@ export interface SuperAdminOverview {
   setupFeesCollectedUsd: number;
   consultationPaymentsUsd: number;
   investorFeesUsd: number;
+  pendingManualPayments: number;
+  pendingTalents: number;
+  pendingStartups: number;
+  earlyFounderCount: number;
 }
 
 export interface SuperAdminPaymentRow {
@@ -863,6 +1186,50 @@ export interface SuperAdminAuditLogsResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface SecurityOverview {
+  eventsLast24h: number;
+  eventsLast7d: number;
+  blockedActive: number;
+  blockedAttacksToday: number;
+  suspiciousSessions: number;
+  activeUsersEstimate: number;
+  systemStatus: 'secure' | 'warning' | 'under_attack';
+  protections: {
+    waf: boolean;
+    ddos: boolean;
+    rateLimiting: boolean;
+    aiMonitoring: boolean;
+    dbEncryption: boolean;
+    backups: boolean;
+  };
+  topIps: { ip: string | null; count: number }[];
+}
+
+export interface SecurityEventItem {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  ip: string | null;
+  createdAt: string;
+  autoBlocked: boolean;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: UserRole;
+  } | null;
+}
+
+export interface BlockedIpRow {
+  id: string;
+  ip: string;
+  reason: string | null;
+  source: string;
+  blockedAt: string;
+  expiresAt: string | null;
 }
 
 export interface SuperAdminReportsResponse {
@@ -942,6 +1309,24 @@ export interface StartupProfileDetail extends StartupProfile {
     client: { businessName: string; industry: string | null; userId?: string; user?: { name: string } };
     milestones?: { id: string; title: string; status: string; dueDate: string | null }[];
   };
+}
+
+export interface StartupScoreBreakdown {
+  problemClarity: number;
+  marketSize: number;
+  businessModel: number;
+  innovation: number;
+  feasibility: number;
+  traction: number;
+  teamStrength: number;
+  financialLogic: number;
+  total: number;
+}
+
+export interface StartupScoreResponse {
+  scoreTotal: number;
+  breakdown: StartupScoreBreakdown | null;
+  suggestions: string[];
 }
 
 export interface StartupPublishBody {
@@ -1180,6 +1565,39 @@ export interface DealRoomStartupDetail extends DealRoomStartup {
   };
 }
 
+export interface DealRoomAccessItem {
+  id: string;
+  status: 'requested' | 'approved' | 'rejected';
+  createdAt: string;
+  decidedAt: string | null;
+  investor: { id: string; name: string; email: string };
+}
+
+export interface CompanyEquityRow {
+  id: string;
+  personName: string;
+  role: string;
+  shares: number;
+  equityPercent: number;
+  vestingStart: string | null;
+  vestingYears: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StartupEquityRow {
+  id: string;
+  startupId: string;
+  personName: string;
+  role: string;
+  shares: number | null;
+  equityPercent: number;
+  vestingStart: string | null;
+  vestingYears: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DealRoomMessage {
   id: string;
   investmentId: string;
@@ -1241,6 +1659,83 @@ export interface NotificationItem {
   link?: string;
   read: boolean;
   createdAt: string;
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  order: number;
+  isActive: boolean;
+  isHighlighted: boolean;
+}
+
+export interface UserBadge {
+  badgeName: string;
+  dateAwarded: string;
+}
+
+export interface FounderReputationBreakdown {
+  profileCompleteness: number;
+  ideaClarity: number;
+  projectProgress: number;
+  communicationResponsiveness: number;
+  meetingAttendance: number;
+  teamFeedback: number;
+  investorFeedback: number;
+  milestonesAchieved: number;
+  total: number;
+  level: 'Beginner' | 'Builder' | 'Trusted Founder' | 'Elite Founder';
+}
+
+export interface SocialMediaLink {
+  id: string;
+  platformName: string;
+  url: string;
+  iconUrl?: string | null;
+  active: boolean;
+  clickCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SocialShareMeta {
+  id: string;
+  pageName: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  canonicalUrl: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ForumPost {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  category: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  isDeleted: boolean;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: { id: string; name: string; role: string };
+}
+
+export interface ForumComment {
+  id: string;
+  postId: string;
+  userId: string;
+  body: string;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: { id: string; name: string; role: string };
 }
 
 export interface PaymentRow {

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { SocialLinksBar } from '@/components/common/SocialLinksBar';
 
 export function Nav() {
   const [open, setOpen] = useState(false);
@@ -47,6 +48,11 @@ export function Nav() {
           </svg>
         </button>
       </nav>
+      <div className="border-t border-gray-100 bg-white/95">
+        <div className="mx-auto max-w-6xl px-4 py-2 sm:px-6 lg:px-8">
+          <SocialLinksBar variant="light" size="sm" align="right" />
+        </div>
+      </div>
 
       {open && (
         <div className="border-t border-gray-100 bg-white px-4 py-4 md:hidden">
