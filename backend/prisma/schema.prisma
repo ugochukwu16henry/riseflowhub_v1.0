@@ -140,6 +140,7 @@ model User {
   country         String?   @db.VarChar(100)
   phone           String?   @db.VarChar(50)
   verified        Boolean   @default(false)
+  birthday        DateTime? @db.Date
   setupPaid       Boolean   @default(false) @map("setup_paid")
   setupReason     String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
   avatarUrl       String?   @map("avatar_url")
@@ -200,6 +201,7 @@ model User {
   manualPayments    ManualPayment[]
   manualPaymentNotifications ManualPaymentNotification[]
   earlyAccess       EarlyAccessUser?
+  birthdayWishes    BirthdayWishLog[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -1247,6 +1249,21 @@ model SocialShareMeta {
 
   @@unique([pageName])
   @@map("social_share_meta")
+}
+
+// Log of birthday wishes sent per user per day
+model BirthdayWishLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  sentEmail  Boolean  @default(false) @map("sent_email")
+  sentInApp  Boolean  @default(false) @map("sent_in_app")
+  sentPush   Boolean  @default(false) @map("sent_push")
+  sentAt     DateTime @default(now()) @map("sent_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sentAt])
+  @@map("birthday_wishes_log")
 }
 
 // —— Hiring & Talent Marketplace ——
