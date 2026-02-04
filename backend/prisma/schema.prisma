@@ -187,6 +187,7 @@ model User {
   preferences       UserPreferences?
   privacySettings   PrivacySettings?
   settingsActivity  SettingsActivityLog[]
+  businessModuleAccessGranted BusinessModuleAccess[] @relation("BusinessModuleAccessGranted")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -530,6 +531,58 @@ model StartupProfile {
   dealRoomAccess DealRoomAccess[]
   score         StartupScore?
   equity        StartupEquity[]
+  businessAccess   BusinessModuleAccess?
+  businessGrowth   BusinessGrowth?
+  businessFinancials BusinessFinancialSnapshot[]
+}
+
+// Business module access (premium founder feature)
+model BusinessModuleAccess {
+  id            String   @id @default(uuid())
+  startupId     String   @unique @map("startup_id")
+  autoUnlocked  Boolean  @default(false) @map("auto_unlocked")
+  grantedById   String?  @map("granted_by_id")
+  reason        String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  startup   StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  grantedBy User?          @relation("BusinessModuleAccessGranted", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@map("business_module_access")
+}
+
+// Business growth journey checklist per startup
+model BusinessGrowth {
+  startupId         String   @id @map("startup_id")
+  ideaValidated     Boolean  @default(false) @map("idea_validated")
+  mvpBuilt          Boolean  @default(false) @map("mvp_built")
+  firstCustomer     Boolean  @default(false) @map("first_customer")
+  revenueGenerated  Boolean  @default(false) @map("revenue_generated")
+  investorOnboarded Boolean  @default(false) @map("investor_onboarded")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@map("business_growth")
+}
+
+// Financial snapshots per startup (monthly)
+model BusinessFinancialSnapshot {
+  id          String   @id @default(uuid())
+  startupId   String   @map("startup_id")
+  periodMonth DateTime @map("period_month") @db.Date
+  revenue     Decimal  @default(0) @db.Decimal(14, 2)
+  expenses    Decimal  @default(0) @db.Decimal(14, 2)
+  assets      Decimal  @default(0) @db.Decimal(14, 2)
+  liabilities Decimal  @default(0) @db.Decimal(14, 2)
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, periodMonth])
+  @@map("business_financial_snapshots")
 }
 
 model Investment {

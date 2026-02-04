@@ -552,4 +552,3 @@ export async function getAccountStatus(req: Request, res: Response): Promise<voi
   });
   res.json({ status: last?.status ?? 'active', last });
 }
-

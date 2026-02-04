@@ -4,6 +4,7 @@ import * as superAdminController from '../controllers/superAdminController';
 import * as adminSkillsController from '../controllers/adminSkillsController';
 import * as emailLogsController from '../controllers/emailLogsController';
 import * as equityController from '../controllers/equityController';
+import * as businessModuleController from '../controllers/businessModuleController';
 
 const router = Router();
 
@@ -38,5 +39,8 @@ router.get('/equity/startup/:startupId', equityController.listStartup);
 router.post('/equity/startup/:startupId', equityController.createStartup);
 router.put('/equity/startup/:startupId/:id', equityController.updateStartup);
 router.delete('/equity/startup/:startupId/:id', equityController.deleteStartup);
+
+// Business module audit (per-startup business performance overview)
+router.get('/business/:startupId', businessModuleController.adminOverview);
 
 export { router as superAdminRoutes };

@@ -12,6 +12,7 @@ const clientNav = [
   { href: '/dashboard/mentor', label: 'AI Mentor' },
   { href: '/dashboard/project', label: 'Project' },
   { href: '/dashboard/startup', label: 'Publish to Marketplace' },
+  { href: '/dashboard/business', label: 'Business OS (beta)' },
   { href: '/dashboard/marketing', label: 'Marketing' },
   { href: '/dashboard/tasks', label: 'Tasks' },
   { href: '/dashboard/files', label: 'Files' },
