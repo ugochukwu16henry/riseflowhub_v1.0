@@ -22,6 +22,7 @@ export default function DealRoomStartupProfilePage() {
   const [commitEquity, setCommitEquity] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<'none' | 'requested' | 'approved' | 'rejected'>('approved');
 
   const investment = startupId ? myInvestments.find((i) => i.startupId === startupId) : null;
 
@@ -33,8 +34,22 @@ export default function DealRoomStartupProfilePage() {
     if (!startupId) return;
     api.dealRoom
       .getStartup(startupId, token)
-      .then(setStartup)
-      .catch((e) => setError(e.message ?? 'Not found'))
+      .then((s) => {
+        setStartup(s);
+        setAccessStatus('approved');
+      })
+      .catch((e) => {
+        // If access denied, try to fetch access status
+        if (e instanceof Error && e.message.includes('Deal Room access required')) {
+          api.dealRoom
+            .accessStatus(startupId, token)
+            .then((r) => setAccessStatus(r.status))
+            .catch(() => setAccessStatus('none'));
+          setStartup(null);
+        } else {
+          setError(e instanceof Error ? e.message : 'Not found');
+        }
+      })
       .finally(() => setLoading(false));
   }, [startupId, token, router]);
 
@@ -119,7 +134,7 @@ export default function DealRoomStartupProfilePage() {
   }
 
   if (!token) return null;
-  if (loading || !startup) {
+  if (loading) {
     return (
       <div className="max-w-4xl">
         {loading ? <p className="text-gray-500">Loading...</p> : error ? (
@@ -128,6 +143,29 @@ export default function DealRoomStartupProfilePage() {
             <Link href="/dashboard/investor/deal-room" className="mt-2 inline-block text-primary hover:underline">
               ← Back to Deal Room
             </Link>
+          </div>
+        ) : accessStatus !== 'approved' ? (
+          <div className="rounded-lg bg-amber-50 text-amber-800 p-4 space-y-3">
+            <p className="font-medium">
+              Deal Room access is {accessStatus === 'none' ? 'not granted yet.' : accessStatus === 'requested' ? 'pending founder approval.' : 'rejected.'}
+            </p>
+            {(accessStatus === 'none' || accessStatus === 'rejected') && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!token || !startupId) return;
+                  try {
+                    const r = await api.dealRoom.requestAccess(startupId, token);
+                    setAccessStatus(r.status);
+                  } catch {
+                    setError('Failed to request access');
+                  }
+                }}
+                className="rounded-lg bg-primary px-4 py-2 text-white text-sm font-medium hover:opacity-90"
+              >
+                Request access
+              </button>
+            )}
           </div>
         ) : null}
       </div>

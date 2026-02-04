@@ -639,6 +639,17 @@ export const api = {
     listMessages: (investmentId: string, token: string) =>
       request<DealRoomMessage[]>(`/api/v1/deal-room/messages/${investmentId}`, { token }),
     adminDeals: (token: string) => request<DealRoomAdminDeal[]>(`/api/v1/deal-room/admin/deals`, { token }),
+    requestAccess: (startupId: string, token: string) =>
+      request<{ status: 'requested' | 'approved' | 'rejected' }>(`/api/v1/deal-room/${startupId}/request-access`, {
+        method: 'POST',
+        token,
+      }),
+    accessStatus: (startupId: string, token: string) =>
+      request<{ status: 'none' | 'requested' | 'approved' | 'rejected' }>(`/api/v1/deal-room/${startupId}/access-status`, {
+        token,
+      }),
+    listAccessRequests: (startupId: string, token: string) =>
+      request<{ items: DealRoomAccessItem[] }>(`/api/v1/deal-room/${startupId}/access-requests`, { token }),
   },
   admin: {
     leads: {
@@ -1205,6 +1216,14 @@ export interface DealRoomStartupDetail extends DealRoomStartup {
     files?: { id: string; fileUrl: string; category?: string | null }[];
     businessModel?: { valueProposition?: string | null; customerSegments?: string | null; revenueStreams?: string | null; costStructure?: string | null; channels?: string | null; keyActivities?: string | null } | null;
   };
+}
+
+export interface DealRoomAccessItem {
+  id: string;
+  status: 'requested' | 'approved' | 'rejected';
+  createdAt: string;
+  decidedAt: string | null;
+  investor: { id: string; name: string; email: string };
 }
 
 export interface DealRoomMessage {
