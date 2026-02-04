@@ -218,6 +218,11 @@ export default function ClientDashboardPage() {
                 ))}
               </div>
             )}
+            {badges.some((b) => b.badgeName === 'early_founder') && (
+              <p className="mt-3 text-xs text-gray-600">
+                You joined as an <span className="font-semibold text-secondary">Early Founder</span>. Your starter access was sponsored by the scholarship program. To keep unlocking advanced features, continue progressing through your roadmap and later choose a growth plan.
+              </p>
+            )}
             <div className="mt-4 border-t border-gray-100 pt-4">
               <p className="text-sm font-medium text-secondary mb-1">Invite a founder friend</p>
               <p className="text-xs text-gray-500 mb-2">

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Nav, Footer } from '@/components/landing';
 import { api, setStoredToken, type IdeaSubmissionBody } from '@/lib/api';
 
@@ -51,8 +51,10 @@ const defaultForm: IdeaSubmissionBody = {
   budgetRange: '',
 };
 
-export default function SubmitIdeaPage() {
+function SubmitIdeaPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const earlyRef = searchParams.get('ref') || undefined;
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<IdeaSubmissionBody>(defaultForm);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +100,10 @@ export default function SubmitIdeaPage() {
         goals: form.goals,
         budgetRange: form.budgetRange.trim(),
       };
+      if (earlyRef) {
+        // Tag early access referrals so the backend can enroll into the scholarship program.
+        (payload as any).ref = earlyRef;
+      }
       const res = await api.ideaSubmissions.submit(payload);
       if (res.token) setStoredToken(res.token);
       setSubmitted(true);
@@ -407,5 +413,13 @@ export default function SubmitIdeaPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function SubmitIdeaPage() {
+  return (
+    <Suspense fallback={null}>
+      <SubmitIdeaPageInner />
+    </Suspense>
   );
 }

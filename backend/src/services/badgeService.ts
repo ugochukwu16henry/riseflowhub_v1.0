@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import { notify } from './notificationService';
 
 export type BadgeName =
@@ -8,7 +8,8 @@ export type BadgeName =
   | 'product_builder'
   | 'first_revenue'
   | 'investor_ready'
-  | 'growth_founder';
+  | 'growth_founder'
+  | 'early_founder';
 
 const BADGE_LABELS: Record<BadgeName, string> = {
   idea_starter: 'Idea Starter',
@@ -18,9 +19,12 @@ const BADGE_LABELS: Record<BadgeName, string> = {
   first_revenue: 'First Revenue',
   investor_ready: 'Investor Ready',
   growth_founder: 'Growth Founder',
+  early_founder: 'Early Founder',
 };
 
-export async function awardBadge(prisma: PrismaClient, params: { userId: string; badge: BadgeName }): Promise<void> {
+type BadgePrismaClient = PrismaClient | Prisma.TransactionClient;
+
+export async function awardBadge(prisma: BadgePrismaClient, params: { userId: string; badge: BadgeName }): Promise<void> {
   const { userId, badge } = params;
   const existing = await prisma.userBadge.findUnique({
     where: { userId_badgeName: { userId, badgeName: badge } },

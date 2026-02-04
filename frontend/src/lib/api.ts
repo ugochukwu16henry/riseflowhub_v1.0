@@ -145,6 +145,35 @@ export interface ContactMessageResponse {
   message: string;
 }
 
+export interface EarlyAccessStatusSummary {
+  limit: number;
+  total: number;
+  remaining: number;
+  enabled: boolean;
+}
+
+export interface EarlyAccessMeResponse {
+  enrolled: boolean;
+  status?: 'active' | 'inactive' | 'completed' | 'revoked';
+  signupOrder?: number;
+  ideaSubmitted?: boolean;
+  consultationCompleted?: boolean;
+}
+
+export interface ManualPayment {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  paymentType: 'platform_fee' | 'donation';
+  status: 'Pending' | 'Confirmed' | 'Rejected';
+  submittedAt: string;
+  confirmedAt: string | null;
+  notes: string | null;
+  userName?: string;
+  userEmail?: string;
+}
+
 export interface TalentApplyBody {
   name?: string;
   email?: string;
@@ -314,6 +343,21 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(body),
       }),
+  },
+  manualPayments: {
+    create: (
+      body: { amount: number; currency: 'NGN' | 'USD'; paymentType: 'platform_fee' | 'donation'; notes?: string },
+      token: string
+    ) =>
+      request<ManualPayment>('/api/v1/manual-payments', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+  },
+  earlyAccess: {
+    status: () => request<EarlyAccessStatusSummary>('/api/v1/early-access/status'),
+    me: (token: string) => request<EarlyAccessMeResponse>('/api/v1/early-access/me', { token }),
   },
   auth: {
     register: (body: { name: string; email: string; password: string; role?: UserRole }, tenantDomain?: string) =>

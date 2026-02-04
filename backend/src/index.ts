@@ -62,6 +62,9 @@ import { badgeRoutes } from './routes/badges';
 import { settingsRoutes } from './routes/settings';
 import { foundersRoutes } from './routes/founders';
 import { forumRoutes } from './routes/forum';
+import { earlyAccessRoutes } from './routes/earlyAccess';
+import { manualPaymentRoutes } from './routes/manualPayments';
+import { manualPaymentAdminRoutes } from './routes/manualPaymentsAdmin';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -128,6 +131,9 @@ app.use('/api/v1/badges', badgeRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/founders', foundersRoutes);
 app.use('/api/v1/forum', forumRoutes);
+app.use('/api/v1/early-access', earlyAccessRoutes);
+app.use('/api/v1/manual-payments', manualPaymentRoutes);
+app.use('/api/v1/super-admin/manual-payments', manualPaymentAdminRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');
