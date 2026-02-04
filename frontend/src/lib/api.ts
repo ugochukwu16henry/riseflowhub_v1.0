@@ -172,6 +172,7 @@ export interface ManualPayment {
   notes: string | null;
   userName?: string;
   userEmail?: string;
+  proofUrl?: string | null;
 }
 
 export interface TalentApplyBody {
@@ -346,7 +347,7 @@ export const api = {
   },
   manualPayments: {
     create: (
-      body: { amount: number; currency: 'NGN' | 'USD'; paymentType: 'platform_fee' | 'donation'; notes?: string },
+      body: { amount: number; currency: 'NGN' | 'USD'; paymentType: 'platform_fee' | 'donation'; notes?: string; proofUrl?: string },
       token: string
     ) =>
       request<ManualPayment>('/api/v1/manual-payments', {

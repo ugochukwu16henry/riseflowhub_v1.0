@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { notify } from '../services/notificationService';
+import { awardBadge } from '../services/badgeService';
 
 const prisma = new PrismaClient();
 
@@ -83,6 +84,9 @@ export async function confirm(req: Request, res: Response): Promise<void> {
         setupReason: updated.notes ?? 'manual_bank_transfer',
       },
     });
+  } else if (updated.paymentType === 'donation') {
+    // Thank-you donor flows: mark with donor badge
+    await awardBadge(prisma, { userId: updated.userId, badge: 'donor_supporter' });
   }
 
   // Log notification row

@@ -8,6 +8,7 @@ export default function PaymentsPage() {
   const [currency, setCurrency] = useState<'NGN' | 'USD'>('NGN');
   const [paymentType, setPaymentType] = useState<'platform_fee' | 'donation'>('platform_fee');
   const [notes, setNotes] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +33,14 @@ export default function PaymentsPage() {
           currency,
           paymentType,
           notes: notes.trim() || undefined,
+          proofUrl: proofUrl.trim() || undefined,
         },
         token
       );
       setMessage('Thank you! We will confirm your payment from our side shortly.');
       setAmount('');
       setNotes('');
+      setProofUrl('');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not submit payment. Please try again.');
     } finally {
@@ -174,6 +177,19 @@ export default function PaymentsPage() {
             rows={2}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
             placeholder="Include any reference, date, or short note about your transfer."
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Proof of payment URL (optional)
+          </label>
+          <input
+            type="url"
+            value={proofUrl}
+            onChange={(e) => setProofUrl(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            placeholder="Link to screenshot or bank confirmation (if available)"
           />
         </div>
 

@@ -936,6 +936,7 @@ model ManualPayment {
   submittedAt DateTime            @default(now()) @map("submitted_at")
   confirmedAt DateTime?           @map("confirmed_at")
   notes       String?             @db.Text
+  proofUrl    String?             @map("proof_url") @db.VarChar(500)
 
   user   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications ManualPaymentNotification[]

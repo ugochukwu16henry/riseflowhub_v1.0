@@ -9,7 +9,8 @@ export type BadgeName =
   | 'first_revenue'
   | 'investor_ready'
   | 'growth_founder'
-  | 'early_founder';
+  | 'early_founder'
+  | 'donor_supporter';
 
 const BADGE_LABELS: Record<BadgeName, string> = {
   idea_starter: 'Idea Starter',
@@ -20,6 +21,7 @@ const BADGE_LABELS: Record<BadgeName, string> = {
   investor_ready: 'Investor Ready',
   growth_founder: 'Growth Founder',
   early_founder: 'Early Founder',
+  donor_supporter: 'Donor Supporter',
 };
 
 type BadgePrismaClient = PrismaClient | Prisma.TransactionClient;

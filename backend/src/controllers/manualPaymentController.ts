@@ -27,11 +27,12 @@ export async function create(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const { amount, currency, paymentType, notes } = req.body as {
+  const { amount, currency, paymentType, notes, proofUrl } = req.body as {
     amount?: number;
     currency?: string;
     paymentType?: string;
     notes?: string;
+    proofUrl?: string;
   };
 
   if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -64,6 +65,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       paymentType,
       status: 'Pending',
       notes: notes?.trim() || null,
+      proofUrl: proofUrl?.trim() || null,
     },
     include: {
       user: { select: { id: true, name: true, email: true, role: true } },
