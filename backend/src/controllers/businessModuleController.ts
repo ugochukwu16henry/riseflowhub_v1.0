@@ -186,6 +186,7 @@ export async function updateGrowth(req: Request, res: Response): Promise<void> {
       revenueGenerated: boolean;
       investorOnboarded: boolean;
     }>;
+    const existing = await prisma.businessGrowth.findUnique({ where: { startupId } });
     const updated = await prisma.businessGrowth.upsert({
       where: { startupId },
       create: {
@@ -208,6 +209,22 @@ export async function updateGrowth(req: Request, res: Response): Promise<void> {
     if (updated.firstCustomer && updated.revenueGenerated && updated.investorOnboarded) {
       // Award Growth Founder badge when full growth milestones are reached
       awardBadge(prisma, { userId: payload.userId, badge: 'growth_founder' }).catch(() => {});
+    }
+
+    // Milestone triggers for investor notifications
+    const milestonesToRecord: string[] = [];
+    if (!existing?.mvpBuilt && updated.mvpBuilt) milestonesToRecord.push('mvp_launched');
+    if (!existing?.firstCustomer && updated.firstCustomer) milestonesToRecord.push('first_customer');
+    if (!existing?.revenueGenerated && updated.revenueGenerated) milestonesToRecord.push('revenue_generated');
+    if (!existing?.investorOnboarded && updated.investorOnboarded) milestonesToRecord.push('investor_onboarded');
+    if (milestonesToRecord.length > 0) {
+      await prisma.milestoneTrigger.createMany({
+        data: milestonesToRecord.map((m) => ({
+          startupId,
+          milestone: m,
+        })),
+        skipDuplicates: true,
+      });
     }
 
     res.json(updated);
@@ -313,6 +330,19 @@ export async function upsertFinancial(req: Request, res: Response): Promise<void
 
     if (revenue > 0) {
       awardBadge(prisma, { userId: payload.userId, badge: 'first_revenue' }).catch(() => {});
+      await prisma.milestoneTrigger.upsert({
+        where: {
+          startupId_milestone: {
+            startupId,
+            milestone: 'first_revenue',
+          },
+        } as any,
+        create: {
+          startupId,
+          milestone: 'first_revenue',
+        },
+        update: {},
+      });
     }
 
     res.json({

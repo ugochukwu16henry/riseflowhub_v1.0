@@ -60,6 +60,7 @@ import { helpAiRoutes } from './routes/helpAi';
 import { tourRoutes } from './routes/tours';
 import { badgeRoutes } from './routes/badges';
 import { settingsRoutes } from './routes/settings';
+import { foundersRoutes } from './routes/founders';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -124,6 +125,7 @@ app.use('/api/v1/help-ai', helpAiRoutes);
 app.use('/api/v1/tours', tourRoutes);
 app.use('/api/v1/badges', badgeRoutes);
 app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/founders', foundersRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

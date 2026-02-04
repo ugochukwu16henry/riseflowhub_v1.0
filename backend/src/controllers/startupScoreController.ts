@@ -59,6 +59,39 @@ export async function recalculate(req: Request, res: Response): Promise<void> {
       updatedAt: new Date(),
     },
   });
+
+  // Milestone triggers based on score thresholds
+  if (breakdown.total >= 80) {
+    await prisma.milestoneTrigger.upsert({
+      where: {
+        startupId_milestone: {
+          startupId: id,
+          milestone: 'high_success_score',
+        },
+      } as any,
+      create: {
+        startupId: id,
+        milestone: 'high_success_score',
+      },
+      update: {},
+    });
+  }
+  if (breakdown.total >= 90) {
+    await prisma.milestoneTrigger.upsert({
+      where: {
+        startupId_milestone: {
+          startupId: id,
+          milestone: 'investor_ready_score',
+        },
+      } as any,
+      create: {
+        startupId: id,
+        milestone: 'investor_ready_score',
+      },
+      update: {},
+    });
+  }
+
   res.json({ scoreTotal: breakdown.total, breakdown });
 }
 
