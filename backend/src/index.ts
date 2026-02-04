@@ -42,7 +42,9 @@ import { cmsRoutes } from './routes/cms';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
+// CORS: origin must match browser exactly (no trailing slash). Browser sends e.g. https://app.vercel.app
+const frontendOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
+app.use(cors({ origin: frontendOrigin, credentials: true }));
 app.use(compression({ level: 6, threshold: 512 }));
 app.use(express.json({ limit: '256kb' }));
 
