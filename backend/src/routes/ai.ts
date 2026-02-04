@@ -1,10 +1,54 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authMiddleware, requireSetupPaid } from '../middleware/auth';
+import * as aiCofounderController from '../controllers/aiCofounderController';
 
 const router = Router();
 
-router.use(authMiddleware, requireSetupPaid);
+router.use(authMiddleware);
+
+// ——— AI Co-Founder (auth only; paid modules gated in controller) ———
+router.post('/idea-clarify', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.ideaClarify(req, res);
+});
+router.post('/business-model', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.businessModel(req, res);
+});
+router.post('/roadmap', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.roadmap(req, res);
+});
+router.post('/pricing', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.pricing(req, res);
+});
+router.post('/marketing', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.marketing(req, res);
+});
+router.post('/pitch', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.pitch(req, res);
+});
+router.post('/risk-analysis', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.riskAnalysis(req, res);
+});
+router.get('/conversations', aiCofounderController.listConversations);
+router.post('/conversations', [body('message').trim().notEmpty(), body('projectId').optional().isUUID()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.sendMessage(req, res);
+});
+router.get('/outputs', aiCofounderController.listOutputs);
+router.post('/full-business-plan', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ errors: validationResult(req).array() });
+  return aiCofounderController.fullBusinessPlan(req, res);
+});
+
+// ——— Legacy AI (require setup paid) ———
+router.use(requireSetupPaid);
 
 // POST /api/v1/ai/evaluate-idea — Mock: returns feasibility, risk, market potential, MVP scope
 router.post(

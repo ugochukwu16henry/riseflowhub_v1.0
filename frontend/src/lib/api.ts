@@ -508,6 +508,33 @@ export const api = {
       request<AIIdeaChatResponse>('/api/v1/ai/idea-chat', { method: 'POST', body: JSON.stringify(body), token }),
     smartMilestones: (body: { ideaSummary?: string; projectId?: string; horizonWeeks?: number }, token: string) =>
       request<AISmartMilestonesResponse>('/api/v1/ai/smart-milestones', { method: 'POST', body: JSON.stringify(body), token }),
+    // AI Co-Founder (persistent chat + outputs; paid gate for pricing/marketing/pitch/risk)
+    ideaClarify: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/idea-clarify', { method: 'POST', body: JSON.stringify(body), token }),
+    businessModel: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/business-model', { method: 'POST', body: JSON.stringify(body), token }),
+    roadmap: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/roadmap', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderPricing: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/pricing', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderMarketing: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/marketing', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderPitch: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/pitch', { method: 'POST', body: JSON.stringify(body), token }),
+    cofounderRiskAnalysis: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/risk-analysis', { method: 'POST', body: JSON.stringify(body), token }),
+    conversations: (token: string, params?: { projectId?: string; limit?: number }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<{ messages: { id: string; message: string; role: string; createdAt: string }[] }>(`/api/v1/ai/conversations${q ? `?${q}` : ''}`, { token });
+    },
+    sendConversation: (body: { message: string; projectId?: string }, token: string) =>
+      request<{ message: string; id: string; createdAt: string }>('/api/v1/ai/conversations', { method: 'POST', body: JSON.stringify(body), token }),
+    outputs: (token: string, params?: { projectId?: string; type?: string; limit?: number }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<{ outputs: { id: string; type: string; content: unknown; createdAt: string; projectId: string | null }[] }>(`/api/v1/ai/outputs${q ? `?${q}` : ''}`, { token });
+    },
+    fullBusinessPlan: (body: { idea: string; projectId?: string; industry?: string; country?: string }, token: string) =>
+      request<Record<string, unknown>>('/api/v1/ai/full-business-plan', { method: 'POST', body: JSON.stringify(body), token }),
   },
   campaigns: {
     create: (body: { projectId: string; platform: string; budget: number; startDate: string; endDate: string }, token: string) =>

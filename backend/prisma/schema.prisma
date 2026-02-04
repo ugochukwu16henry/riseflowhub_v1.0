@@ -171,6 +171,8 @@ model User {
   talentRatingsReceived TalentRating[] @relation("TalentRatingTo")
   notifications     Notification[]
   agreementsCreated Agreement[]   @relation("AgreementCreatedBy")
+  aiConversations   AiConversation[]
+  aiGeneratedOutputs AiGeneratedOutput[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -249,6 +251,8 @@ model Project {
   ideaVaultItems  IdeaVaultItem[]
   businessModel   BusinessModel?
   projectMembers  ProjectMember[]
+  aiConversations   AiConversation[]
+  aiGeneratedOutputs AiGeneratedOutput[]
 }
 
 model Milestone {
@@ -647,6 +651,36 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// AI Co-Founder: persistent chat per user/project
+model AiConversation {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  projectId  String?  @map("project_id")
+  message    String   @db.Text
+  role       String   @db.VarChar(20) // user | ai
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("ai_conversations")
+}
+
+// AI Co-Founder: generated outputs (business model, roadmap, pricing, pitch, etc.)
+model AiGeneratedOutput {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  projectId String?  @map("project_id")
+  type      String   @db.VarChar(60) // business_model | roadmap | pricing | pitch | marketing | idea_clarified | risk_analysis
+  content   Json     @db.JsonB // structured or text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("ai_generated_outputs")
 }
 
 // User-level payments (setup fee, etc.)
