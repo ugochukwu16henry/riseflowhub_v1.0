@@ -67,6 +67,8 @@ import { manualPaymentRoutes } from './routes/manualPayments';
 import { manualPaymentAdminRoutes } from './routes/manualPaymentsAdmin';
 import { socialLinksRoutes } from './routes/socialLinks';
 import { socialLinksAdminRoutes } from './routes/socialLinksAdmin';
+import { shareMetaRoutes } from './routes/shareMeta';
+import { shareMetaAdminRoutes } from './routes/shareMetaAdmin';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -138,6 +140,8 @@ app.use('/api/v1/manual-payments', manualPaymentRoutes);
 app.use('/api/v1/super-admin/manual-payments', manualPaymentAdminRoutes);
 app.use('/api/v1/social-links', socialLinksRoutes);
 app.use('/api/v1/super-admin/social-links', socialLinksAdminRoutes);
+app.use('/api/v1/share-meta', shareMetaRoutes);
+app.use('/api/v1/super-admin/share-meta', shareMetaAdminRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

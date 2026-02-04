@@ -910,6 +910,36 @@ export const api = {
         keepalive: true,
       }).catch(() => {}),
   },
+  shareMeta: {
+    getByPage: (page: string) =>
+      request<SocialShareMeta>(`/api/v1/share-meta/${encodeURIComponent(page)}`),
+    adminList: (token: string) =>
+      request<SocialShareMeta[]>('/api/v1/super-admin/share-meta', { token }),
+    create: (
+      body: { pageName: string; title: string; description: string; imageUrl: string; canonicalUrl: string },
+      token: string
+    ) =>
+      request<SocialShareMeta>('/api/v1/super-admin/share-meta', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+    update: (
+      id: string,
+      body: Partial<{ pageName: string; title: string; description: string; imageUrl: string; canonicalUrl: string }>,
+      token: string
+    ) =>
+      request<SocialShareMeta>(`/api/v1/super-admin/share-meta/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        token,
+      }),
+    remove: (id: string, token: string) =>
+      request<void>(`/api/v1/super-admin/share-meta/${id}`, {
+        method: 'DELETE',
+        token,
+      }),
+  },
   superAdmin: {
     overview: (token: string) => request<SuperAdminOverview>(`/api/v1/super-admin/overview`, { token }),
     payments: (token: string, params?: { period?: string; userId?: string; paymentType?: string; format?: string }) => {

@@ -1234,6 +1234,21 @@ model SocialMediaLink {
   @@map("social_media_links")
 }
 
+// Per-page social share metadata for Open Graph and Twitter cards
+model SocialShareMeta {
+  id           String   @id @default(uuid())
+  pageName     String   @map("page_name") @db.VarChar(120)
+  title        String
+  description  String   @db.Text
+  imageUrl     String   @map("image_url") @db.VarChar(500)
+  canonicalUrl String   @map("canonical_url") @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([pageName])
+  @@map("social_share_meta")
+}
+
 // —— Hiring & Talent Marketplace ——
 enum TalentStatus {
   pending
