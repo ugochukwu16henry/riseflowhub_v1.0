@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
 import * as emailController from '../controllers/emailController';
+import * as notificationController from '../controllers/notificationController';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -18,6 +19,11 @@ const EMAIL_TYPES = [
   'milestone_completed',
   'project_launched',
   'investor_interest_received',
+  'team_invite',
+  'payment_confirmation',
+  'talent_approval',
+  'interview_invite',
+  'password_reset',
 ] as const;
 
 const emailValidation = [
@@ -41,23 +47,18 @@ router.post('/email', emailValidation, async (req: Request, res: Response) => {
   return emailController.sendEmailHandler(req, res);
 });
 
+/** POST /api/v1/notifications/send — Internal: create in-app notification */
+router.post('/send', notificationController.send);
+
 router.use(authMiddleware);
 
-// GET /api/v1/notifications — In-dashboard notifications (stub: agreement pending, etc.)
-router.get('/', async (req: Request, res: Response) => {
-  const { userId } = (req as unknown as { user: { userId: string } }).user;
-  const assignedAgreements = await prisma.assignedAgreement.findMany({
-    where: { userId, status: 'Pending' },
-    include: { agreement: { select: { title: true } } },
-  });
-  const items = assignedAgreements.map((a) => ({
-    id: a.id,
-    type: 'agreement_pending',
-    title: `Agreement pending: ${a.agreement.title}`,
-    createdAt: a.createdAt,
-    link: '/dashboard',
-  }));
-  res.json({ notifications: items });
-});
+/** GET /api/v1/notifications — List user in-app notifications */
+router.get('/', notificationController.list);
+
+/** PATCH /api/v1/notifications/:id/read — Mark one as read */
+router.patch('/:id/read', notificationController.markRead);
+
+/** POST /api/v1/notifications/mark-all-read — Mark all as read */
+router.post('/mark-all-read', notificationController.markAllRead);
 
 export { router as notificationRoutes };

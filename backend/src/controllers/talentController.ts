@@ -4,6 +4,8 @@ import type { AuthPayload } from '../middleware/auth';
 import { hashPassword } from '../utils/hash';
 import { signToken } from '../utils/jwt';
 import { createAuditLog } from '../services/auditLogService';
+import { notify } from '../services/notificationService';
+import { sendNotificationEmail } from '../services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -406,7 +408,10 @@ export async function approve(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const talent = await prisma.talent.findUnique({ where: { id } });
+  const talent = await prisma.talent.findUnique({
+    where: { id },
+    include: { user: { select: { id: true, name: true, email: true } } },
+  });
   if (!talent) {
     res.status(404).json({ error: 'Talent not found' });
     return;
@@ -427,6 +432,22 @@ export async function approve(req: Request, res: Response): Promise<void> {
     entityType: 'talent',
     entityId: talent.id,
     details: { status },
+  }).catch(() => {});
+
+  const isApproved = status === 'approved';
+  notify({
+    userId: talent.user.id,
+    type: 'talent_approved',
+    title: isApproved ? 'Talent application approved' : 'Talent application update',
+    message: isApproved
+      ? 'Your talent application has been approved. You can now pay the marketplace fee to showcase your profile.'
+      : 'Your talent application was not approved at this time. You may reapply with more details.',
+    link: isApproved ? '/dashboard/talent/pay-fee' : '/dashboard/talent',
+  }).catch(() => {});
+  sendNotificationEmail({
+    type: 'talent_approval',
+    userEmail: talent.user.email,
+    dynamicData: { name: talent.user.name, status },
   }).catch(() => {});
 
   res.json({ ok: true, status });

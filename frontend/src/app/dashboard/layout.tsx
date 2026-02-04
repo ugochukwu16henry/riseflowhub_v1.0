@@ -1,10 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { getStoredToken, clearStoredToken, api, type User } from '@/lib/api';
+import { getStoredToken, clearStoredToken, api, type User, type NotificationItem } from '@/lib/api';
 import { SetupModal } from '@/components/dashboard/SetupModal';
 
 const clientNav = [
@@ -61,6 +61,7 @@ const superAdminNav = [
   { href: '/dashboard/marketing', label: 'Marketing Campaigns' },
   { href: '/dashboard/admin/analytics', label: 'Analytics' },
   { href: '/dashboard/admin/audit-logs', label: 'Audit Logs' },
+  { href: '/dashboard/admin/email-logs', label: 'Email Logs' },
   { href: '/dashboard/admin/team', label: 'Team Management' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
   { href: '/dashboard/admin/settings', label: 'Settings' },
@@ -167,6 +168,56 @@ function DashboardLayoutInner({
   const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) return;
+    api.notifications
+      .list(token, { limit: 50 })
+      .then((data) => {
+        setNotifications(data.notifications ?? []);
+        setUnreadCount(data.unreadCount ?? 0);
+      })
+      .catch(() => {});
+  }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
+    }
+    if (notifOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [notifOpen]);
+
+  async function markOneRead(id: string) {
+    const token = getStoredToken();
+    if (!token) return;
+    try {
+      await api.notifications.markRead(id, token);
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch {
+      // ignore
+    }
+  }
+
+  async function markAllRead() {
+    const token = getStoredToken();
+    if (!token) return;
+    try {
+      await api.notifications.markAllRead(token);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch {
+      // ignore
+    }
+  }
 
   useEffect(() => {
     const token = getStoredToken();

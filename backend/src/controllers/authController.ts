@@ -5,6 +5,7 @@ import { hashPassword, comparePassword } from '../utils/hash';
 import { signToken } from '../utils/jwt';
 import type { AuthPayload } from '../middleware/auth';
 import { sendNotificationEmail } from '../services/emailService';
+import { notify } from '../services/notificationService';
 import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
@@ -58,6 +59,13 @@ export async function signup(req: Request, res: Response): Promise<void> {
     userEmail: user.email,
     dynamicData: { name: user.name },
   }).catch((e) => console.error('[Auth] Welcome email error:', e));
+  notify({
+    userId: user.id,
+    type: 'message',
+    title: 'Welcome to AfriLaunch Hub',
+    message: 'Your account has been created. You can now log in and explore your dashboard.',
+    link: '/dashboard',
+  }).catch(() => {});
 
   res.status(201).json({
     user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, setupPaid: user.setupPaid, setupReason: user.setupReason },

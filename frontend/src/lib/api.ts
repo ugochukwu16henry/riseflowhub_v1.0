@@ -462,7 +462,20 @@ export const api = {
     myTasks: (token: string) => request<TaskWithProject[]>(`/api/v1/tasks/me`, { token }),
   },
   notifications: {
-    list: (token: string) => request<{ notifications: NotificationItem[] }>('/api/v1/notifications', { token }),
+    list: (token: string, params?: { limit?: number; unreadOnly?: boolean }) => {
+      const q = new URLSearchParams();
+      if (params?.limit != null) q.set('limit', String(params.limit));
+      if (params?.unreadOnly) q.set('unreadOnly', 'true');
+      const query = q.toString();
+      return request<{ notifications: NotificationItem[]; unreadCount: number }>(
+        `/api/v1/notifications${query ? `?${query}` : ''}`,
+        { token }
+      );
+    },
+    markRead: (id: string, token: string) =>
+      request<{ ok: boolean }>(`/api/v1/notifications/${id}/read`, { method: 'PATCH', token }),
+    markAllRead: (token: string) =>
+      request<{ ok: boolean; count?: number }>('/api/v1/notifications/mark-all-read', { method: 'POST', token }),
   },
   payments: {
     list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
@@ -693,6 +706,20 @@ export const api = {
       delete: (id: string, token: string) =>
         request<{ ok: boolean; id: string }>(`/api/v1/super-admin/skills/${id}`, { method: 'DELETE', token }),
     },
+    emailLogs: {
+      list: (token: string, params?: { page?: number; limit?: number; status?: string; type?: string; toEmail?: string }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ rows: EmailLogRow[]; total: number; page: number; limit: number }>(
+          `/api/v1/super-admin/email-logs${q ? `?${q}` : ''}`,
+          { token }
+        );
+      },
+      resend: (id: string, token: string) =>
+        request<{ ok: boolean; message: string; logId?: string }>(`/api/v1/super-admin/email-logs/${id}/resend`, {
+          method: 'POST',
+          token,
+        }),
+    },
   },
   team: {
     list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
@@ -728,6 +755,18 @@ export interface SuperAdminConsultationRow {
   preferredTime: string | null;
   timezone: string | null;
   createdAt: string;
+}
+
+export interface EmailLogRow {
+  id: string;
+  type: string;
+  toEmail: string;
+  subject: string;
+  status: string;
+  errorMessage: string | null;
+  sentAt: string | null;
+  createdAt: string;
+  metadata: Record<string, unknown> | null;
 }
 
 export interface TeamMemberRow {
@@ -1172,8 +1211,10 @@ export interface NotificationItem {
   id: string;
   type: string;
   title: string;
-  createdAt: string;
+  message?: string;
   link?: string;
+  read: boolean;
+  createdAt: string;
 }
 
 export interface PaymentRow {

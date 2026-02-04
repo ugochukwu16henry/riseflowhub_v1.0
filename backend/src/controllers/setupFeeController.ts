@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { convertUsdToCurrency } from '../services/currencyService';
 import { createAuditLog } from '../services/auditLogService';
+import { notify } from '../services/notificationService';
+import { sendNotificationEmail } from '../services/emailService';
 import { getPricingConfig, IDEA_STARTER_SETUP_FEE_USD, INVESTOR_SETUP_FEE_USD } from '../config/pricing';
 
 const prisma = new PrismaClient();
@@ -148,6 +150,21 @@ export async function verify(req: Request, res: Response): Promise<void> {
     entityId: payment.id,
     details: { type: 'setup_fee' },
   }).catch(() => {});
+  const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { name: true, email: true } });
+  notify({
+    userId: payload.userId,
+    type: 'payment',
+    title: 'Setup fee paid',
+    message: 'Your setup payment was successful. You now have full access to your dashboard.',
+    link: '/dashboard',
+  }).catch(() => {});
+  if (user?.email) {
+    sendNotificationEmail({
+      type: 'payment_confirmation',
+      userEmail: user.email,
+      dynamicData: { name: user.name, description: 'Setup fee', amount: `${payment.amount} ${payment.currency}` },
+    }).catch(() => {});
+  }
   res.json({ ok: true, setupPaid: true });
 }
 

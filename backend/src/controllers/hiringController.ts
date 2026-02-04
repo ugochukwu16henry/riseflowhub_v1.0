@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { createAuditLog } from '../services/auditLogService';
+import { notify } from '../services/notificationService';
 
 const prisma = new PrismaClient();
 
@@ -87,6 +88,14 @@ export async function createHire(req: Request, res: Response): Promise<void> {
     entityType: 'hire',
     entityId: hire.id,
     details: { talentId, hirerId: hirer.id },
+  }).catch(() => {});
+
+  notify({
+    userId: talent.user.id,
+    type: 'hire_request',
+    title: 'New hire request',
+    message: `${hire.hirer.user.name} wants to hire you for: ${hire.projectTitle}. Check your dashboard to respond.`,
+    link: '/dashboard/talent/hires',
   }).catch(() => {});
 
   res.status(201).json({

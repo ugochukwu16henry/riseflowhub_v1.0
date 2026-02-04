@@ -9,6 +9,10 @@ import { milestoneCompletedEmail } from './milestoneCompletedEmail';
 import { projectLaunchedEmail } from './projectLaunchedEmail';
 import { investorInterestEmail } from './investorInterestEmail';
 import { teamInviteEmail } from './teamInviteEmail';
+import { paymentConfirmationEmail } from './paymentConfirmationEmail';
+import { talentApprovalEmail } from './talentApprovalEmail';
+import { interviewInviteEmail } from './interviewInviteEmail';
+import { passwordResetEmail } from './passwordResetEmail';
 
 export type EmailType =
   | 'account_created'
@@ -21,7 +25,11 @@ export type EmailType =
   | 'milestone_completed'
   | 'project_launched'
   | 'investor_interest_received'
-  | 'team_invite';
+  | 'team_invite'
+  | 'payment_confirmation'
+  | 'talent_approval'
+  | 'interview_invite'
+  | 'password_reset';
 
 export interface EmailPayload {
   type: EmailType;
@@ -41,6 +49,10 @@ const TEMPLATES: Record<EmailType, (data: Record<string, unknown>) => { subject:
   project_launched: projectLaunchedEmail,
   investor_interest_received: investorInterestEmail,
   team_invite: teamInviteEmail,
+  payment_confirmation: paymentConfirmationEmail,
+  talent_approval: talentApprovalEmail,
+  interview_invite: interviewInviteEmail,
+  password_reset: passwordResetEmail,
 };
 
 export function getEmailContent(type: EmailType, dynamicData: Record<string, unknown> = {}): { subject: string; html: string } {
@@ -49,4 +61,4 @@ export function getEmailContent(type: EmailType, dynamicData: Record<string, unk
   return fn(dynamicData);
 }
 
-export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail };
+export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail, paymentConfirmationEmail, talentApprovalEmail, interviewInviteEmail, passwordResetEmail };

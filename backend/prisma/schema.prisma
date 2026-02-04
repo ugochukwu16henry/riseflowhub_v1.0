@@ -161,6 +161,7 @@ model User {
   hirerProfile      Hirer?
   talentRatingsGiven   TalentRating[] @relation("TalentRatingFrom")
   talentRatingsReceived TalentRating[] @relation("TalentRatingTo")
+  notifications     Notification[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -613,6 +614,22 @@ model EmailLog {
   sentAt     DateTime? @map("sent_at")
   metadata   Json?    // dynamicData for debugging
   createdAt   DateTime @default(now()) @map("created_at")
+}
+
+// In-app notifications (payment, approval, message, hiring, agreement, rating, etc.)
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String   @db.VarChar(60) // payment, approval, message, hiring, agreement, rating, project_update
+  title     String   @db.VarChar(200)
+  message   String   @db.Text
+  link      String?  @db.VarChar(500) // optional deep link
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }
 
 // User-level payments (setup fee, etc.)

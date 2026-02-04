@@ -11,6 +11,7 @@ import {
   constructWebhookEvent,
 } from '../services/stripeService';
 import { createAuditLog } from '../services/auditLogService';
+import { notify } from '../services/notificationService';
 
 const prisma = new PrismaClient();
 
@@ -98,6 +99,15 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     entityType: 'payment',
     entityId: payment.id,
     details: { type, reference, gateway: 'stripe' },
+  }).catch(() => {});
+
+  const description = type === 'talent_marketplace_fee' ? 'Talent marketplace fee' : type === 'hirer_platform_fee' ? 'Hiring platform fee' : 'Setup fee';
+  notify({
+    userId: payment.userId,
+    type: 'payment',
+    title: 'Payment confirmed',
+    message: `Your ${description} payment was successful. You now have full access.`,
+    link: '/dashboard',
   }).catch(() => {});
 
   res.json({ received: true });

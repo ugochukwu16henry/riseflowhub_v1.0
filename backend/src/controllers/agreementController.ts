@@ -251,6 +251,14 @@ export async function signAgreement(req: Request, res: Response): Promise<void> 
       dynamicData: { name: updated.user.name, agreementTitle: updated.agreement.title },
     }).catch((e) => console.error('[Agreement] Email error:', e));
   }
+  const { notify } = await import('../services/notificationService');
+  notify({
+    userId,
+    type: 'agreement',
+    title: 'Agreement signed',
+    message: `You signed "${updated?.agreement?.title ?? 'Agreement'}". It has been recorded.`,
+    link: '/dashboard',
+  }).catch(() => {});
   res.json({ message: 'Agreement signed successfully', assignment: updated });
 }
 

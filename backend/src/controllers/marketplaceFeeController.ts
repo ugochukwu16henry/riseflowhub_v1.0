@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { convertUsdToCurrency } from '../services/currencyService';
 import { createAuditLog } from '../services/auditLogService';
+import { notify } from '../services/notificationService';
+import { sendNotificationEmail } from '../services/emailService';
 import { isStripeEnabled, createCheckoutSession } from '../services/stripeService';
 import { TALENT_MARKETPLACE_FEE_USD, HIRER_PLATFORM_FEE_USD } from '../config/pricing';
 
@@ -180,6 +182,23 @@ export async function verify(req: Request, res: Response): Promise<void> {
     entityId: payment.id,
     details: { type: payment.type },
   }).catch(() => {});
+
+  const description = payment.type === 'talent_marketplace_fee' ? 'Talent marketplace fee' : 'Hiring company platform fee';
+  notify({
+    userId: payload.userId,
+    type: 'payment',
+    title: 'Payment confirmed',
+    message: `${description} paid successfully. You now have full marketplace access.`,
+    link: '/dashboard',
+  }).catch(() => {});
+  const user = await prisma.user.findUnique({ where: { id: payload.userId }, select: { name: true, email: true } });
+  if (user?.email) {
+    sendNotificationEmail({
+      type: 'payment_confirmation',
+      userEmail: user.email,
+      dynamicData: { name: user.name, description, amount: `${payment.amount} ${payment.currency}` },
+    }).catch(() => {});
+  }
 
   res.json({ ok: true, feePaid: true });
 }
