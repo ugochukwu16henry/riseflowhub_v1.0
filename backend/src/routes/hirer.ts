@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { authMiddleware, requireRoles, optionalAuth } from '../middleware/auth';
+import { formRateLimiter, verifyRecaptcha } from '../middleware/antispam';
 import { UserRole } from '@prisma/client';
 import * as hirerController from '../controllers/hirerController';
 
 const router = Router();
 
-// Register: optional auth
-router.post('/register', optionalAuth, hirerController.register);
+// Register: rate limit + optional reCAPTCHA, then optional auth
+router.post('/register', formRateLimiter, verifyRecaptcha, optionalAuth, hirerController.register);
 
 router.use(authMiddleware);
 

@@ -22,5 +22,6 @@ router.put('/profile', requireRoles(UserRole.talent), talentController.updatePro
 // HR / Super Admin: list all talents, approve/reject
 router.get('/', requireRoles(UserRole.super_admin, UserRole.cofounder, UserRole.hr_manager), talentController.list);
 router.put('/:id/approve', requireRoles(UserRole.super_admin, UserRole.cofounder, UserRole.hr_manager), talentController.approve);
+router.patch('/:id', requireRoles(UserRole.super_admin, UserRole.cofounder), talentController.updateVisibility);
 
 export const talentRoutes = router;

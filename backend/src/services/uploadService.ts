@@ -24,16 +24,6 @@ const ALLOWED: Record<UploadType, string[]> = {
   project_media: ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'],
 };
 
-const EXT_TO_MIME: Record<string, string> = {
-  pdf: 'application/pdf',
-  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-  mp4: 'video/mp4',
-};
-
 const MAX_SIZE_BYTES: Record<UploadType, number> = {
   resume: 10 * 1024 * 1024,   // 10 MB
   cv: 10 * 1024 * 1024,

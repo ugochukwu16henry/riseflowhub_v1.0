@@ -11,7 +11,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
 
 export const stripe =
   secretKey && secretKey.startsWith('sk_')
-    ? new Stripe(secretKey, { apiVersion: '2024-11-20.acacia' })
+    ? new Stripe(secretKey)
     : null;
 
 export function isStripeEnabled(): boolean {

@@ -28,6 +28,7 @@ export async function apply(req: Request, res: Response): Promise<void> {
     services?: Array<{ title: string; description?: string; rate?: string }>;
     skillRates?: Record<string, string>;
     videoUrl?: string;
+    hourlyRate?: number;
   };
   const {
     name,
@@ -48,6 +49,7 @@ export async function apply(req: Request, res: Response): Promise<void> {
     services,
     skillRates,
     videoUrl,
+    hourlyRate,
   } = body;
 
   if (!Array.isArray(skills) || skills.length === 0 || typeof yearsExperience !== 'number') {
@@ -116,6 +118,7 @@ export async function apply(req: Request, res: Response): Promise<void> {
       services: services ?? null,
       skillRates: skillRates ?? null,
       videoUrl: videoUrl?.trim() || null,
+      hourlyRate: hourlyRate != null ? hourlyRate : null,
       status: 'pending',
     },
     include: { user: { select: { id: true, name: true, email: true, role: true } } },
@@ -149,27 +152,81 @@ export async function apply(req: Request, res: Response): Promise<void> {
   });
 }
 
-/** GET /api/v1/talent/marketplace — Public: list approved talents */
+/** GET /api/v1/talent/marketplace — Public: list approved, not-hidden talents with filters and sort */
 export async function marketplace(req: Request, res: Response): Promise<void> {
-  const skills = req.query.skills as string | undefined;
-  const skillList = skills ? skills.split(',').map((s) => s.trim()).filter(Boolean) : [];
-  const where: { status: 'approved'; skills?: { hasSome: string[] } } = { status: 'approved' };
-  if (skillList.length > 0) {
-    where.skills = { hasSome: skillList };
+  const {
+    skills: skillsQ,
+    category,
+    minRating,
+    minExperience,
+    rateMin,
+    rateMax,
+    availability,
+    verifiedOnly,
+    sort,
+  } = req.query as {
+    skills?: string;
+    category?: string;
+    minRating?: string;
+    minExperience?: string;
+    rateMin?: string;
+    rateMax?: string;
+    availability?: string;
+    verifiedOnly?: string;
+    sort?: string;
+  };
+
+  const where: {
+    status: 'approved';
+    hiddenByAdmin?: boolean;
+    skills?: { hasSome: string[] };
+    roleCategory?: string;
+    averageRating?: { gte: number };
+    yearsExperience?: { gte: number };
+    hourlyRate?: { gte?: number; lte?: number };
+    availability?: 'full_time' | 'part_time' | 'freelance';
+    feePaid?: boolean;
+  } = { status: 'approved', hiddenByAdmin: false };
+
+  const skillList = skillsQ ? skillsQ.split(',').map((s) => s.trim()).filter(Boolean) : [];
+  if (skillList.length > 0) where.skills = { hasSome: skillList };
+  if (category?.trim()) where.roleCategory = category.trim();
+  const minR = minRating != null ? Number(minRating) : NaN;
+  if (!Number.isNaN(minR) && minR >= 0) where.averageRating = { gte: minR };
+  const minE = minExperience != null ? Number(minExperience) : NaN;
+  if (!Number.isNaN(minE) && minE >= 0) where.yearsExperience = { gte: minE };
+  const rMin = rateMin != null ? Number(rateMin) : NaN;
+  const rMax = rateMax != null ? Number(rateMax) : NaN;
+  if (!Number.isNaN(rMin) || !Number.isNaN(rMax)) {
+    where.hourlyRate = {};
+    if (!Number.isNaN(rMin)) where.hourlyRate.gte = rMin;
+    if (!Number.isNaN(rMax)) where.hourlyRate.lte = rMax;
   }
+  if (availability === 'full_time' || availability === 'part_time' || availability === 'freelance') {
+    where.availability = availability;
+  }
+  if (verifiedOnly === 'true' || verifiedOnly === '1') where.feePaid = true;
+
+  type Order = { averageRating?: 'desc'; updatedAt?: 'desc'; createdAt?: 'desc'; featured?: 'desc' };
+  let orderBy: Order[] = [{ averageRating: 'desc' }, { ratingCount: 'desc' }, { createdAt: 'desc' }];
+  if (sort === 'featured') orderBy = [{ featured: 'desc' }, { averageRating: 'desc' }, { createdAt: 'desc' }];
+  else if (sort === 'recent') orderBy = [{ updatedAt: 'desc' }, { createdAt: 'desc' }];
+  else if (sort === 'rating') orderBy = [{ averageRating: 'desc' }, { ratingCount: 'desc' }];
+  else if (sort === 'new') orderBy = [{ createdAt: 'desc' }];
 
   const talents = await prisma.talent.findMany({
     where,
     include: {
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, avatarUrl: true } },
     },
-    orderBy: [{ averageRating: 'desc' }, { ratingCount: 'desc' }, { createdAt: 'desc' }],
+    orderBy: orderBy as Array<{ averageRating?: 'desc'; updatedAt?: 'desc'; createdAt?: 'desc'; featured?: 'desc'; ratingCount?: 'desc' }>,
   });
 
   res.json({
     items: talents.map((t) => ({
       id: t.id,
       name: t.user.name,
+      avatarUrl: t.user.avatarUrl,
       skills: t.skills,
       customRole: t.customRole,
       roleCategory: t.roleCategory,
@@ -182,8 +239,13 @@ export async function marketplace(req: Request, res: Response): Promise<void> {
       services: t.services,
       skillRates: t.skillRates,
       videoUrl: t.videoUrl,
+      hourlyRate: t.hourlyRate != null ? Number(t.hourlyRate) : null,
+      featured: t.featured,
+      feePaid: t.feePaid,
       averageRating: t.averageRating != null ? Number(t.averageRating) : null,
       ratingCount: t.ratingCount,
+      updatedAt: t.updatedAt,
+      createdAt: t.createdAt,
     })),
   });
 }
@@ -217,6 +279,7 @@ export async function profile(req: Request, res: Response): Promise<void> {
     services: talent.services,
     skillRates: talent.skillRates,
     videoUrl: talent.videoUrl,
+    hourlyRate: talent.hourlyRate != null ? Number(talent.hourlyRate) : null,
     feePaid: talent.feePaid,
     averageRating: talent.averageRating != null ? Number(talent.averageRating) : null,
     ratingCount: talent.ratingCount,
@@ -245,6 +308,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
     services?: Array<{ title: string; description?: string; rate?: string }>;
     skillRates?: Record<string, string>;
     videoUrl?: string;
+    hourlyRate?: number;
   };
   const talent = await prisma.talent.findUnique({ where: { userId: payload.userId } });
   if (!talent) {
@@ -267,6 +331,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
   if (body.services !== undefined) data.services = body.services;
   if (body.skillRates !== undefined) data.skillRates = body.skillRates;
   if (body.videoUrl !== undefined) data.videoUrl = body.videoUrl?.trim() || null;
+  if (body.hourlyRate !== undefined) data.hourlyRate = body.hourlyRate == null ? null : body.hourlyRate;
   const updated = await prisma.talent.update({
     where: { id: talent.id },
     data: data as import('@prisma/client').Prisma.TalentUpdateInput,
@@ -290,6 +355,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
     services: updated.services,
     skillRates: updated.skillRates,
     videoUrl: updated.videoUrl,
+    hourlyRate: updated.hourlyRate != null ? Number(updated.hourlyRate) : null,
     feePaid: updated.feePaid,
     averageRating: updated.averageRating != null ? Number(updated.averageRating) : null,
     ratingCount: updated.ratingCount,
@@ -364,4 +430,40 @@ export async function approve(req: Request, res: Response): Promise<void> {
   }).catch(() => {});
 
   res.json({ ok: true, status });
+}
+
+/** PATCH /api/v1/talent/:id — Super Admin/Co-Founder: set featured or hiddenByAdmin */
+export async function updateVisibility(req: Request, res: Response): Promise<void> {
+  const id = req.params.id as string;
+  const { featured, hiddenByAdmin } = req.body as { featured?: boolean; hiddenByAdmin?: boolean };
+  const payload = (req as unknown as { user: AuthPayload }).user;
+
+  const talent = await prisma.talent.findUnique({ where: { id } });
+  if (!talent) {
+    res.status(404).json({ error: 'Talent not found' });
+    return;
+  }
+
+  const data: { featured?: boolean; hiddenByAdmin?: boolean } = {};
+  if (typeof featured === 'boolean') data.featured = featured;
+  if (typeof hiddenByAdmin === 'boolean') data.hiddenByAdmin = hiddenByAdmin;
+  if (Object.keys(data).length === 0) {
+    res.status(400).json({ error: 'Provide featured and/or hiddenByAdmin' });
+    return;
+  }
+
+  const updated = await prisma.talent.update({
+    where: { id },
+    data,
+  });
+
+  createAuditLog(prisma, {
+    adminId: payload.userId,
+    actionType: 'talent_visibility',
+    entityType: 'talent',
+    entityId: talent.id,
+    details: data,
+  }).catch(() => {});
+
+  res.json({ ok: true, featured: updated.featured, hiddenByAdmin: updated.hiddenByAdmin });
 }

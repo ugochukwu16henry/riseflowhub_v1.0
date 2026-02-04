@@ -5,19 +5,25 @@ import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
-/** GET /api/v1/hiring/config — Public: role categories, skill list, fees from CMS */
+/** GET /api/v1/hiring/config — Public: role categories, skill list (from Skill table + CMS fallback), fees */
 export async function getConfig(_req: Request, res: Response): Promise<void> {
-  const rows = await prisma.cmsContent.findMany({
-    where: { page: 'hiring' },
-    select: { key: true, value: true, type: true },
-  });
+  const [rows, skills] = await Promise.all([
+    prisma.cmsContent.findMany({
+      where: { page: 'hiring' },
+      select: { key: true, value: true, type: true },
+    }),
+    prisma.skill.findMany({ orderBy: [{ category: 'asc' }, { name: 'asc' }], select: { id: true, name: true, category: true } }),
+  ]);
   const config: Record<string, unknown> = {};
   for (const row of rows) {
     config[row.key] = row.type === 'json' ? (JSON.parse(row.value) as unknown) : row.value;
   }
+  const cmsSkillList = (config['hiring.skillList'] as string[]) ?? [];
+  const skillList = skills.length > 0 ? skills.map((s) => s.name) : cmsSkillList;
   res.json({
     roleCategories: (config['hiring.roleCategories'] as string[]) ?? ['Tech Roles', 'Creative Roles', 'Business Roles'],
-    skillList: (config['hiring.skillList'] as string[]) ?? [],
+    skillList,
+    skills: skills.map((s) => ({ id: s.id, name: s.name, category: s.category })),
     talentFeeUsd: Number(config['hiring.talentFeeUsd']) || 7,
     companyFeeUsd: Number(config['hiring.companyFeeUsd']) || 20,
   });

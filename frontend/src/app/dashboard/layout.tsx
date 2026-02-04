@@ -41,6 +41,7 @@ const superAdminNav = [
   { href: '/dashboard/admin/cms', label: 'CMS Manager' },
   { href: '/dashboard/admin/knowledge', label: 'Internal Knowledge Center' },
   { href: '/dashboard/admin/hr', label: 'Hiring / Talent' },
+  { href: '/dashboard/admin/skills', label: 'Skill Management' },
   { href: '/dashboard/legal', label: 'Legal Agreements' },
   { href: '/dashboard/team', label: 'Team Dashboard' },
   { href: '/dashboard/admin/users', label: 'Users' },

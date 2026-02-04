@@ -670,6 +670,29 @@ export const api = {
     },
     consultations: (token: string) =>
       request<SuperAdminConsultationRow[]>(`/api/v1/super-admin/consultations`, { token }),
+    skills: {
+      list: (token: string, params?: { category?: string }) => {
+        const q = new URLSearchParams(params as Record<string, string>).toString();
+        return request<{ items: { id: string; name: string; category: string | null; createdAt: string }[] }>(
+          `/api/v1/super-admin/skills${q ? `?${q}` : ''}`,
+          { token }
+        );
+      },
+      create: (body: { name: string; category?: string }, token: string) =>
+        request<{ id: string; name: string; category: string | null; createdAt: string }>(`/api/v1/super-admin/skills`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          token,
+        }),
+      update: (id: string, body: { name?: string; category?: string }, token: string) =>
+        request<{ id: string; name: string; category: string | null; createdAt: string }>(`/api/v1/super-admin/skills/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(body),
+          token,
+        }),
+      delete: (id: string, token: string) =>
+        request<{ ok: boolean; id: string }>(`/api/v1/super-admin/skills/${id}`, { method: 'DELETE', token }),
+    },
   },
   team: {
     list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
