@@ -62,6 +62,7 @@ const superAdminNav = [
   { href: '/dashboard/admin/analytics', label: 'Analytics' },
   { href: '/dashboard/admin/audit-logs', label: 'Audit Logs' },
   { href: '/dashboard/admin/email-logs', label: 'Email Logs' },
+  { href: '/dashboard/admin/equity', label: 'Equity / Cap tables' },
   { href: '/dashboard/admin/team', label: 'Team Management' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
   { href: '/dashboard/admin/settings', label: 'Settings' },
