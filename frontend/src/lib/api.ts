@@ -479,6 +479,17 @@ export const api = {
     markAllRead: (token: string) =>
       request<{ ok: boolean; count?: number }>('/api/v1/notifications/mark-all-read', { method: 'POST', token }),
   },
+  faq: {
+    list: (params?: { category?: string; q?: string; highlighted?: boolean; limit?: number }) => {
+      const usp = new URLSearchParams();
+      if (params?.category) usp.set('category', params.category);
+      if (params?.q) usp.set('q', params.q);
+      if (params?.highlighted) usp.set('highlighted', 'true');
+      if (params?.limit) usp.set('limit', String(params.limit));
+      const qs = usp.toString();
+      return request<{ items: FaqItem[] }>(`/api/v1/faq${qs ? `?${qs}` : ''}`);
+    },
+  },
   payments: {
     list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
     create: (body: { projectId: string; amount: number; currency?: string; type?: string }, token: string) =>
@@ -1348,6 +1359,16 @@ export interface NotificationItem {
   link?: string;
   read: boolean;
   createdAt: string;
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  order: number;
+  isActive: boolean;
+  isHighlighted: boolean;
 }
 
 export interface PaymentRow {

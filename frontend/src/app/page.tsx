@@ -10,6 +10,7 @@ import {
   Vision,
   FinalCTA,
   Footer,
+  FAQPreview,
 } from '@/components/landing';
 import { pageContentFallback } from '@/data/pageContent';
 import type { HomePageContent } from '@/data/pageContent';
@@ -44,6 +45,7 @@ export default async function HomePage() {
         <ForInvestors content={content.forInvestors} />
         <PlatformFeatures content={content.platformFeatures} />
         <Vision content={content.vision} />
+        <FAQPreview />
         <FinalCTA content={content.finalCta} />
         <Footer />
       </main>

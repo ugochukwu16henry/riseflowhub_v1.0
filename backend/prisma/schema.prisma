@@ -924,6 +924,21 @@ model PrivacySettings {
   @@map("privacy_settings")
 }
 
+// Dynamic FAQ items (homepage + /faq + CMS)
+model FaqItem {
+  id            String   @id @default(uuid())
+  question      String
+  answer        String   @db.Text
+  category      String   @db.VarChar(50) // general | founders | investors | pricing | security | process | benefits | vision
+  order         Int      @default(0)
+  isActive      Boolean  @default(true) @map("is_active")
+  isHighlighted Boolean  @default(false) @map("is_highlighted")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("faq_items")
+}
+
 // Admin Leads (track and manage incoming leads; convert to project)
 enum AdminLeadStatus {
   New

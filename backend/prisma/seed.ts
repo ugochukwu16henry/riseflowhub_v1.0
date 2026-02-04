@@ -126,6 +126,126 @@ async function main() {
     console.log('Skills already present, skipping');
   }
 
+  // FAQ items (homepage + /faq)
+  try {
+    const faqCount = await prisma.faqItem.count();
+    if (faqCount === 0) {
+      await prisma.faqItem.createMany({
+        data: [
+          {
+            question: 'What is this platform about?',
+            answer:
+              'AfriLaunch Hub is a venture-building platform that helps entrepreneurs turn ideas into real startups through technology, AI guidance, business structuring, and access to investors.',
+            category: 'general',
+            order: 1,
+            isActive: true,
+            isHighlighted: true,
+          },
+          {
+            question: 'Who is this platform for?',
+            answer:
+              'It is built for founders with ideas, early-stage startups that need structure, and investors looking for vetted opportunities across Africa and beyond.',
+            category: 'general',
+            order: 2,
+            isActive: true,
+            isHighlighted: true,
+          },
+          {
+            question: 'What do I get when I join as a founder?',
+            answer:
+              'You get idea evaluation, business model creation, website/app development, an AI startup mentor, business administration tools, and investor visibility once you are ready.',
+            category: 'founders',
+            order: 1,
+            isActive: true,
+            isHighlighted: true,
+          },
+          {
+            question: 'I only have an idea, can I join?',
+            answer:
+              'Yes. The platform is designed to help you move from idea stage to a structured, launched business. You do not need a finished product before joining.',
+            category: 'founders',
+            order: 2,
+            isActive: true,
+            isHighlighted: false,
+          },
+          {
+            question: 'What is the process from idea to startup?',
+            answer:
+              'You submit your idea → our AI and team evaluate it → we help you shape a business model → development and branding begin → your product is launched on the platform → you get support for growth and investor access.',
+            category: 'process',
+            order: 1,
+            isActive: true,
+            isHighlighted: true,
+          },
+          {
+            question: 'How are startups vetted for investors?',
+            answer:
+              'We combine AI-based scoring, human business analysis, and structured evaluation of traction, team, market, and product readiness before presenting startups to investors.',
+            category: 'investors',
+            order: 1,
+            isActive: true,
+            isHighlighted: true,
+          },
+          {
+            question: 'How do I invest through the platform?',
+            answer:
+              'You browse approved startups, request access to their deal room, review documents and metrics, then express interest, request a meeting, or make an offer through the investment workflow.',
+            category: 'investors',
+            order: 2,
+            isActive: true,
+            isHighlighted: false,
+          },
+          {
+            question: 'Why is there a setup fee?',
+            answer:
+              'The setup fee covers evaluation, business structuring, onboarding, and initial resources needed to support your project before launch.',
+            category: 'pricing',
+            order: 1,
+            isActive: true,
+            isHighlighted: false,
+          },
+          {
+            question: 'Is my idea safe on this platform?',
+            answer:
+              'Yes. We use NDAs, role-based access control, and secure storage. Only relevant team members and approved investors can see sensitive startup information.',
+            category: 'security',
+            order: 1,
+            isActive: true,
+            isHighlighted: false,
+          },
+          {
+            question: 'What makes this platform different?',
+            answer:
+              'AfriLaunch Hub combines product development, business intelligence, AI mentorship, and investor access in one system, with a focus on African founders and practical execution.',
+            category: 'benefits',
+            order: 1,
+            isActive: true,
+            isHighlighted: true,
+          },
+          {
+            question: 'What is the long-term goal of the platform?',
+            answer:
+              'Our vision is to build a global ecosystem where great ideas are not lost due to lack of structure, technology, or funding — starting from Africa and expanding outward.',
+            category: 'vision',
+            order: 1,
+            isActive: true,
+            isHighlighted: false,
+          },
+        ],
+      });
+      console.log('Seeded initial FAQ items');
+    } else {
+      console.log('FAQ items already present, skipping');
+    }
+  } catch (e: unknown) {
+    const code = (e as { code?: string })?.code;
+    if (code === 'P2021') {
+      console.log('Skipping FAQ seeding (table not found). Run: pnpm run db:push');
+    } else {
+      throw e;
+    }
+  }
+
   // Agreement templates (for Legal / Admin to assign) — requires DB to have Agreement columns (content_html, status, etc.). Run db:push if needed.
   const agreementCount = await prisma.agreement.count();
   if (agreementCount === 0) {
