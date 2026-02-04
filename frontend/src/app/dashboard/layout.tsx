@@ -316,6 +316,10 @@ function DashboardLayoutInner({
   const logoUrl = user.tenant?.logo || '/Afrilauch_logo.png';
   const showSetupModal = needsSetupModal(user);
   const showWelcomePanel = isTeamMember(user.role) && user.welcomePanelSeen === false;
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpQuestion, setHelpQuestion] = useState('');
+  const [helpAnswer, setHelpAnswer] = useState<string | null>(null);
+  const [helpLoading, setHelpLoading] = useState(false);
 
   function handleSetupComplete(updated: User) {
     setUser(updated);
@@ -459,7 +463,7 @@ function DashboardLayoutInner({
             )}
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6 relative">{children}</main>
       </div>
       {showSetupModal && (
         <SetupModal
@@ -486,6 +490,93 @@ function DashboardLayoutInner({
               Get started
             </button>
           </div>
+        </div>
+      )}
+      {/* Floating Help AI button */}
+      <button
+        type="button"
+        onClick={() => setHelpOpen((o) => !o)}
+        className="fixed bottom-5 right-5 z-40 rounded-full bg-primary text-white w-11 h-11 flex items-center justify-center shadow-lg hover:opacity-90"
+        aria-label="Help and tutorials"
+      >
+        ?
+      </button>
+      {helpOpen && (
+        <div className="fixed bottom-20 right-5 z-40 w-80 max-w-[90vw] rounded-2xl border border-gray-200 bg-white shadow-xl flex flex-col">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-secondary">Need help?</p>
+              <p className="text-xs text-gray-500">Ask how to use the platform.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHelpOpen(false)}
+              className="text-gray-400 hover:text-gray-600 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="px-4 py-3 space-y-2 text-xs text-gray-700 max-h-64 overflow-y-auto">
+            <p>
+              Try questions like:
+              <br />
+              “How do I submit my idea?”
+              <br />
+              “How do I find investors?”
+              <br />
+              “What does this page mean?”
+            </p>
+            {helpAnswer && (
+              <div className="mt-1 rounded-lg bg-gray-50 border border-gray-100 p-2 text-xs text-gray-800 whitespace-pre-line">
+                {helpAnswer}
+              </div>
+            )}
+          </div>
+          <form
+            className="px-3 pb-3 pt-1 border-t border-gray-100 flex gap-2"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!helpQuestion.trim()) return;
+              const token = getStoredToken();
+              if (!token) return;
+              setHelpLoading(true);
+              setHelpAnswer(null);
+              try {
+                const res = await fetch('/api/v1/help-ai/ask', {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ question: helpQuestion.trim(), pagePath: pathname }),
+                });
+                if (!res.ok) throw new Error('Failed to get answer');
+                const data = (await res.json()) as { answer: string };
+                setHelpAnswer(data.answer);
+              } catch (err) {
+                setHelpAnswer(
+                  err instanceof Error ? err.message : 'Sorry, something went wrong. Please try again.'
+                );
+              } finally {
+                setHelpLoading(false);
+              }
+            }}
+          >
+            <input
+              type="text"
+              value={helpQuestion}
+              onChange={(e) => setHelpQuestion(e.target.value)}
+              placeholder="Ask a how-to question..."
+              className="flex-1 rounded-lg border border-gray-300 px-2 py-1 text-xs"
+            />
+            <button
+              type="submit"
+              disabled={helpLoading}
+              className="rounded-lg bg-primary text-white px-3 py-1 text-xs font-medium hover:opacity-90 disabled:opacity-50"
+            >
+              {helpLoading ? '...' : 'Ask'}
+            </button>
+          </form>
         </div>
       )}
     </div>
