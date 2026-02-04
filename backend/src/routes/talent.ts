@@ -19,7 +19,7 @@ router.get('/profile', requireRoles(UserRole.talent), talentController.profile);
 router.put('/profile', requireRoles(UserRole.talent), talentController.updateProfile);
 
 // HR / Super Admin: list all talents, approve/reject
-router.get('/', requireRoles(UserRole.super_admin, UserRole.hr_manager), talentController.list);
-router.put('/:id/approve', requireRoles(UserRole.super_admin, UserRole.hr_manager), talentController.approve);
+router.get('/', requireRoles(UserRole.super_admin, UserRole.cofounder, UserRole.hr_manager), talentController.list);
+router.put('/:id/approve', requireRoles(UserRole.super_admin, UserRole.cofounder, UserRole.hr_manager), talentController.approve);
 
 export const talentRoutes = router;

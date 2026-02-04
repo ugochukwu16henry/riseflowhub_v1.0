@@ -35,13 +35,13 @@ export default function LoginPage() {
       const data = await api.auth.login({ email, password }, tenantDomain);
       setStoredToken(data.token);
       const role = data.user?.role;
-      if (role === 'super_admin' || role === 'project_manager' || role === 'finance_admin') {
+      if (role === 'super_admin' || role === 'project_manager' || role === 'finance_admin' || role === 'cofounder') {
         router.push('/dashboard/admin');
       } else if (role === 'investor') {
         router.push('/dashboard/investor');
       } else if (role === 'talent') {
         router.push('/dashboard/talent');
-      } else if (role === 'hirer') {
+      } else if (role === 'hirer' || role === 'hiring_company') {
         router.push('/dashboard/hirer');
       } else if (role === 'hr_manager') {
         router.push('/dashboard/admin/hr');

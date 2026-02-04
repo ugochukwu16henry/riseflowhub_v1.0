@@ -10,6 +10,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Core roles for hiring/talent: talent, hiring_company, hr_manager, legal_team, super_admin, cofounder
+// Legacy: client, developer, designer, marketer, project_manager, finance_admin, investor, hirer (alias hiring_company)
 enum UserRole {
   client
   developer
@@ -20,9 +22,11 @@ enum UserRole {
   super_admin
   investor
   talent
-  hirer
+  hirer           // same as hiring_company
+  hiring_company  // alias for hirer (spec naming)
   hr_manager
   legal_team
+  cofounder       // talent approval, marketplace moderation
 }
 
 enum ProjectStage {
@@ -77,10 +81,11 @@ enum AgreementType {
 }
 
 enum AssignedAgreementStatus {
-  Pending
-  Signed
-  Overdue
-  Disputed
+  Draft    // company drafts contract
+  Pending  // awaiting signature
+  Signed   // both signed
+  Overdue  // past deadline
+  Disputed // legal team monitors
 }
 
 // Multi-tenant white-label
@@ -120,10 +125,13 @@ model TenantBilling {
 model User {
   id              String    @id @default(uuid())
   tenantId        String?   @map("tenant_id")
-  name            String
+  name            String    // full_name in spec (stored as name)
   email           String    @unique
   passwordHash    String    @map("password_hash")
   role            UserRole  @default(client)
+  country         String?   @db.VarChar(100)
+  phone           String?   @db.VarChar(50)
+  verified        Boolean   @default(false)
   setupPaid       Boolean   @default(false) @map("setup_paid")
   setupReason     String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
   avatarUrl       String?   @map("avatar_url")
@@ -713,10 +721,33 @@ enum TalentAvailability {
   freelance
 }
 
+// Skills table (id, name, category) — CMS-editable; many-to-many with talents
+model Skill {
+  id         String        @id @default(uuid())
+  name       String        @db.VarChar(120)
+  category   String?       @db.VarChar(80) // Tech | Creative | Business
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  talentSkills TalentSkill[]
+}
+
+// Talent_Skills many-to-many
+model TalentSkill {
+  talentId   String   @map("talent_id")
+  skillId    String   @map("skill_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  talent Talent @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  skill  Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([talentId, skillId])
+  @@map("talent_skills")
+}
+
 model Talent {
   id              String             @id @default(uuid())
   userId          String             @unique @map("user_id")
-  skills          String[]           // from CMS skill list or custom
+  skills          String[]           // denormalized for filter; sync from TalentSkill or CMS list
   customRole      String?            @map("custom_role") @db.VarChar(120)
   roleCategory    String?            @map("role_category") @db.VarChar(100) // Tech / Creative / Business from CMS
   yearsExperience Int                @map("years_experience")
@@ -727,34 +758,37 @@ model Talent {
   shortBio        String?            @map("short_bio") @db.Text
   availability    TalentAvailability? @map("availability")
   country         String?            @db.VarChar(100)
-  phone          String?            @db.VarChar(50)
-  services       Json?              @db.JsonB // [{ title, description, rate? }] — post services
-  skillRates     Json?              @map("skill_rates") @db.JsonB // { "Frontend": "50/hr", ... }
-  videoUrl       String?            @map("video_url") @db.VarChar(500)
-  status         TalentStatus       @default(pending)
-  feePaid        Boolean            @default(false) @map("fee_paid")
-  averageRating  Decimal?           @map("average_rating") @db.Decimal(3, 2) // 0–5
-  ratingCount    Int                @default(0) @map("rating_count")
-  createdAt      DateTime           @default(now()) @map("created_at")
-  updatedAt      DateTime           @updatedAt @map("updated_at")
-  approvedAt     DateTime?          @map("approved_at")
-  approvedById   String?            @map("approved_by_id")
+  phone           String?            @db.VarChar(50)
+  services        Json?              @db.JsonB // [{ title, description, rate? }]
+  skillRates      Json?              @map("skill_rates") @db.JsonB // { "Frontend": "50/hr", ... }
+  videoUrl        String?            @map("video_url") @db.VarChar(500)
+  status          TalentStatus       @default(pending)   // approved = true when status approved
+  feePaid         Boolean            @default(false) @map("fee_paid") // marketplace_access
+  averageRating   Decimal?           @map("average_rating") @db.Decimal(3, 2) // rating_avg 0–5
+  ratingCount     Int                @default(0) @map("rating_count")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  approvedAt      DateTime?          @map("approved_at")
+  approvedById    String?            @map("approved_by_id")
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hires  Hire[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hires        Hire[]
+  talentSkills TalentSkill[]
 }
 
 model Hirer {
-  id                  String    @id @default(uuid())
-  userId              String    @unique @map("user_id")
-  companyName         String    @map("company_name")
-  hiringNeeds         String?   @map("hiring_needs") @db.Text
-  budget              String?   @db.VarChar(100)
-  feePaid             Boolean   @default(false) @map("fee_paid")
-  fairTreatmentSignedAt DateTime? @map("fair_treatment_signed_at")
-  fairTreatmentAgreementId String? @map("fair_treatment_agreement_id")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                      String    @id @default(uuid())
+  userId                  String    @unique @map("user_id")
+  companyName             String    @map("company_name")
+  website                 String?   @db.VarChar(500)
+  verified                Boolean   @default(false) // verified_company after platform fee
+  hiringNeeds             String?   @map("hiring_needs") @db.Text
+  budget                  String?   @db.VarChar(100)
+  feePaid                 Boolean   @default(false) @map("fee_paid")
+  fairTreatmentSignedAt   DateTime? @map("fair_treatment_signed_at")
+  fairTreatmentAgreementId String?  @map("fair_treatment_agreement_id")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   hires        Hire[]

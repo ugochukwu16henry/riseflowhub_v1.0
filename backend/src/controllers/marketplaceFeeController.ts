@@ -23,8 +23,8 @@ export async function createSession(req: Request, res: Response): Promise<void> 
     res.status(403).json({ error: 'Only talent can pay talent marketplace fee' });
     return;
   }
-  if (type === 'hirer_platform_fee' && payload.role !== 'hirer') {
-    res.status(403).json({ error: 'Only hirer can pay hirer platform fee' });
+  if (type === 'hirer_platform_fee' && payload.role !== 'hirer' && payload.role !== 'hiring_company') {
+    res.status(403).json({ error: 'Only hiring company can pay platform fee' });
     return;
   }
 
@@ -123,7 +123,7 @@ export async function verify(req: Request, res: Response): Promise<void> {
   } else {
     await prisma.hirer.updateMany({
       where: { userId: payload.userId },
-      data: { feePaid: true },
+      data: { feePaid: true, verified: true },
     });
   }
 

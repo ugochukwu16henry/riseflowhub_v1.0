@@ -11,6 +11,6 @@ router.get('/', optionalAuth, jobRequestController.list);
 router.use(authMiddleware);
 
 // Hirer: post job request
-router.post('/', requireRoles(UserRole.hirer), jobRequestController.create);
+router.post('/', requireRoles(UserRole.hirer, UserRole.hiring_company), jobRequestController.create);
 
 export const jobRequestRoutes = router;

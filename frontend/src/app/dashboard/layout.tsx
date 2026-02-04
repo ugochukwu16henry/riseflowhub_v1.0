@@ -112,7 +112,7 @@ const legalNav = [
 ];
 
 function isAdmin(role: string) {
-  return ['super_admin', 'project_manager', 'finance_admin'].includes(role);
+  return ['super_admin', 'cofounder', 'project_manager', 'finance_admin'].includes(role);
 }
 
 function isTeamMember(role: string) {
@@ -128,7 +128,7 @@ function isTalent(role: string) {
 }
 
 function isHirer(role: string) {
-  return role === 'hirer';
+  return role === 'hirer' || role === 'hiring_company';
 }
 
 function isHrManager(role: string) {

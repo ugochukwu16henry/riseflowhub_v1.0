@@ -64,7 +64,7 @@ export async function list(req: Request, res: Response): Promise<void> {
   const skills = req.query.skills as string | undefined;
   const skillList = skills ? skills.split(',').map((s) => s.trim()).filter(Boolean) : [];
 
-  const isHirer = payload?.role === 'hirer';
+  const isHirer = payload?.role === 'hirer' || payload?.role === 'hiring_company';
   const isAdmin = payload && ['super_admin', 'hr_manager'].includes(payload.role);
 
   let where: { status?: string; hirerId?: string; roleCategory?: string; skills?: { hasSome: string[] } } = {};

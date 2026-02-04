@@ -13,8 +13,10 @@ export type UserRole =
   | 'investor'
   | 'talent'
   | 'hirer'
+  | 'hiring_company'
   | 'hr_manager'
-  | 'legal_team';
+  | 'legal_team'
+  | 'cofounder';
 
 export interface PricingConfig {
   ideaStarterSetupFeeUsd: number;

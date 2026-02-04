@@ -106,7 +106,7 @@ export async function listHires(req: Request, res: Response): Promise<void> {
   if (!isAdmin) {
     if (role === 'talent') {
       where.talent = { userId: payload.userId };
-    } else if (role === 'hirer') {
+    } else if (role === 'hirer' || role === 'hiring_company') {
       where.hirer = { userId: payload.userId };
     } else {
       res.status(403).json({ error: 'Not authorized to list hires' });

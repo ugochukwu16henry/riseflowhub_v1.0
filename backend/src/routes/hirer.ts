@@ -11,12 +11,12 @@ router.post('/register', optionalAuth, hirerController.register);
 router.use(authMiddleware);
 
 // Own profile
-router.get('/profile', requireRoles(UserRole.hirer), hirerController.profile);
+router.get('/profile', requireRoles(UserRole.hirer, UserRole.hiring_company), hirerController.profile);
 
 // Hirer: sign Fair Treatment Agreement
-router.post('/fair-treatment/sign', requireRoles(UserRole.hirer), hirerController.signFairTreatment);
+router.post('/fair-treatment/sign', requireRoles(UserRole.hirer, UserRole.hiring_company), hirerController.signFairTreatment);
 
 // Admin: list all hirers
-router.get('/', requireRoles(UserRole.super_admin, UserRole.hr_manager), hirerController.list);
+router.get('/', requireRoles(UserRole.super_admin, UserRole.cofounder, UserRole.hr_manager), hirerController.list);
 
 export const hirerRoutes = router;

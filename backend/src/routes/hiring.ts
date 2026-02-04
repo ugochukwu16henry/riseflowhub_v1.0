@@ -11,7 +11,7 @@ router.get('/config', hiringController.getConfig);
 router.use(authMiddleware);
 
 // Hirer: send hire request
-router.post('/hire/:talentId', requireRoles(UserRole.hirer), hiringController.createHire);
+router.post('/hire/:talentId', requireRoles(UserRole.hirer, UserRole.hiring_company), hiringController.createHire);
 
 // Talent, Hirer, or Admin: list hires
 router.get('/hires', requireRoles(UserRole.talent, UserRole.hirer, UserRole.super_admin, UserRole.hr_manager, UserRole.legal_team), hiringController.listHires);
@@ -20,6 +20,6 @@ router.get('/hires', requireRoles(UserRole.talent, UserRole.hirer, UserRole.supe
 router.post('/agreement', requireRoles(UserRole.super_admin, UserRole.hr_manager), hiringController.createHireAgreement);
 
 // Update hire status (talent, hirer, or admin)
-router.patch('/hires/:id', requireRoles(UserRole.talent, UserRole.hirer, UserRole.super_admin, UserRole.hr_manager), hiringController.updateHireStatus);
+router.patch('/hires/:id', requireRoles(UserRole.talent, UserRole.hirer, UserRole.hiring_company, UserRole.super_admin, UserRole.hr_manager), hiringController.updateHireStatus);
 
 export const hiringRoutes = router;

@@ -6,7 +6,7 @@ import { UserRole } from '@prisma/client';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const prisma = new PrismaClient();
 
-const ADMIN_ROLES: UserRole[] = ['super_admin', 'project_manager', 'finance_admin', 'developer', 'designer', 'marketer'];
+const ADMIN_ROLES: UserRole[] = ['super_admin', 'cofounder', 'project_manager', 'finance_admin', 'developer', 'designer', 'marketer'];
 
 export interface AuthPayload {
   userId: string;
