@@ -215,6 +215,13 @@ export default function DealRoomStartupProfilePage() {
         <div>
           <h1 className="text-2xl font-bold text-secondary">{project?.projectName ?? 'Startup'}</h1>
           <p className="text-gray-600">{project?.client?.businessName} · {project?.client?.industry ?? '—'}</p>
+          {startup.investorReady && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                Investor ready
+              </span>
+            </div>
+          )}
         </div>
         <button
           type="button"
@@ -233,13 +240,45 @@ export default function DealRoomStartupProfilePage() {
 
         {score && (
           <section className="rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="font-semibold text-secondary mb-2">Startup score</h2>
-            <p className="text-sm text-gray-600 mb-2">
-              Overall rating based on problem clarity, market, business model, traction, team, and risk.
+            <h2 className="font-semibold text-secondary mb-2">Startup success score</h2>
+            <p className="text-sm text-gray-600 mb-3">
+              Overall rating across **Clarity, Market, Execution, Traction, Team, Financials, Investor Readiness**.
             </p>
-            <p className="text-3xl font-bold text-primary mb-2">{score.scoreTotal}/100</p>
+            <p className="text-3xl font-bold text-primary mb-3">{score.scoreTotal}/100</p>
+            {score.breakdown && (
+              <dl className="grid gap-2 text-xs text-gray-700 sm:grid-cols-2">
+                <div className="flex justify-between">
+                  <dt>Clarity</dt>
+                  <dd className="font-semibold">{score.breakdown.problemClarity}/10</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Market</dt>
+                  <dd className="font-semibold">{score.breakdown.marketSize}/15</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Execution</dt>
+                  <dd className="font-semibold">{score.breakdown.businessModel + score.breakdown.feasibility}/30</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Traction</dt>
+                  <dd className="font-semibold">{score.breakdown.traction}/15</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Team</dt>
+                  <dd className="font-semibold">{score.breakdown.teamStrength}/10</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Financials</dt>
+                  <dd className="font-semibold">{score.breakdown.financialLogic}/10</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Investor Readiness</dt>
+                  <dd className="font-semibold">{score.breakdown.innovation}/10</dd>
+                </div>
+              </dl>
+            )}
             {score.suggestions && score.suggestions.length > 0 && (
-              <ul className="list-disc list-inside text-sm text-gray-700">
+              <ul className="mt-3 list-disc list-inside text-sm text-gray-700">
                 {score.suggestions.slice(0, 3).map((s, i) => (
                   <li key={i}>{s}</li>
                 ))}

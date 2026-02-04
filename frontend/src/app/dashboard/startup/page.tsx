@@ -180,7 +180,7 @@ export default function PublishToMarketplacePage() {
           {currentProfile && (
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-800">Startup score</span>
+                <span className="font-medium text-gray-800">Startup success score</span>
                 {scoreLoading ? (
                   <span className="text-gray-500 text-xs">Calculating…</span>
                 ) : score ? (
@@ -197,6 +197,38 @@ export default function PublishToMarketplacePage() {
                     <li key={i}>{s}</li>
                   ))}
                 </ul>
+              )}
+              {score?.breakdown && (
+                <dl className="mt-2 grid gap-1 text-[11px] text-gray-600 sm:grid-cols-2">
+                  <div className="flex justify-between">
+                    <dt>Clarity</dt>
+                    <dd className="font-semibold">{score.breakdown.problemClarity}/10</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Market</dt>
+                    <dd className="font-semibold">{score.breakdown.marketSize}/15</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Execution</dt>
+                    <dd className="font-semibold">{score.breakdown.businessModel + score.breakdown.feasibility}/30</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Traction</dt>
+                    <dd className="font-semibold">{score.breakdown.traction}/15</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Team</dt>
+                    <dd className="font-semibold">{score.breakdown.teamStrength}/10</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Financials</dt>
+                    <dd className="font-semibold">{score.breakdown.financialLogic}/10</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>Investor readiness</dt>
+                    <dd className="font-semibold">{score.breakdown.innovation}/10</dd>
+                  </div>
+                </dl>
               )}
               <button
                 type="button"
