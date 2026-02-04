@@ -54,6 +54,7 @@ import { marketplaceFeeRoutes } from './routes/marketplaceFee';
 import { partnerRoutes } from './routes/partner';
 import { jobRequestRoutes } from './routes/jobRequests';
 import { uploadRoutes } from './routes/upload';
+import { settingsRoutes } from './routes/settings';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -112,6 +113,7 @@ app.use('/api/v1/marketplace-fee', marketplaceFeeRoutes);
 app.use('/api/v1/partner', partnerRoutes);
 app.use('/api/v1/job-requests', jobRequestRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

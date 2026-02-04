@@ -143,6 +143,14 @@ model User {
   setupPaid       Boolean   @default(false) @map("setup_paid")
   setupReason     String?   @map("setup_reason") @db.VarChar(100) // skip reason: cant_afford | pay_later | exploring | other
   avatarUrl       String?   @map("avatar_url")
+  displayName     String?   @map("display_name") @db.VarChar(120)
+  bio             String?   @db.Text
+  jobTitle        String?   @map("job_title") @db.VarChar(120)
+  website         String?   @db.VarChar(500)
+  linkedinUrl     String?   @map("linkedin_url") @db.VarChar(500)
+  twitterUrl      String?   @map("twitter_url") @db.VarChar(500)
+  timezone        String?   @db.VarChar(80)
+  twoFactorEnabled Boolean  @default(false) @map("two_factor_enabled")
   lastLoginAt     DateTime? @map("last_login_at")
   welcomePanelSeen Boolean   @default(false) @map("welcome_panel_seen")
   customRoleId    String?   @map("custom_role_id")
@@ -173,6 +181,9 @@ model User {
   agreementsCreated Agreement[]   @relation("AgreementCreatedBy")
   aiConversations   AiConversation[]
   aiGeneratedOutputs AiGeneratedOutput[]
+  accountStatuses   AccountStatus[]
+  statusesSet       AccountStatus[] @relation("AccountStatusSetBy")
+  notificationSettings NotificationSettings?
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -207,6 +218,10 @@ model Client {
   userId        String   @unique @map("user_id")
   businessName  String   @map("business_name")
   industry      String?
+  companySize   String?  @map("company_size") @db.VarChar(50)
+  headquarters  String?  @db.VarChar(200)
+  logoUrl       String?  @map("logo_url") @db.VarChar(500)
+  coverImageUrl String?  @map("cover_image_url") @db.VarChar(500)
   ideaSummary   String?  @map("idea_summary") @db.Text
   budgetRange   String?  @map("budget_range")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -632,6 +647,29 @@ model StartupEquity {
   @@map("startup_equity")
 }
 
+// Account status history (admin-enforced locks, suspensions, deletion)
+enum UserAccountStatus {
+  active
+  suspended
+  locked
+  pending_deletion
+  banned
+}
+
+model AccountStatus {
+  id        String            @id @default(uuid())
+  userId    String            @map("user_id")
+  status    UserAccountStatus @map("status")
+  reason    String?           @db.Text
+  setById   String?           @map("set_by")
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  setBy User? @relation("AccountStatusSetBy", fields: [setById], references: [id], onDelete: SetNull)
+
+  @@map("account_status")
+}
+
 // Marketing Analytics & Campaign Engine
 model Campaign {
   id         String    @id @default(uuid())
@@ -723,6 +761,23 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// Per-user notification preferences
+model NotificationSettings {
+  userId             String   @id @map("user_id")
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  inAppNotifications Boolean  @default(true) @map("in_app_notifications")
+  dealUpdates        Boolean  @default(true) @map("deal_updates")
+  investorMessages   Boolean  @default(true) @map("investor_messages")
+  projectAlerts      Boolean  @default(true) @map("project_alerts")
+  marketingEmails    Boolean  @default(false) @map("marketing_emails")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
 }
 
 // AI Co-Founder: persistent chat per user/project
