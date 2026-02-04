@@ -60,16 +60,21 @@ CREATE INDEX "blocked_ips_ip_idx" ON "blocked_ips"("ip");
 -- CreateIndex
 CREATE INDEX "support_banner_events_user_id_created_at_idx" ON "support_banner_events"("user_id", "created_at");
 
--- Add columns to contact_messages if they don't exist (safe for existing DBs)
-ALTER TABLE "contact_messages" ADD COLUMN IF NOT EXISTS "phone" VARCHAR(50);
-ALTER TABLE "contact_messages" ADD COLUMN IF NOT EXISTS "attachment_url" VARCHAR(500);
-ALTER TABLE "contact_messages" ADD COLUMN IF NOT EXISTS "status" VARCHAR(20) DEFAULT 'unread';
+-- Add columns to contact_messages only if the table exists (safe when table missing)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'contact_messages') THEN
+    ALTER TABLE "contact_messages" ADD COLUMN IF NOT EXISTS "phone" VARCHAR(50);
+    ALTER TABLE "contact_messages" ADD COLUMN IF NOT EXISTS "attachment_url" VARCHAR(500);
+    ALTER TABLE "contact_messages" ADD COLUMN IF NOT EXISTS "status" VARCHAR(20) DEFAULT 'unread';
+  END IF;
+END $$;
 
--- AddForeignKey (security_events -> users)
-ALTER TABLE "security_events" ADD CONSTRAINT "security_events_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- AddForeignKey (security_events -> User)
+ALTER TABLE "security_events" ADD CONSTRAINT "security_events_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey (blocked_ips -> users)
-ALTER TABLE "blocked_ips" ADD CONSTRAINT "blocked_ips_created_by_id_fkey" FOREIGN KEY ("created_by_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- AddForeignKey (blocked_ips -> User)
+ALTER TABLE "blocked_ips" ADD CONSTRAINT "blocked_ips_created_by_id_fkey" FOREIGN KEY ("created_by_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey (support_banner_events -> users)
-ALTER TABLE "support_banner_events" ADD CONSTRAINT "support_banner_events_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- AddForeignKey (support_banner_events -> User)
+ALTER TABLE "support_banner_events" ADD CONSTRAINT "support_banner_events_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
