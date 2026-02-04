@@ -209,7 +209,7 @@ export async function marketplace(req: Request, res: Response): Promise<void> {
   }
   if (verifiedOnly === 'true' || verifiedOnly === '1') where.feePaid = true;
 
-  type Order = { averageRating?: 'desc'; updatedAt?: 'desc'; createdAt?: 'desc'; featured?: 'desc' };
+  type Order = { averageRating?: 'desc'; ratingCount?: 'desc'; updatedAt?: 'desc'; createdAt?: 'desc'; featured?: 'desc' };
   let orderBy: Order[] = [{ averageRating: 'desc' }, { ratingCount: 'desc' }, { createdAt: 'desc' }];
   if (sort === 'featured') orderBy = [{ featured: 'desc' }, { averageRating: 'desc' }, { createdAt: 'desc' }];
   else if (sort === 'recent') orderBy = [{ updatedAt: 'desc' }, { createdAt: 'desc' }];
@@ -221,7 +221,7 @@ export async function marketplace(req: Request, res: Response): Promise<void> {
     include: {
       user: { select: { id: true, name: true, email: true, avatarUrl: true } },
     },
-    orderBy: orderBy as Array<{ averageRating?: 'desc'; updatedAt?: 'desc'; createdAt?: 'desc'; featured?: 'desc'; ratingCount?: 'desc' }>,
+    orderBy,
   });
 
   res.json({

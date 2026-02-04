@@ -32,7 +32,7 @@ export async function upload(req: Request, res: Response): Promise<void> {
   const size = file.size || (fileBuffer && fileBuffer.length) || 0;
   const validation = validateFile(type as UploadType, mimetype, size);
   if (!validation.ok) {
-    res.status(400).json({ error: validation.error });
+    res.status(400).json({ error: 'error' in validation ? validation.error : 'Invalid file' });
     return;
   }
 

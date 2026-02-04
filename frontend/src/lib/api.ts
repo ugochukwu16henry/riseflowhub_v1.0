@@ -979,7 +979,7 @@ export interface InvestmentListItem extends Investment {
   };
 }
 
-export type AgreementType = 'NDA' | 'MOU' | 'CoFounder' | 'Terms';
+export type AgreementType = 'NDA' | 'MOU' | 'CoFounder' | 'Terms' | 'FairTreatment' | 'HireContract' | 'Partnership' | 'Investor';
 
 export interface Agreement {
   id: string;
