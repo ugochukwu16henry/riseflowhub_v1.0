@@ -7,21 +7,64 @@ const prisma = new PrismaClient();
 export async function overview(_req: Request, res: Response): Promise<void> {
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const since30m = new Date(Date.now() - 30 * 60 * 1000);
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
 
-  const [events24h, events7d, blockedActive] = await Promise.all([
-    prisma.securityEvent.count({ where: { createdAt: { gte: since24h } } }),
-    prisma.securityEvent.count({ where: { createdAt: { gte: since7d } } }),
-    prisma.blockedIp.count({
-      where: {
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    }),
-  ]);
+  const [events24h, events7d, blockedActive, blockedAttacksToday, suspiciousSessions, activeUsersEstimate] =
+    await Promise.all([
+      prisma.securityEvent.count({ where: { createdAt: { gte: since24h } } }),
+      prisma.securityEvent.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.blockedIp.count({
+        where: {
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+      }),
+      prisma.securityEvent.count({
+        where: {
+          createdAt: { gte: startOfDay },
+          OR: [{ type: 'ip_blocked' }, { type: 'rate_limit_exceeded' }],
+        },
+      }),
+      prisma.securityEvent.count({
+        where: {
+          createdAt: { gte: since24h },
+          severity: { in: ['high', 'critical'] },
+        },
+      }),
+      prisma.auditLog.count({
+        where: {
+          actionType: 'login',
+          timestamp: { gte: since30m },
+        },
+      }),
+    ]);
+
+  let systemStatus: 'secure' | 'warning' | 'under_attack' = 'secure';
+  if (blockedAttacksToday > 100 || suspiciousSessions > 50) {
+    systemStatus = 'under_attack';
+  } else if (blockedAttacksToday > 0 || suspiciousSessions > 0) {
+    systemStatus = 'warning';
+  }
+
+  const protections = {
+    waf: process.env.PROTECTION_WAF_ENABLED === 'true',
+    ddos: process.env.PROTECTION_DDOS_ENABLED === 'true',
+    rateLimiting: true,
+    aiMonitoring: process.env.PROTECTION_AI_ENABLED === 'true',
+    dbEncryption: process.env.PROTECTION_DB_ENCRYPTION === 'true',
+    backups: process.env.PROTECTION_BACKUPS === 'true',
+  };
 
   res.json({
     eventsLast24h: events24h,
     eventsLast7d: events7d,
     blockedActive,
+    blockedAttacksToday,
+    suspiciousSessions,
+    activeUsersEstimate,
+    systemStatus,
+    protections,
     topIps: [],
   });
 }

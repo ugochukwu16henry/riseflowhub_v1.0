@@ -1164,6 +1164,18 @@ export interface SecurityOverview {
   eventsLast24h: number;
   eventsLast7d: number;
   blockedActive: number;
+  blockedAttacksToday: number;
+  suspiciousSessions: number;
+  activeUsersEstimate: number;
+  systemStatus: 'secure' | 'warning' | 'under_attack';
+  protections: {
+    waf: boolean;
+    ddos: boolean;
+    rateLimiting: boolean;
+    aiMonitoring: boolean;
+    dbEncryption: boolean;
+    backups: boolean;
+  };
   topIps: { ip: string | null; count: number }[];
 }
 
