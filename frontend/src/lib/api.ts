@@ -871,6 +871,45 @@ export const api = {
         token,
       }),
   },
+  socialLinks: {
+    list: () => request<SocialMediaLink[]>('/api/v1/social-links'),
+    adminList: (token: string) =>
+      request<SocialMediaLink[]>('/api/v1/super-admin/social-links', { token }),
+    create: (
+      body: { platformName: string; url: string; iconUrl?: string; active?: boolean },
+      token: string
+    ) =>
+      request<SocialMediaLink>('/api/v1/super-admin/social-links', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        token,
+      }),
+    update: (
+      id: string,
+      body: { platformName?: string; url?: string; iconUrl?: string | null; active?: boolean },
+      token: string
+    ) =>
+      request<SocialMediaLink>(`/api/v1/super-admin/social-links/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        token,
+      }),
+    remove: (id: string, token: string) =>
+      request<void>(`/api/v1/super-admin/social-links/${id}`, {
+        method: 'DELETE',
+        token,
+      }),
+    toggle: (id: string, token: string) =>
+      request<SocialMediaLink>(`/api/v1/super-admin/social-links/${id}/toggle`, {
+        method: 'PATCH',
+        token,
+      }),
+    trackClick: (id: string) =>
+      fetch(`${API_BASE}/api/v1/social-links/${id}/click`, {
+        method: 'POST',
+        keepalive: true,
+      }).catch(() => {}),
+  },
   superAdmin: {
     overview: (token: string) => request<SuperAdminOverview>(`/api/v1/super-admin/overview`, { token }),
     payments: (token: string, params?: { period?: string; userId?: string; paymentType?: string; format?: string }) => {
@@ -1526,6 +1565,17 @@ export interface FounderReputationBreakdown {
   milestonesAchieved: number;
   total: number;
   level: 'Beginner' | 'Builder' | 'Trusted Founder' | 'Elite Founder';
+}
+
+export interface SocialMediaLink {
+  id: string;
+  platformName: string;
+  url: string;
+  iconUrl?: string | null;
+  active: boolean;
+  clickCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ForumPost {

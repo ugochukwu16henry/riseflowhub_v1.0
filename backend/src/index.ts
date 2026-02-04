@@ -65,6 +65,8 @@ import { forumRoutes } from './routes/forum';
 import { earlyAccessRoutes } from './routes/earlyAccess';
 import { manualPaymentRoutes } from './routes/manualPayments';
 import { manualPaymentAdminRoutes } from './routes/manualPaymentsAdmin';
+import { socialLinksRoutes } from './routes/socialLinks';
+import { socialLinksAdminRoutes } from './routes/socialLinksAdmin';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -134,6 +136,8 @@ app.use('/api/v1/forum', forumRoutes);
 app.use('/api/v1/early-access', earlyAccessRoutes);
 app.use('/api/v1/manual-payments', manualPaymentRoutes);
 app.use('/api/v1/super-admin/manual-payments', manualPaymentAdminRoutes);
+app.use('/api/v1/social-links', socialLinksRoutes);
+app.use('/api/v1/super-admin/social-links', socialLinksAdminRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

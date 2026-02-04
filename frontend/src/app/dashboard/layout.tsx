@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { getStoredToken, clearStoredToken, api, type User, type NotificationItem } from '@/lib/api';
+import { SocialLinksBar } from '@/components/common/SocialLinksBar';
 import { SetupModal } from '@/components/dashboard/SetupModal';
 
 const clientNav = [
@@ -400,7 +401,11 @@ function DashboardLayoutInner({
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-h-0">
-        <header className="flex-shrink-0 flex items-center justify-end gap-2 h-12 px-4 border-b border-gray-200 bg-white">
+        <header className="flex-shrink-0 flex items-center justify-between gap-2 h-12 px-4 border-b border-gray-200 bg-white">
+          <div className="hidden sm:block">
+            <SocialLinksBar variant="light" size="sm" align="left" />
+          </div>
+          <div className="flex-1" />
           <div className="relative" ref={notifRef}>
             <button
               type="button"

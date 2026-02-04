@@ -1220,6 +1220,20 @@ model CmsContent {
   @@map("cms_content")
 }
 
+// Global social media handles managed by Super Admin
+model SocialMediaLink {
+  id           String   @id @default(uuid())
+  platformName String   @map("platform_name") @db.VarChar(80) // Facebook, Instagram, LinkedIn, X, YouTube, etc.
+  url          String   @db.VarChar(500)
+  iconUrl      String?  @map("icon_url") @db.VarChar(500) // optional custom icon
+  active       Boolean  @default(true)
+  clickCount   Int      @default(0) @map("click_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("social_media_links")
+}
+
 // —— Hiring & Talent Marketplace ——
 enum TalentStatus {
   pending
