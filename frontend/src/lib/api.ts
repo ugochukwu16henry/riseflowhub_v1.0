@@ -490,6 +490,10 @@ export const api = {
       return request<{ items: FaqItem[] }>(`/api/v1/faq${qs ? `?${qs}` : ''}`);
     },
   },
+  badges: {
+    list: (token: string) =>
+      request<{ items: UserBadge[] }>('/api/v1/badges', { token }),
+  },
   payments: {
     list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
     create: (body: { projectId: string; amount: number; currency?: string; type?: string }, token: string) =>
@@ -1369,6 +1373,11 @@ export interface FaqItem {
   order: number;
   isActive: boolean;
   isHighlighted: boolean;
+}
+
+export interface UserBadge {
+  badgeName: string;
+  dateAwarded: string;
 }
 
 export interface PaymentRow {

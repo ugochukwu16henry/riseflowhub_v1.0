@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { Project, AssignedToMe, ProjectStatus } from '@/lib/api';
+import type { Project, AssignedToMe, ProjectStatus, UserBadge } from '@/lib/api';
 
 const PROJECT_STATUS_FLOW: { value: ProjectStatus; label: string }[] = [
   { value: 'IdeaSubmitted', label: 'Idea Submitted' },
@@ -22,16 +22,24 @@ export default function ClientDashboardPage() {
   const [error, setError] = useState('');
   const [signModal, setSignModal] = useState<AssignedToMe | null>(null);
   const [signSuccess, setSignSuccess] = useState(false);
+  const [badges, setBadges] = useState<UserBadge[]>([]);
 
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
     Promise.all([
       fetch('/api/v1/projects', { headers: { Authorization: `Bearer ${token}` } })
-        .then((res) => res.ok ? res.json() : Promise.reject(new Error('Failed to load')))
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to load'))))
         .then(setProjects)
         .catch(() => setError('Could not load projects')),
-      api.agreements.listAssignedToMe(token).then(setAgreements).catch(() => setAgreements([])),
+      api.agreements
+        .listAssignedToMe(token)
+        .then(setAgreements)
+        .catch(() => setAgreements([])),
+      api.badges
+        .list(token)
+        .then((res) => setBadges(res.items))
+        .catch(() => setBadges([])),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -138,6 +146,35 @@ export default function ClientDashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Achievements & referrals */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+            <h2 className="text-lg font-semibold text-secondary mb-3">Your achievements</h2>
+            {badges.length === 0 ? (
+              <p className="text-gray-500 text-sm">Complete actions like submitting ideas, refining with AI, and logging revenue to unlock badges.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {badges.map((b) => (
+                  <span
+                    key={`${b.badgeName}-${b.dateAwarded}`}
+                    className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
+                  >
+                    {b.badgeName
+                      .split('_')
+                      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                      .join(' ')}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <p className="text-sm font-medium text-secondary mb-1">Invite a founder friend</p>
+              <p className="text-xs text-gray-500 mb-2">
+                Share your personal link. When they submit an idea and launch, you both unlock extra perks in AfriLaunch Hub.
+              </p>
+              <ReferralShare />
+            </div>
+          </div>
 
           {/* Milestones & Tasks */}
           <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
@@ -350,6 +387,92 @@ function SignAgreementModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function ReferralShare() {
+  const [copied, setCopied] = useState(false);
+  const [link, setLink] = useState('');
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (typeof window === 'undefined' || !token) return;
+    // We only need the raw token payload's userId, which is already encoded into signup ref query on backend
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = JSON.parse(atob(payloadBase64));
+      const userId = payloadJson.userId as string | undefined;
+      if (!userId) return;
+      const origin = window.location.origin;
+      setLink(`${origin}/signup?ref=${encodeURIComponent(userId)}`);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function handleCopy() {
+    if (!link) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(
+        () => setCopied(true),
+        () => setCopied(false)
+      );
+    }
+  }
+
+  if (!link) {
+    return <p className="text-xs text-gray-400">Sign in to see your referral link.</p>;
+  }
+
+  const shareText = encodeURIComponent(
+    'I’m building my startup on AfriLaunch Hub. Use my link to submit your idea and unlock founder tools:'
+  );
+  const encodedUrl = encodeURIComponent(link);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          readOnly
+          value={link}
+          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-700 bg-gray-50"
+        />
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+        >
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs">
+        <a
+          href={`https://wa.me/?text=${shareText}%20${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-green-50 px-3 py-1 text-green-700 hover:bg-green-100"
+        >
+          Share on WhatsApp
+        </a>
+        <a
+          href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-sky-50 px-3 py-1 text-sky-700 hover:bg-sky-100"
+        >
+          Share on X
+        </a>
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-blue-50 px-3 py-1 text-blue-700 hover:bg-blue-100"
+        >
+          Share on LinkedIn
+        </a>
       </div>
     </div>
   );
