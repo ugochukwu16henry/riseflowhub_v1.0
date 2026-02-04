@@ -7,6 +7,7 @@ import type { AuthPayload } from '../middleware/auth';
 import { sendNotificationEmail } from '../services/emailService';
 import { notify } from '../services/notificationService';
 import { createAuditLog } from '../services/auditLogService';
+import { recordSignupReferral } from '../services/referralService';
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,10 @@ export async function signup(req: Request, res: Response): Promise<void> {
     data: { name, email, passwordHash, role, tenantId },
     select: { id: true, name: true, email: true, role: true, tenantId: true, setupPaid: true, setupReason: true, createdAt: true },
   });
+  const ref = (req.query.ref as string | undefined) || (req.body as { ref?: string }).ref;
+  if (ref) {
+    recordSignupReferral(prisma, { referrerId: ref, referredUserId: user.id }).catch(() => {});
+  }
   const token = signToken({
     userId: user.id,
     email: user.email,

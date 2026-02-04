@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import * as aiCofounderService from '../services/aiCofounderService';
+import { awardBadge } from '../services/badgeService';
 
 const prisma = new PrismaClient();
 
@@ -41,6 +42,7 @@ export async function ideaClarify(req: Request, res: Response): Promise<void> {
   await prisma.aiGeneratedOutput.create({
     data: { userId, projectId: projectId || null, type: 'idea_clarified', content: content as object },
   });
+  awardBadge(prisma, { userId, badge: 'vision_clarifier' }).catch(() => {});
   res.json(content);
 }
 
@@ -58,6 +60,7 @@ export async function businessModel(req: Request, res: Response): Promise<void> 
   await prisma.aiGeneratedOutput.create({
     data: { userId, projectId: projectId || null, type: 'business_model', content: content as object },
   });
+  awardBadge(prisma, { userId, badge: 'business_architect' }).catch(() => {});
   res.json(content);
 }
 

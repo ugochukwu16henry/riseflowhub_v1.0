@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient, UserRole } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
+import { awardBadge } from '../services/badgeService';
 
 const prisma = new PrismaClient();
 
@@ -203,6 +204,12 @@ export async function updateGrowth(req: Request, res: Response): Promise<void> {
         ...(body.investorOnboarded != null && { investorOnboarded: body.investorOnboarded }),
       },
     });
+
+    if (updated.firstCustomer && updated.revenueGenerated && updated.investorOnboarded) {
+      // Award Growth Founder badge when full growth milestones are reached
+      awardBadge(prisma, { userId: payload.userId, badge: 'growth_founder' }).catch(() => {});
+    }
+
     res.json(updated);
   } catch (err) {
     const status = (err as any)?.status ?? 500;
@@ -303,6 +310,11 @@ export async function upsertFinancial(req: Request, res: Response): Promise<void
     const assets = Number(row.assets);
     const liabilities = Number(row.liabilities);
     const netWorth = assets - liabilities;
+
+    if (revenue > 0) {
+      awardBadge(prisma, { userId: payload.userId, badge: 'first_revenue' }).catch(() => {});
+    }
+
     res.json({
       id: row.id,
       periodMonth: row.periodMonth,
