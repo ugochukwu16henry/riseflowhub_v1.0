@@ -184,6 +184,9 @@ model User {
   accountStatuses   AccountStatus[]
   statusesSet       AccountStatus[] @relation("AccountStatusSetBy")
   notificationSettings NotificationSettings?
+  preferences       UserPreferences?
+  privacySettings   PrivacySettings?
+  settingsActivity  SettingsActivityLog[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -824,6 +827,48 @@ model UserPayment {
   completedAt DateTime? @map("completed_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Settings activity log (per-user settings changes)
+model SettingsActivityLog {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  action       String   @db.VarChar(100)
+  fieldChanged String?  @map("field_changed") @db.VarChar(120)
+  oldValue     String?  @map("old_value") @db.Text
+  newValue     String?  @map("new_value") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settings_activity_log")
+}
+
+// User preferences (theme, language, dashboard layout)
+model UserPreferences {
+  userId          String   @id @map("user_id")
+  theme           String   @default("system") @db.VarChar(20) // light | dark | system
+  language        String   @default("en") @db.VarChar(10)
+  dashboardLayout String   @default("default") @map("dashboard_layout") @db.VarChar(40)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// Privacy controls
+model PrivacySettings {
+  userId           String   @id @map("user_id")
+  profileVisibility String  @default("public") @map("profile_visibility") @db.VarChar(20) // public | private
+  messagePreference String  @default("anyone") @map("message_preference") @db.VarChar(30) // anyone | investors_only | no_one
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
 }
 
 // Admin Leads (track and manage incoming leads; convert to project)
