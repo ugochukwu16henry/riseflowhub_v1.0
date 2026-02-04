@@ -160,6 +160,42 @@ export interface EarlyAccessMeResponse {
   consultationCompleted?: boolean;
 }
 
+export type DashboardFeatureKey =
+  | 'idea_workspace'
+  | 'ai_guidance'
+  | 'consultations'
+  | 'marketplace'
+  | 'donor_badge'
+  | 'early_founder'
+  | 'admin_dashboard';
+
+export interface UserFeatureState {
+  userId: string;
+  role: UserRole;
+  hasSetupAccess: boolean;
+  hasMarketplaceAccess: boolean;
+  isEarlyFounder: boolean;
+  hasDonorBadge: boolean;
+  hasPendingManualPayment: boolean;
+  pendingManualPayment?: {
+    id: string;
+    amount: number;
+    currency: string;
+    paymentType: 'platform_fee' | 'donation';
+    submittedAt: string;
+  };
+  earlyAccess?:
+    | {
+        status: 'active' | 'inactive' | 'completed' | 'revoked';
+        signupOrder: number;
+        ideaSubmitted: boolean;
+        consultationCompleted: boolean;
+      }
+    | null;
+  badges: UserBadge[];
+  unlockedFeatures: DashboardFeatureKey[];
+}
+
 export interface ManualPayment {
   id: string;
   userId: string;
@@ -789,6 +825,7 @@ export const api = {
         `/api/v1/users/me`,
         { method: 'PATCH', body: JSON.stringify(body), token }
       ),
+    meFeatures: (token: string) => request<UserFeatureState>('/api/v1/users/me/features', { token }),
   },
   setupFee: {
     config: () =>
@@ -877,6 +914,8 @@ export const api = {
       delete: (id: string, token: string) =>
         request<{ ok: boolean; id: string }>(`/api/v1/super-admin/skills/${id}`, { method: 'DELETE', token }),
     },
+    userFeatures: (userId: string, token: string) =>
+      request<UserFeatureState>(`/api/v1/super-admin/users/${userId}/features`, { token }),
     emailLogs: {
       list: (token: string, params?: { page?: number; limit?: number; status?: string; type?: string; toEmail?: string }) => {
         const q = new URLSearchParams(params as Record<string, string>).toString();

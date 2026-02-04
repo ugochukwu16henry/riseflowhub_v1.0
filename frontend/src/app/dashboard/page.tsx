@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getStoredToken, api } from '@/lib/api';
+import { getStoredToken, api, type UserFeatureState } from '@/lib/api';
 import type {
   Project,
   AssignedToMe,
@@ -30,6 +30,7 @@ export default function ClientDashboardPage() {
   const [signSuccess, setSignSuccess] = useState(false);
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [reputation, setReputation] = useState<FounderReputationBreakdown | null>(null);
+  const [features, setFeatures] = useState<UserFeatureState | null>(null);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -51,6 +52,10 @@ export default function ClientDashboardPage() {
         .meReputation(token)
         .then(setReputation)
         .catch(() => setReputation(null)),
+      api.users
+        .meFeatures(token)
+        .then(setFeatures)
+        .catch(() => setFeatures(null)),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -70,6 +75,85 @@ export default function ClientDashboardPage() {
       <p className="text-gray-600 mb-8">
         Here’s an overview of your project and next steps.
       </p>
+
+      {/* Smart feature access grid */}
+      {features && (
+        <div className="mb-6 space-y-3">
+          {features.hasPendingManualPayment && features.pendingManualPayment && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              We’ve received your bank transfer of{' '}
+              <span className="font-semibold">
+                {Number(features.pendingManualPayment.amount).toLocaleString()}{' '}
+                {features.pendingManualPayment.currency}
+              </span>
+              . It is currently <span className="font-semibold">pending verification</span>. You’ll get a notification
+              once it is confirmed and your features are unlocked.
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Idea workspace / dashboard */}
+            <FeatureCard
+              title="Idea workspace"
+              description="Plan, validate, and manage your startup in one place."
+              href="/dashboard/project"
+              unlocked={features.hasSetupAccess}
+              primaryCtaLabel={features.hasSetupAccess ? 'Open workspace' : 'Unlock with setup fee'}
+              lockedHint="Pay or claim your Early Founder scholarship to unlock your idea dashboard and workspace."
+            />
+
+            {/* AI Co‑Founder */}
+            <FeatureCard
+              title="AI Co‑Founder"
+              description="Ask questions and get structured guidance for your idea."
+              href="/dashboard/ai"
+              unlocked={features.unlockedFeatures.includes('ai_guidance')}
+              primaryCtaLabel={features.unlockedFeatures.includes('ai_guidance') ? 'Chat with AI' : 'Unlock AI guidance'}
+              lockedHint="Unlock your setup to access AI Co‑Founder guidance for validation, strategy, and planning."
+            />
+
+            {/* Consultation booking */}
+            <FeatureCard
+              title="1:1 Consultation"
+              description="Book a session to review your idea, pricing, or roadmap."
+              href="/dashboard/consultation"
+              unlocked={features.unlockedFeatures.includes('consultations')}
+              primaryCtaLabel={features.unlockedFeatures.includes('consultations') ? 'Book consultation' : 'Unlock consultation'}
+              lockedHint="Once your setup is active, you can book a founder consultation."
+            />
+
+            {/* Marketplace access */}
+            <FeatureCard
+              title="Marketplace access"
+              description="Hire vetted talent or showcase your skills for paid projects."
+              href="/dashboard/marketplace"
+              unlocked={features.hasMarketplaceAccess}
+              primaryCtaLabel={features.hasMarketplaceAccess ? 'Go to marketplace' : 'Unlock marketplace'}
+              lockedHint="Pay the small marketplace fee or complete required steps to unlock hiring and talent opportunities."
+            />
+
+            {/* Donor / supporter */}
+            <FeatureCard
+              title="Donor & supporter badge"
+              description="Support the platform and display your donor badge on your profile."
+              href="/dashboard/payments"
+              unlocked={features.hasDonorBadge}
+              primaryCtaLabel={features.hasDonorBadge ? 'View payments' : 'Donate or support'}
+              lockedHint="Send a voluntary donation to unlock your donor badge and help other founders get started."
+            />
+
+            {/* Early Founder program */}
+            <FeatureCard
+              title="Early Founder program"
+              description="Limited scholarship seats with sponsored starter access."
+              href="/invite/founder-early-access"
+              unlocked={features.isEarlyFounder}
+              primaryCtaLabel={features.isEarlyFounder ? 'View my benefits' : 'Check availability'}
+              lockedHint="If seats are still open, you can join via the Early Founder invite link and unlock sponsored starter access."
+            />
+          </div>
+        </div>
+      )}
 
       {loading && <p className="text-gray-500">Loading...</p>}
       {error && (
@@ -348,6 +432,48 @@ export default function ClientDashboardPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function FeatureCard({
+  title,
+  description,
+  href,
+  unlocked,
+  primaryCtaLabel,
+  lockedHint,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  unlocked: boolean;
+  primaryCtaLabel: string;
+  lockedHint: string;
+}) {
+  return (
+    <div
+      className={`rounded-xl border px-4 py-4 text-sm ${
+        unlocked
+          ? 'border-emerald-200 bg-white'
+          : 'border-dashed border-gray-200 bg-gray-50 text-gray-500'
+      }`}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-secondary mb-1">{title}</p>
+      <p className="text-xs mb-3">{description}</p>
+      <div className="flex items-center justify-between gap-2">
+        <Link
+          href={href}
+          className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium ${
+            unlocked
+              ? 'bg-primary text-white hover:opacity-90'
+              : 'bg-white text-primary border border-primary/30 hover:bg-primary/5'
+          }`}
+        >
+          {primaryCtaLabel}
+        </Link>
+        <span className="text-[10px] text-gray-500 max-w-[55%]">{lockedHint}</span>
+      </div>
     </div>
   );
 }
