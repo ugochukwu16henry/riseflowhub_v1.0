@@ -69,6 +69,7 @@ import { socialLinksRoutes } from './routes/socialLinks';
 import { socialLinksAdminRoutes } from './routes/socialLinksAdmin';
 import { shareMetaRoutes } from './routes/shareMeta';
 import { shareMetaAdminRoutes } from './routes/shareMetaAdmin';
+import { birthdayWishesRoutes } from './routes/birthdayWishes';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -142,6 +143,7 @@ app.use('/api/v1/social-links', socialLinksRoutes);
 app.use('/api/v1/super-admin/social-links', socialLinksAdminRoutes);
 app.use('/api/v1/share-meta', shareMetaRoutes);
 app.use('/api/v1/super-admin/share-meta', shareMetaAdminRoutes);
+app.use('/api/v1/super-admin/birthday-wishes', birthdayWishesRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');
