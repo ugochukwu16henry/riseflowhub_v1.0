@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { Project, AssignedToMe, ProjectStatus, UserBadge } from '@/lib/api';
+import type {
+  Project,
+  AssignedToMe,
+  ProjectStatus,
+  UserBadge,
+  FounderReputationBreakdown,
+} from '@/lib/api';
 
 const PROJECT_STATUS_FLOW: { value: ProjectStatus; label: string }[] = [
   { value: 'IdeaSubmitted', label: 'Idea Submitted' },
@@ -23,6 +29,7 @@ export default function ClientDashboardPage() {
   const [signModal, setSignModal] = useState<AssignedToMe | null>(null);
   const [signSuccess, setSignSuccess] = useState(false);
   const [badges, setBadges] = useState<UserBadge[]>([]);
+  const [reputation, setReputation] = useState<FounderReputationBreakdown | null>(null);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -40,6 +47,10 @@ export default function ClientDashboardPage() {
         .list(token)
         .then((res) => setBadges(res.items))
         .catch(() => setBadges([])),
+      api.founders
+        .meReputation(token)
+        .then(setReputation)
+        .catch(() => setReputation(null)),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -111,20 +122,60 @@ export default function ClientDashboardPage() {
             </div>
           </div>
 
-          {/* Project status timeline */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
-            <h2 className="text-lg font-semibold text-secondary mb-3">Project timeline</h2>
-            <div className="flex flex-wrap gap-2">
-              {PROJECT_STATUS_FLOW.map((s, i) => (
-                <span
-                  key={s.value}
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                    i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  {s.label}
-                </span>
-              ))}
+          {/* Project status timeline + Founder reputation */}
+          <div className="grid gap-4 lg:grid-cols-3 mb-6">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 lg:col-span-2">
+              <h2 className="text-lg font-semibold text-secondary mb-3">Project timeline</h2>
+              <div className="flex flex-wrap gap-2">
+                {PROJECT_STATUS_FLOW.map((s, i) => (
+                  <span
+                    key={s.value}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                      i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h2 className="text-sm font-semibold text-secondary mb-1">Founder reputation</h2>
+              {reputation ? (
+                <>
+                  <p className="text-xs text-gray-600 mb-2">
+                    Your trust & professionalism score based on profile, progress, investor activity, and milestones.
+                  </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700">
+                      {reputation.level}
+                    </span>
+                    <span className="text-sm font-semibold text-secondary">{reputation.total}/100</span>
+                  </div>
+                  <dl className="space-y-1 text-[11px] text-gray-600">
+                    <div className="flex justify-between">
+                      <dt>Profile</dt>
+                      <dd>{reputation.profileCompleteness}/10</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Idea clarity</dt>
+                      <dd>{reputation.ideaClarity}/10</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Progress</dt>
+                      <dd>{reputation.projectProgress}/20</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt>Investor feedback</dt>
+                      <dd>{reputation.investorFeedback}/15</dd>
+                    </div>
+                  </dl>
+                </>
+              ) : (
+                <p className="text-xs text-gray-500">
+                  Your founder reputation will appear here once your profile, projects, and milestones are more active.
+                </p>
+              )}
             </div>
           </div>
 

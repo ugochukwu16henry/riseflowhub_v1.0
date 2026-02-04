@@ -100,12 +100,18 @@ export async function recalculateFounderReputation(
     if (project?.id) {
       const startup = await prisma.startupProfile.findFirst({
         where: { projectId: project.id },
-        select: { id: true, score: { select: { breakdownJson: true } } },
+        select: { id: true },
       });
-      const breakdown = (startup?.score?.breakdownJson as any) || null;
+      if (startup?.id) {
+        const score = await prisma.startupScore.findUnique({
+          where: { startupId: startup.id },
+          select: { breakdown: true },
+        });
+        const breakdown = (score?.breakdown as any) || null;
       if (breakdown?.problemClarity != null) {
         const raw = Number(breakdown.problemClarity) || 0;
         ideaClarity = Math.max(0, Math.min(10, Math.round(raw)));
+      }
       }
     }
   }
@@ -136,11 +142,8 @@ export async function recalculateFounderReputation(
   });
   const communicationResponsiveness = Math.max(0, Math.min(10, Math.round(Math.log10(1 + sentMessagesCount) * 4)));
 
-  // 5) Meeting attendance (10 pts) — approximate from consultations booked & completed
-  const consultationsCount = await prisma.consultationBooking.count({
-    where: { userId },
-  });
-  const meetingAttendance = Math.max(0, Math.min(10, Math.round(Math.log10(1 + consultationsCount) * 4)));
+  // 5) Meeting attendance (10 pts) — placeholder until explicit meeting tracking is wired
+  const meetingAttendance = 0;
 
   // 6) Team feedback (10 pts) — placeholder until explicit team ratings exist
   const teamFeedback = 0;

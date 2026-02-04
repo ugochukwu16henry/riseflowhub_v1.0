@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getStoredToken, api } from '@/lib/api';
-import type { DealRoomStartupDetail, DealRoomMessage, InvestmentListItem, StartupScoreResponse } from '@/lib/api';
+import type {
+  DealRoomStartupDetail,
+  DealRoomMessage,
+  InvestmentListItem,
+  StartupScoreResponse,
+  FounderReputationBreakdown,
+} from '@/lib/api';
 
 export default function DealRoomStartupProfilePage() {
   const params = useParams();
@@ -24,6 +30,7 @@ export default function DealRoomStartupProfilePage() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [accessStatus, setAccessStatus] = useState<'none' | 'requested' | 'approved' | 'rejected'>('approved');
   const [score, setScore] = useState<StartupScoreResponse | null>(null);
+  const [founderRep, setFounderRep] = useState<FounderReputationBreakdown | null>(null);
 
   const investment = startupId ? myInvestments.find((i) => i.startupId === startupId) : null;
 
@@ -43,6 +50,15 @@ export default function DealRoomStartupProfilePage() {
           setScore(sc);
         } catch {
           setScore(null);
+        }
+        const founderId = s.project?.client?.userId;
+        if (founderId) {
+          try {
+            const rep = await api.founders.getReputation(founderId, token);
+            setFounderRep(rep);
+          } catch {
+            setFounderRep(null);
+          }
         }
       })
       .catch((e) => {
@@ -214,14 +230,21 @@ export default function DealRoomStartupProfilePage() {
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-secondary">{project?.projectName ?? 'Startup'}</h1>
-          <p className="text-gray-600">{project?.client?.businessName} · {project?.client?.industry ?? '—'}</p>
-          {startup.investorReady && (
-            <div className="mt-2 flex flex-wrap gap-1">
+          <p className="text-gray-600">
+            {project?.client?.businessName} · {project?.client?.industry ?? '—'}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1">
+            {startup.investorReady && (
               <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                 Investor ready
               </span>
-            </div>
-          )}
+            )}
+            {founderRep && (
+              <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700">
+                Founder: {founderRep.level} ({founderRep.total}/100)
+              </span>
+            )}
+          </div>
         </div>
         <button
           type="button"

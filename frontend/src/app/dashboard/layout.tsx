@@ -19,6 +19,7 @@ const clientNav = [
   { href: '/dashboard/messages', label: 'Messages' },
   { href: '/dashboard/payments', label: 'Payments' },
   { href: '/dashboard/reports', label: 'Reports' },
+  { href: '/dashboard/community', label: 'Community' },
 ];
 
 const adminNav = [
@@ -84,6 +85,7 @@ const investorNav = [
   { href: '/dashboard/investor/marketplace', label: 'Marketplace' },
   { href: '/dashboard/investor/investments', label: 'My investments' },
   { href: '/dashboard/mentor', label: 'AI Mentor' },
+  { href: '/dashboard/community', label: 'Community' },
 ];
 
 const talentNav = [

@@ -494,6 +494,53 @@ export const api = {
     list: (token: string) =>
       request<{ items: UserBadge[] }>('/api/v1/badges', { token }),
   },
+  founders: {
+    meReputation: (token: string) =>
+      request<FounderReputationBreakdown>('/api/v1/founders/me/reputation', { token }),
+    getReputation: (userId: string, token: string) =>
+      request<FounderReputationBreakdown>(`/api/v1/founders/${userId}/reputation`, { token }),
+  },
+  forum: {
+    list: (
+      params: { category?: string; search?: string; page?: number; pageSize?: number } = {},
+      token?: string
+    ) => {
+      const usp = new URLSearchParams();
+      if (params.category) usp.set('category', params.category);
+      if (params.search) usp.set('search', params.search);
+      if (params.page) usp.set('page', String(params.page));
+      if (params.pageSize) usp.set('pageSize', String(params.pageSize));
+      const qs = usp.toString();
+      return request<{ items: ForumPost[]; total: number; page: number; pageSize: number }>(
+        `/api/v1/forum/posts${qs ? `?${qs}` : ''}`,
+        token ? { token } : {}
+      );
+    },
+    get: (id: string, token?: string) =>
+      request<ForumPost & { comments: ForumComment[] }>(`/api/v1/forum/posts/${id}`, token ? { token } : {}),
+    create: (body: { title: string; content: string; category?: string }, token: string) =>
+      request<ForumPost>('/api/v1/forum/posts', {
+        method: 'POST',
+        token,
+        body: JSON.stringify({ title: body.title, body: body.content, category: body.category }),
+      }),
+    comment: (postId: string, content: string, token: string) =>
+      request<ForumComment>(`/api/v1/forum/posts/${postId}/comments`, {
+        method: 'POST',
+        token,
+        body: JSON.stringify({ body: content }),
+      }),
+    toggleLike: (postId: string, token: string) =>
+      request<{ liked: boolean }>(`/api/v1/forum/posts/${postId}/like`, {
+        method: 'POST',
+        token,
+      }),
+    remove: (postId: string, token: string) =>
+      request<{ ok: boolean }>(`/api/v1/forum/posts/${postId}`, {
+        method: 'DELETE',
+        token,
+      }),
+  },
   payments: {
     list: (projectId: string, token: string) => request<PaymentRow[]>(`/api/v1/payments?projectId=${projectId}`, { token }),
     create: (body: { projectId: string; amount: number; currency?: string; type?: string }, token: string) =>
@@ -1378,6 +1425,46 @@ export interface FaqItem {
 export interface UserBadge {
   badgeName: string;
   dateAwarded: string;
+}
+
+export interface FounderReputationBreakdown {
+  profileCompleteness: number;
+  ideaClarity: number;
+  projectProgress: number;
+  communicationResponsiveness: number;
+  meetingAttendance: number;
+  teamFeedback: number;
+  investorFeedback: number;
+  milestonesAchieved: number;
+  total: number;
+  level: 'Beginner' | 'Builder' | 'Trusted Founder' | 'Elite Founder';
+}
+
+export interface ForumPost {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  category: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  isDeleted: boolean;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: { id: string; name: string; role: string };
+}
+
+export interface ForumComment {
+  id: string;
+  postId: string;
+  userId: string;
+  body: string;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: { id: string; name: string; role: string };
 }
 
 export interface PaymentRow {
