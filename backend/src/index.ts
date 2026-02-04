@@ -58,6 +58,7 @@ import { businessRoutes } from './routes/business';
 import { faqRoutes } from './routes/faq';
 import { helpAiRoutes } from './routes/helpAi';
 import { tourRoutes } from './routes/tours';
+import { badgeRoutes } from './routes/badges';
 import { settingsRoutes } from './routes/settings';
 import * as webhookController from './controllers/webhookController';
 
@@ -121,6 +122,7 @@ app.use('/api/v1/business', businessRoutes);
 app.use('/api/v1/faq', faqRoutes);
 app.use('/api/v1/help-ai', helpAiRoutes);
 app.use('/api/v1/tours', tourRoutes);
+app.use('/api/v1/badges', badgeRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 
 app.get('/api/v1/health', (_, res) => {

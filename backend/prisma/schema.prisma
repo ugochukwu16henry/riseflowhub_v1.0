@@ -190,6 +190,9 @@ model User {
   businessModuleAccessGranted BusinessModuleAccess[] @relation("BusinessModuleAccessGranted")
   helpAiLogs        HelpAiLog[]
   tourProgress      UserTourProgress[]
+  userBadges        UserBadge[]
+  referralsSent     Referral[] @relation("ReferralReferrer")
+  referralsReceived Referral[] @relation("ReferralReferred")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -968,6 +971,36 @@ model UserTourProgress {
 
   @@unique([userId, tourName])
   @@map("user_tour_progress")
+}
+
+// User achievement badges
+model UserBadge {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  badgeName   String   @map("badge_name") @db.VarChar(80)
+  dateAwarded DateTime @default(now()) @map("date_awarded")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeName])
+  @@map("user_badges")
+}
+
+// Referral tracking (viral growth)
+model Referral {
+  id              String   @id @default(uuid())
+  referrerId      String   @map("referrer_id")
+  referredUserId  String?  @map("referred_user_id")
+  stageCompleted  String?  @map("stage_completed") @db.VarChar(40) // signed_up | idea_submitted | startup_launched
+  rewardGiven     Boolean  @default(false) @map("reward_given")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  referrer  User @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred  User? @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: SetNull)
+
+  @@unique([referrerId, referredUserId])
+  @@map("referrals")
 }
 
 // Admin Leads (track and manage incoming leads; convert to project)
