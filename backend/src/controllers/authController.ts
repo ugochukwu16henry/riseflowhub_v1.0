@@ -79,10 +79,17 @@ export async function signup(req: Request, res: Response): Promise<void> {
   });
 }
 
+function isPrismaInitError(e: unknown): boolean {
+  const name = (e as { name?: string })?.name;
+  const message = (e as { message?: string })?.message ?? '';
+  return name === 'PrismaClientInitializationError' || (message.includes('datasource') && message.includes('URL'));
+}
+
 export async function login(req: Request, res: Response): Promise<void> {
   const { email, password } = req.body as { email: string; password: string };
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await comparePassword(password, user.passwordHash))) {
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !(await comparePassword(password, user.passwordHash))) {
     const ip = getClientIp(req);
     const ua = getUserAgent(req);
     await recordFailedLoginAttempt({
@@ -125,6 +132,16 @@ export async function login(req: Request, res: Response): Promise<void> {
     },
     token,
   });
+  } catch (e) {
+    if (isPrismaInitError(e)) {
+      console.error('[Auth] Login failed: database config error.', (e as Error).message);
+      res.status(503).json({
+        error: 'Database not configured. On Render, set DATABASE_URL to a valid postgresql:// or postgres:// connection string (e.g. from Supabase Project Settings → Database).',
+      });
+      return;
+    }
+    throw e;
+  }
 }
 
 export async function me(req: Request, res: Response): Promise<void> {

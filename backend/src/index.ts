@@ -87,9 +87,27 @@ import * as webhookController from './controllers/webhookController';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// CORS: origin must match browser exactly (no trailing slash). Browser sends e.g. https://app.vercel.app
-const frontendOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/+$/, '');
-app.use(cors({ origin: frontendOrigin, credentials: true }));
+// CORS: allow FRONTEND_URL, localhost, and known Vercel URL so requests succeed even if FRONTEND_URL is unset on Render
+const frontendOrigin = (process.env.FRONTEND_URL || '').replace(/\/+$/, '');
+const allowedOrigins = [
+  frontendOrigin,
+  'http://localhost:3000',
+  'https://afrilauch-v1-0.vercel.app',
+].filter((o) => o && o.length > 0);
+const originSet = new Set(allowedOrigins);
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // same-origin or tools like Postman
+      if (originSet.has(origin)) return cb(null, origin);
+      return cb(null, false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-Domain'],
+  })
+);
 app.use(compression({ level: 6, threshold: 512 }));
 
 // App-layer security: block known-bad IPs and apply global rate limiter

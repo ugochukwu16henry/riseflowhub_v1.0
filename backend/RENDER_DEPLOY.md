@@ -42,7 +42,7 @@ In your Render Web Service → **Environment** tab, add these variables.
 
 | Key | Value | Notes |
 |-----|--------|--------|
-| `DATABASE_URL` | Your Supabase Postgres connection string | From Supabase: Project Settings → Database → Connection string (URI). Use the **pooled** one if available (port 6543). |
+| `DATABASE_URL` | Your Supabase Postgres connection string | Must start with `postgresql://` or `postgres://`. From Supabase: Project Settings → Database → Connection string (URI). Use the **pooled** one if available (port 6543). If login returns 503 "Database not configured", this value is wrong or missing on Render. |
 | `JWT_SECRET` | A long random string | Generate one: e.g. `openssl rand -base64 32`. **Never** commit this. |
 | `FRONTEND_URL` | Your Vercel app URL | e.g. `https://your-app.vercel.app` (no trailing slash). Used for CORS and links in emails. |
 
