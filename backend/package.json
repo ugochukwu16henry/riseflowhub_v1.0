@@ -13,6 +13,7 @@
     "db:push": "prisma db push",
     "db:push:local": "node scripts/load-env-and-push.js",
     "db:migrate": "prisma migrate dev",
+    "db:baseline-deploy": "prisma migrate resolve --applied \"0_baseline\" && prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts"
   },
