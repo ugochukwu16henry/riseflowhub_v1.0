@@ -1,17 +1,10 @@
-import { useEffect, useState } from 'react';
 import { Section } from './Section';
-import { api, type FaqItem } from '@/lib/api';
 
-export function FAQPreview() {
-  const [items, setItems] = useState<FaqItem[]>([]);
+interface FAQPreviewProps {
+  items: { id: string; question: string; answer: string }[];
+}
 
-  useEffect(() => {
-    api.faq
-      .list({ highlighted: true, limit: 6 })
-      .then((data) => setItems(data.items))
-      .catch(() => setItems([]));
-  }, []);
-
+export function FAQPreview({ items }: FAQPreviewProps) {
   return (
     <Section id="faq" variant="muted">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
@@ -33,7 +26,7 @@ export function FAQPreview() {
         </div>
         <div className="md:w-2/3 space-y-3">
           {items.length === 0 ? (
-            <p className="text-gray-500 text-sm">Loading FAQs...</p>
+            <p className="text-gray-500 text-sm">More questions answered in the full FAQ.</p>
           ) : (
             <dl className="space-y-3">
               {items.map((item) => (

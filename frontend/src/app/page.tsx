@@ -12,6 +12,7 @@ import {
   Footer,
   FAQPreview,
 } from '@/components/landing';
+import { api, type FaqItem } from '@/lib/api';
 import { pageContentFallback } from '@/data/pageContent';
 import type { HomePageContent } from '@/data/pageContent';
 
@@ -30,8 +31,22 @@ async function getPageContent(slug: 'home' = 'home'): Promise<HomePageContent> {
   }
 }
 
+async function getHighlightedFaqs(): Promise<Pick<FaqItem, 'id' | 'question' | 'answer'>[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/faq?highlighted=true&limit=6`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Failed');
+    const data = (await res.json()) as { items: FaqItem[] };
+    return data.items.map((i) => ({ id: i.id, question: i.question, answer: i.answer }));
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
   const content = await getPageContent();
+  const faqs = await getHighlightedFaqs();
 
   return (
     <div className="min-h-screen bg-background text-text-dark">
@@ -45,7 +60,7 @@ export default async function HomePage() {
         <ForInvestors content={content.forInvestors} />
         <PlatformFeatures content={content.platformFeatures} />
         <Vision content={content.vision} />
-        <FAQPreview />
+        <FAQPreview items={faqs} />
         <FinalCTA content={content.finalCta} />
         <Footer />
       </main>
