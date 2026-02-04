@@ -45,6 +45,12 @@ import { teamRoutes } from './routes/team';
 import { workspaceRoutes } from './routes/workspace';
 import { dealRoomRoutes } from './routes/dealRoom';
 import { cmsRoutes } from './routes/cms';
+import { talentRoutes } from './routes/talent';
+import { hirerRoutes } from './routes/hirer';
+import { hiringRoutes } from './routes/hiring';
+import { ratingsRoutes } from './routes/ratings';
+import { legalRoutes } from './routes/legal';
+import { marketplaceFeeRoutes } from './routes/marketplaceFee';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -85,6 +91,12 @@ app.use('/api/v1/team', teamRoutes);
 app.use('/api/v1/workspace', workspaceRoutes);
 app.use('/api/v1/deal-room', dealRoomRoutes);
 app.use('/api/v1/cms', cmsRoutes);
+app.use('/api/v1/talent', talentRoutes);
+app.use('/api/v1/hirer', hirerRoutes);
+app.use('/api/v1/hiring', hiringRoutes);
+app.use('/api/v1/ratings', ratingsRoutes);
+app.use('/api/v1/legal', legalRoutes);
+app.use('/api/v1/marketplace-fee', marketplaceFeeRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

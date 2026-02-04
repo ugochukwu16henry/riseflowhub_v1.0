@@ -24,7 +24,7 @@ router.get(
 router.post(
   '/',
   requireRoles(UserRole.super_admin),
-  [body('title').trim().notEmpty(), body('type').isIn(['NDA', 'MOU', 'CoFounder', 'Terms']), body('templateUrl').optional().trim()],
+  [body('title').trim().notEmpty(), body('type').isIn(['NDA', 'MOU', 'CoFounder', 'Terms', 'FairTreatment', 'HireContract']), body('templateUrl').optional().trim()],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -50,7 +50,7 @@ router.get(
 router.put(
   '/:id',
   requireRoles(UserRole.super_admin),
-  [param('id').isUUID(), body('title').optional().trim(), body('type').optional().isIn(['NDA', 'MOU', 'CoFounder', 'Terms']), body('templateUrl').optional().trim()],
+  [param('id').isUUID(), body('title').optional().trim(), body('type').optional().isIn(['NDA', 'MOU', 'CoFounder', 'Terms', 'FairTreatment', 'HireContract']), body('templateUrl').optional().trim()],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

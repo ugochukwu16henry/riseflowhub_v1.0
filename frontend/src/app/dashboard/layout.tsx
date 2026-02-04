@@ -80,6 +80,35 @@ const investorNav = [
   { href: '/dashboard/mentor', label: 'AI Mentor' },
 ];
 
+const talentNav = [
+  { href: '/dashboard/talent', label: 'Dashboard' },
+  { href: '/dashboard/talent/profile', label: 'Profile' },
+  { href: '/dashboard/talent/hires', label: 'My hires' },
+  { href: '/dashboard/talent/agreements', label: 'Agreements' },
+  { href: '/dashboard/mentor', label: 'AI Mentor' },
+];
+
+const hirerNav = [
+  { href: '/dashboard/hirer', label: 'Dashboard' },
+  { href: '/talent-marketplace', label: 'Browse talents' },
+  { href: '/dashboard/hirer/hires', label: 'My hires' },
+  { href: '/dashboard/hirer/agreements', label: 'Agreements' },
+  { href: '/dashboard/hirer/payments', label: 'Payments' },
+];
+
+const hrManagerNav = [
+  { href: '/dashboard/admin/hr', label: 'HR Dashboard' },
+  { href: '/dashboard/admin/hr/talents', label: 'Review talents' },
+  { href: '/dashboard/admin/hr/hirers', label: 'Hirers' },
+  { href: '/dashboard/admin/hr/hires', label: 'Hires' },
+  { href: '/dashboard/admin/agreements', label: 'Agreements' },
+];
+
+const legalNav = [
+  { href: '/dashboard/legal', label: 'Agreements' },
+  { href: '/dashboard/legal/audit', label: 'Audit trail' },
+];
+
 function isAdmin(role: string) {
   return ['super_admin', 'project_manager', 'finance_admin'].includes(role);
 }
@@ -90,6 +119,22 @@ function isTeamMember(role: string) {
 
 function isInvestor(role: string) {
   return role === 'investor';
+}
+
+function isTalent(role: string) {
+  return role === 'talent';
+}
+
+function isHirer(role: string) {
+  return role === 'hirer';
+}
+
+function isHrManager(role: string) {
+  return role === 'hr_manager';
+}
+
+function isLegalTeam(role: string) {
+  return role === 'legal_team';
 }
 
 function needsSetupModal(user: User): boolean {
@@ -137,13 +182,21 @@ function DashboardLayoutInner({
     const token = getStoredToken();
     const ref = searchParams.get('ref');
     const success = searchParams.get('setup_success');
-    if (!token || !ref || success !== '1') return;
-    api.setupFee.verify({ reference: ref }, token)
-      .then((r) => {
-        if (r.setupPaid) api.auth.me(token!).then(setUser);
-      })
-      .catch(() => {})
-      .finally(() => router.replace(pathname?.split('?')[0] || '/dashboard'));
+    const marketplaceSuccess = searchParams.get('marketplace_fee_success');
+    if (!token || !ref) return;
+    if (success === '1') {
+      api.setupFee.verify({ reference: ref }, token)
+        .then((r) => { if (r.setupPaid) api.auth.me(token!).then(setUser); })
+        .catch(() => {})
+        .finally(() => router.replace(pathname?.split('?')[0] || '/dashboard'));
+      return;
+    }
+    if (marketplaceSuccess === '1') {
+      api.marketplaceFee.verify({ reference: ref }, token)
+        .then(() => api.auth.me(token!).then(setUser))
+        .catch(() => {})
+        .finally(() => router.replace(pathname?.split('?')[0] || '/dashboard'));
+    }
   }, [searchParams, pathname, router]);
 
   function handleLogout() {
@@ -175,7 +228,15 @@ function DashboardLayoutInner({
           ? teamMemberNav
           : isInvestor(user.role)
             ? investorNav
-            : clientNav;
+            : isTalent(user.role)
+              ? talentNav
+              : isHirer(user.role)
+                ? hirerNav
+                : isHrManager(user.role)
+                  ? hrManagerNav
+                  : isLegalTeam(user.role)
+                    ? legalNav
+                    : clientNav;
   const base =
     user.role === 'super_admin'
       ? '/dashboard/admin'
@@ -185,7 +246,15 @@ function DashboardLayoutInner({
           ? '/dashboard/team'
           : isInvestor(user.role)
             ? '/dashboard/investor'
-            : '/dashboard';
+            : isTalent(user.role)
+              ? '/dashboard/talent'
+              : isHirer(user.role)
+                ? '/dashboard/hirer'
+                : isHrManager(user.role)
+                  ? '/dashboard/admin/hr'
+                  : isLegalTeam(user.role)
+                    ? '/dashboard/legal'
+                    : '/dashboard';
   const primaryColor = user.tenant?.primaryColor || '#0FA958';
   const brandName = user.tenant?.orgName || 'AfriLaunch Hub';
   const logoUrl = user.tenant?.logo || '/Afrilauch_logo.png';

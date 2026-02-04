@@ -11,7 +11,7 @@ router.post(
     body('name').trim().notEmpty(),
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 6 }),
-    body('role').optional().isIn(['client', 'developer', 'designer', 'marketer', 'project_manager', 'finance_admin', 'super_admin', 'investor']),
+    body('role').optional().isIn(['client', 'developer', 'designer', 'marketer', 'project_manager', 'finance_admin', 'super_admin', 'investor', 'talent', 'hirer', 'hr_manager', 'legal_team']),
   ],
   (req, res) => {
     const errors = validationResult(req);

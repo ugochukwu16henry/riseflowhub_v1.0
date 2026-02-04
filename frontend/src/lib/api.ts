@@ -10,7 +10,11 @@ export type UserRole =
   | 'project_manager'
   | 'finance_admin'
   | 'super_admin'
-  | 'investor';
+  | 'investor'
+  | 'talent'
+  | 'hirer'
+  | 'hr_manager'
+  | 'legal_team';
 
 export interface PricingConfig {
   ideaStarterSetupFeeUsd: number;
@@ -139,6 +143,145 @@ export interface ContactMessageResponse {
   message: string;
 }
 
+export interface TalentApplyBody {
+  name?: string;
+  email?: string;
+  password?: string;
+  skills: string[];
+  customRole?: string;
+  yearsExperience: number;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  pastProjects?: Array<{ title: string; description?: string; url?: string }>;
+}
+
+export interface TalentApplyResponse {
+  talent: { id: string; status: string; skills: string[]; yearsExperience: number; portfolioUrl?: string | null; user: { id: string; name: string; email: string; role: string } };
+  token?: string;
+}
+
+export interface TalentMarketplaceItem {
+  id: string;
+  name: string;
+  skills: string[];
+  customRole: string | null;
+  yearsExperience: number;
+  portfolioUrl: string | null;
+  pastProjects: unknown;
+  averageRating: number | null;
+  ratingCount: number;
+}
+
+export interface TalentProfile {
+  id: string;
+  status: string;
+  skills: string[];
+  customRole: string | null;
+  yearsExperience: number;
+  portfolioUrl: string | null;
+  resumeUrl: string | null;
+  pastProjects: unknown;
+  feePaid: boolean;
+  averageRating: number | null;
+  ratingCount: number;
+  user: { id: string; name: string; email: string; role: string };
+  createdAt: string;
+  approvedAt: string | null;
+}
+
+export interface TalentListItem {
+  id: string;
+  status: string;
+  skills: string[];
+  customRole: string | null;
+  yearsExperience: number;
+  portfolioUrl: string | null;
+  feePaid: boolean;
+  averageRating: number | null;
+  ratingCount: number;
+  createdAt: string;
+  approvedAt: string | null;
+  user: { id: string; name: string; email: string; createdAt: string };
+}
+
+export interface HirerRegisterBody {
+  name?: string;
+  email?: string;
+  password?: string;
+  companyName: string;
+  hiringNeeds?: string;
+  budget?: string;
+}
+
+export interface HirerRegisterResponse {
+  hirer: { id: string; companyName: string; hiringNeeds?: string | null; budget?: string | null; feePaid: boolean; fairTreatmentSignedAt?: string | null; user: { id: string; name: string; email: string; role: string } };
+  token?: string;
+}
+
+export interface HirerProfile {
+  id: string;
+  companyName: string;
+  hiringNeeds: string | null;
+  budget: string | null;
+  feePaid: boolean;
+  fairTreatmentSignedAt: string | null;
+  user: { id: string; name: string; email: string; role: string };
+  createdAt: string;
+}
+
+export interface HirerListItem {
+  id: string;
+  companyName: string;
+  hiringNeeds: string | null;
+  budget: string | null;
+  feePaid: boolean;
+  fairTreatmentSignedAt: string | null;
+  user: { id: string; name: string; email: string; createdAt: string };
+  createdAt: string;
+}
+
+export interface HireResponse {
+  id: string;
+  talentId: string;
+  hirerId: string;
+  projectTitle: string;
+  projectDescription?: string | null;
+  status: string;
+  talent: { name: string; email: string };
+  hirer: { name: string; email: string };
+  createdAt: string;
+}
+
+export interface HireListItem {
+  id: string;
+  talentId: string;
+  hirerId: string;
+  projectTitle: string;
+  projectDescription?: string | null;
+  agreementId?: string | null;
+  status: string;
+  talent: { id: string; name: string; email: string };
+  hirer: { id: string; name: string; email: string };
+  agreement?: { id: string; title: string; type: string } | null;
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export interface RatingItem {
+  id: string;
+  fromUser?: { id: string; name: string };
+  toUserId: string;
+  hireId: string | null;
+  score: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface LegalAgreementsResponse {
+  assignments: unknown[];
+  hireContracts: unknown[];
+}
+
 export const api = {
   ideaSubmissions: {
     submit: (body: IdeaSubmissionBody) =>
@@ -182,6 +325,60 @@ export const api = {
       });
     },
     logout: (token: string) => request<{ message: string }>('/api/v1/auth/logout', { method: 'POST', token }),
+  },
+  talent: {
+    apply: (body: TalentApplyBody, token?: string) =>
+      request<TalentApplyResponse>('/api/v1/talent/apply', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...(token && { token }),
+      }),
+    marketplace: (skills?: string[]) =>
+      request<{ items: TalentMarketplaceItem[] }>(
+        `/api/v1/talent/marketplace${skills?.length ? `?skills=${skills.map(encodeURIComponent).join(',')}` : ''}`
+      ),
+    profile: (token: string) => request<TalentProfile>('/api/v1/talent/profile', { token }),
+    list: (token: string, status?: string) =>
+      request<{ items: TalentListItem[] }>(`/api/v1/talent${status ? `?status=${encodeURIComponent(status)}` : ''}`, { token }),
+    approve: (id: string, status: 'approved' | 'rejected', token: string) =>
+      request<{ ok: boolean; status: string }>(`/api/v1/talent/${id}/approve`, { method: 'PUT', body: JSON.stringify({ status }), token }),
+  },
+  hirer: {
+    register: (body: HirerRegisterBody, token?: string) =>
+      request<HirerRegisterResponse>('/api/v1/hirer/register', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...(token && { token }),
+      }),
+    profile: (token: string) => request<HirerProfile>('/api/v1/hirer/profile', { token }),
+    signFairTreatment: (token: string) =>
+      request<{ ok: boolean; fairTreatmentSignedAt?: string }>('/api/v1/hirer/fair-treatment/sign', { method: 'POST', token }),
+    list: (token: string) => request<{ items: HirerListItem[] }>('/api/v1/hirer', { token }),
+  },
+  hiring: {
+    hire: (talentId: string, body: { projectTitle: string; projectDescription?: string }, token: string) =>
+      request<HireResponse>(`/api/v1/hiring/hire/${talentId}`, { method: 'POST', body: JSON.stringify(body), token }),
+    listHires: (token: string) => request<{ items: HireListItem[] }>('/api/v1/hiring/hires', { token }),
+    createAgreement: (body: { hireId: string; title?: string }, token: string) =>
+      request<{ agreement: { id: string; title: string; type: string }; hireId: string }>('/api/v1/hiring/agreement', { method: 'POST', body: JSON.stringify(body), token }),
+    updateHireStatus: (hireId: string, status: 'in_progress' | 'completed' | 'cancelled', token: string) =>
+      request<{ ok: boolean; status: string }>(`/api/v1/hiring/hires/${hireId}`, { method: 'PATCH', body: JSON.stringify({ status }), token }),
+  },
+  ratings: {
+    list: (query: { toUserId?: string; hireId?: string }) =>
+      request<{ items: RatingItem[] }>(`/api/v1/ratings?${new URLSearchParams(query as Record<string, string>).toString()}`),
+    create: (body: { toUserId: string; hireId?: string; score: number; comment?: string }, token: string) =>
+      request<RatingItem>('/api/v1/ratings', { method: 'POST', body: JSON.stringify(body), token }),
+  },
+  legal: {
+    agreements: (token: string) =>
+      request<LegalAgreementsResponse>('/api/v1/legal/agreements', { token }),
+  },
+  marketplaceFee: {
+    createSession: (body: { type: 'talent_marketplace_fee' | 'hirer_platform_fee'; currency?: string }, token: string) =>
+      request<{ checkoutUrl: string; sessionId: string; amount: number; currency: string; type: string }>('/api/v1/marketplace-fee/create-session', { method: 'POST', body: JSON.stringify(body), token }),
+    verify: (body: { reference: string }, token: string) =>
+      request<{ ok: boolean; feePaid: boolean }>('/api/v1/marketplace-fee/verify', { method: 'POST', body: JSON.stringify(body), token }),
   },
   tenants: {
     current: (token: string) => request<{ tenant: { id: string; orgName: string; domain: string | null; planType: string } | null; branding: { logo: string | null; primaryColor: string | null } | null }>('/api/v1/tenants/current', { token }),

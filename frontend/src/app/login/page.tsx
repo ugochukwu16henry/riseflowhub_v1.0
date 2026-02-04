@@ -39,6 +39,14 @@ export default function LoginPage() {
         router.push('/dashboard/admin');
       } else if (role === 'investor') {
         router.push('/dashboard/investor');
+      } else if (role === 'talent') {
+        router.push('/dashboard/talent');
+      } else if (role === 'hirer') {
+        router.push('/dashboard/hirer');
+      } else if (role === 'hr_manager') {
+        router.push('/dashboard/admin/hr');
+      } else if (role === 'legal_team') {
+        router.push('/dashboard/legal');
       } else {
         router.push('/dashboard');
       }

@@ -6,7 +6,7 @@ import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
-const AGREEMENT_TYPES = ['NDA', 'MOU', 'CoFounder', 'Terms'] as const;
+const AGREEMENT_TYPES = ['NDA', 'MOU', 'CoFounder', 'Terms', 'FairTreatment', 'HireContract'] as const;
 
 /** List all agreement templates. Admin only. */
 export async function listAgreements(_req: Request, res: Response): Promise<void> {
@@ -50,7 +50,7 @@ export async function createAgreement(req: Request, res: Response): Promise<void
     return;
   }
   if (!AGREEMENT_TYPES.includes(type as (typeof AGREEMENT_TYPES)[number])) {
-    res.status(400).json({ error: 'type must be NDA, MOU, CoFounder, or Terms' });
+    res.status(400).json({ error: 'type must be one of: NDA, MOU, CoFounder, Terms, FairTreatment, HireContract' });
     return;
   }
   const agreement = await prisma.agreement.create({
