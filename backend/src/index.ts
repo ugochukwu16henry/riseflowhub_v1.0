@@ -81,6 +81,7 @@ import { embeddingsRoutes } from './routes/embeddings';
 import { imagesRoutes } from './routes/images';
 import { publicDataRoutes } from './routes/publicData';
 import { seoRoutes } from './routes/seo';
+import { supportBannerRoutes } from './routes/supportBanner';
 import * as webhookController from './controllers/webhookController';
 
 const app = express();
@@ -160,6 +161,7 @@ app.use('/api/v1/super-admin/social-links', socialLinksAdminRoutes);
 app.use('/api/v1/share-meta', shareMetaRoutes);
 app.use('/api/v1/super-admin/share-meta', shareMetaAdminRoutes);
 app.use('/api/v1/super-admin/birthday-wishes', birthdayWishesRoutes);
+app.use('/api/v1/support-banner', supportBannerRoutes);
 
 // Open / free helper APIs (no versioned path on purpose for flexibility)
 app.use('/api/openai/free', openAiFreeRoutes);

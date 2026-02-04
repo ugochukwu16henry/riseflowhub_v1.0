@@ -12,3 +12,4 @@ export { FinalCTA } from './FinalCTA';
 export { Footer } from './Footer';
 export { PricingPlans } from './PricingPlans';
 export { FAQPreview } from './FAQ';
+export { SupportBanner } from './SupportBanner';
