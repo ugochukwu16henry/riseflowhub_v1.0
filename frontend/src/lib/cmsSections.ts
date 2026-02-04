@@ -94,6 +94,17 @@ export const cmsSections: Record<string, CmsSectionConfig> = {
       { key: 'system.forms.cancel', label: 'Cancel Button Label', type: 'text', placeholder: 'Cancel' },
     ],
   },
+  hiring: {
+    pageName: 'hiring',
+    title: 'Hiring & Talent Marketplace',
+    description: 'Role categories, skill list, and platform fees. Used on Join as Talent and marketplace.',
+    fields: [
+      { key: 'hiring.roleCategories', label: 'Role Categories (JSON array)', type: 'json', placeholder: '["Tech Roles","Creative Roles","Business Roles"]' },
+      { key: 'hiring.skillList', label: 'Skill List (JSON array)', type: 'json', placeholder: '["Frontend Developer","Backend Developer",...]' },
+      { key: 'hiring.talentFeeUsd', label: 'Talent marketplace fee (USD)', type: 'text', placeholder: '7' },
+      { key: 'hiring.companyFeeUsd', label: 'Hiring company fee (USD)', type: 'text', placeholder: '20' },
+    ],
+  },
 };
 
 export const cmsSectionSlugs = Object.keys(cmsSections) as string[];

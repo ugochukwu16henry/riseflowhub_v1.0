@@ -149,10 +149,19 @@ export interface TalentApplyBody {
   password?: string;
   skills: string[];
   customRole?: string;
+  roleCategory?: string;
   yearsExperience: number;
   portfolioUrl?: string;
   resumeUrl?: string;
+  cvUrl?: string;
   pastProjects?: Array<{ title: string; description?: string; url?: string }>;
+  shortBio?: string;
+  availability?: 'full_time' | 'part_time' | 'freelance';
+  country?: string;
+  phone?: string;
+  services?: Array<{ title: string; description?: string; rate?: string }>;
+  skillRates?: Record<string, string>;
+  videoUrl?: string;
 }
 
 export interface TalentApplyResponse {
@@ -338,6 +347,8 @@ export const api = {
         `/api/v1/talent/marketplace${skills?.length ? `?skills=${skills.map(encodeURIComponent).join(',')}` : ''}`
       ),
     profile: (token: string) => request<TalentProfile>('/api/v1/talent/profile', { token }),
+    updateProfile: (body: Partial<TalentApplyBody>, token: string) =>
+      request<TalentProfile>('/api/v1/talent/profile', { method: 'PUT', body: JSON.stringify(body), token }),
     list: (token: string, status?: string) =>
       request<{ items: TalentListItem[] }>(`/api/v1/talent${status ? `?status=${encodeURIComponent(status)}` : ''}`, { token }),
     approve: (id: string, status: 'approved' | 'rejected', token: string) =>

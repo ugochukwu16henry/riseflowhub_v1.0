@@ -55,7 +55,33 @@ export default function LegalDashboardPage() {
   return (
     <div className="p-6 max-w-5xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Legal — Agreements</h1>
-      <p className="text-gray-600 mb-6">View all agreements, MOU, contracts, signed dates, and parties.</p>
+      <p className="text-gray-600 mb-6">View all agreements, MOU, contracts, signed dates, parties, and disputes.</p>
+
+      {disputeList.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-amber-800 mb-3">Disputes</h2>
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 overflow-hidden">
+            <table className="min-w-full divide-y divide-amber-200">
+              <thead className="bg-amber-100">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-amber-900 uppercase">Agreement</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-amber-900 uppercase">Party</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-amber-900 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-amber-100">
+                {disputeList.map((d) => (
+                  <tr key={d.id}>
+                    <td className="px-4 py-3 text-sm">{d.agreement?.title} ({d.agreement?.type})</td>
+                    <td className="px-4 py-3 text-sm">{d.user?.name} — {d.user?.email}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-amber-700">{d.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Assigned agreements</h2>

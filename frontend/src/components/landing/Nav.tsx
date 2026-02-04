@@ -20,6 +20,8 @@ export function Nav() {
           <Link href="/team" className="text-sm font-medium text-gray-600 hover:text-primary transition">Team</Link>
           <a href="/#solution" className="text-sm font-medium text-gray-600 hover:text-primary transition">How it works</a>
           <Link href="/investors" className="text-sm font-medium text-gray-600 hover:text-primary transition">Investors</Link>
+          <Link href="/hiring" className="text-sm font-medium text-gray-600 hover:text-primary transition">Hiring</Link>
+          <Link href="/partner" className="text-sm font-medium text-gray-600 hover:text-primary transition">Partner With Us</Link>
           <a href="/#features" className="text-sm font-medium text-gray-600 hover:text-primary transition">Features</a>
           <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-primary transition">Login</Link>
           <Link
@@ -55,6 +57,7 @@ export function Nav() {
             <a href="/#solution" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>How it works</a>
             <Link href="/investors" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Investors</Link>
             <Link href="/hiring" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Hiring</Link>
+            <Link href="/partner" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Partner With Us</Link>
             <a href="/#features" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Features</a>
             <Link href="/login" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Login</Link>
             <Link
