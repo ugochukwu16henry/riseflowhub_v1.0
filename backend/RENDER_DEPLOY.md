@@ -61,7 +61,7 @@ Click **Save Changes** after adding variables.
 
 ---
 
-## 4. Database (Supabase) and Migrations
+## 4. Database (Supabase), Migrations, and Seed
 
 - Your **database** is already on Supabase; you only need to give the backend its URL via `DATABASE_URL`.
 - Ensure the schema is applied:
@@ -70,6 +70,16 @@ Click **Save Changes** after adding variables.
   - Or on Render you can add a **Release Command** (optional):  
     `pnpm run db:push`  
     so each deploy syncs the schema. (Free tier may run this on every deploy; use if you prefer.)
+
+- **Seed the database** so login works (otherwise you get **401 Unauthorized**):
+  - From your machine, with `DATABASE_URL` in `backend/.env.local` (or env) set to the **same** Supabase DB your Render app uses, run:
+    ```bash
+    cd backend && pnpm run db:seed
+    ```
+  - The seed creates:
+    - **Super Admin:** `ugochukwuhenry16@gmail.com` — password is in `backend/prisma/seed.ts` (e.g. `1995Mobuchi@.`; change it there and re-run seed if you prefer).
+    - **Test users** (password for all: `Password123`): e.g. `test-super_admin@example.com`, `test-client@example.com`, etc.
+  - After seeding, use one of those emails/passwords to sign in on the deployed app.
 
 ---
 
@@ -111,6 +121,7 @@ Then **redeploy** the frontend so the new API URL is used. After that, sign up a
 | Build fails | Ensure **Root Directory** is `backend` if the backend lives in a `backend/` folder. Build command must run in that directory. |
 | "Application failed to respond" | Check **Logs** on Render. Often `DATABASE_URL` is wrong or the DB is unreachable (Supabase allows connections from anywhere by default; check IP allowlist if you enabled it). |
 | 500 on login/register | Check Render **Logs** for stack traces. Typical causes: missing `JWT_SECRET`, wrong `DATABASE_URL`, or Prisma client not generated (build should run `prisma generate`; the `build` script in `package.json` does this). |
+| **401 on login** | **Invalid email or password** means the user does not exist or the password is wrong. **Seed the database** (see §4): run `cd backend && pnpm run db:seed` with `DATABASE_URL` pointing to your production Supabase. Then use the Super Admin or test user email/password from the seed. |
 | CORS errors in browser | Set `FRONTEND_URL` on Render to the **exact** Vercel URL (including `https://`, no trailing slash). |
 | Free instance "spins down" | Render free tier sleeps after inactivity. First request after sleep can take 30–60 seconds; subsequent requests are fast until the next sleep. |
 

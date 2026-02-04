@@ -46,6 +46,8 @@ export default function LoginPage() {
       const msg = err instanceof Error ? err.message : 'Login failed';
       if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('502') || msg.includes('Bad Gateway')) {
         setError('Backend not responding (502). On Render free tier the app sleeps: open the backend health URL in a new tab, wait ~60s for it to load, then try again. Ensure NEXT_PUBLIC_API_URL is set on Vercel and FRONTEND_URL on Render, then redeploy both.');
+      } else if (msg === 'Unauthorized' || msg.toLowerCase().includes('invalid email or password')) {
+        setError('Invalid email or password. If this is a fresh deploy, seed the DB (see backend/RENDER_DEPLOY.md). Use the Super Admin or test user from seed (e.g. test-super_admin@example.com / Password123).');
       } else {
         setError(msg);
       }
