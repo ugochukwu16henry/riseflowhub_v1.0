@@ -114,7 +114,7 @@ export default function TalentMarketplacePage() {
                     </a>
                   )}
                   <Link
-                    href={typeof window !== 'undefined' ? `/login?redirect=/dashboard/hirer?hire=${t.id}` : `/login`}
+                    href={`/dashboard/hirer/hire/${t.id}`}
                     className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 transition"
                   >
                     Hire

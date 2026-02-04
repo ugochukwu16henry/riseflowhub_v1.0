@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getStoredToken, api } from '@/lib/api';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +12,7 @@ export default function TalentAgreementsPage() {
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
-    api.agreements.listAssigned(token).then((r) => setList(Array.isArray(r) ? r : [])).catch(() => setList([])).finally(() => setLoading(false));
+    api.agreements.listAssignedToMe(token).then((r) => setList(Array.isArray(r) ? r.map((a: { id: string; agreement?: { title: string }; status: string }) => ({ id: a.id, title: a.agreement?.title ?? 'Agreement', status: a.status })) : [])).catch(() => setList([])).finally(() => setLoading(false));
   }, []);
 
   return (

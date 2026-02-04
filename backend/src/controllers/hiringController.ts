@@ -207,14 +207,12 @@ export async function updateHireStatus(req: Request, res: Response): Promise<voi
     return;
   }
 
-  const updateData: { status: string; completedAt?: Date } = { status };
-  if (status === 'completed') {
-    updateData.completedAt = new Date();
-  }
-
   await prisma.hire.update({
     where: { id: hireId },
-    data: updateData,
+    data: {
+      status: status as 'in_progress' | 'completed' | 'cancelled',
+      ...(status === 'completed' && { completedAt: new Date() }),
+    },
   });
 
   res.json({ ok: true, status, ...(status === 'completed' && { completedAt: new Date() }) });

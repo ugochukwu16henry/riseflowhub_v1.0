@@ -16,9 +16,16 @@ export type AuditActionType =
   | 'investor_interest'
   | 'payment_completed'
   | 'project_created'
-  | 'startup_published';
+  | 'startup_published'
+  | 'talent_applied'
+  | 'talent_approval'
+  | 'hirer_registered'
+  | 'fair_treatment_signed'
+  | 'hire_requested'
+  | 'hire_agreement_created'
+  | 'marketplace_fee_paid';
 
-export type AuditEntityType = 'user' | 'payment' | 'agreement' | 'project' | 'idea' | 'consultation' | 'investment' | 'startup';
+export type AuditEntityType = 'user' | 'payment' | 'agreement' | 'project' | 'idea' | 'consultation' | 'investment' | 'startup' | 'talent' | 'hirer' | 'hire';
 
 export interface CreateAuditLogParams {
   adminId?: string | null;

@@ -18,6 +18,8 @@ const roles = [
   'project_manager',
   'finance_admin',
   'investor',
+  'hr_manager',
+  'legal_team',
 ] as const;
 
 async function main() {

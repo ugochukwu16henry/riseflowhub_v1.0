@@ -93,7 +93,7 @@ export async function verify(req: Request, res: Response): Promise<void> {
     where: {
       reference: reference.trim(),
       userId: payload.userId,
-      type: { in: FEE_TYPES },
+      type: { in: [...FEE_TYPES] },
     },
   });
 
