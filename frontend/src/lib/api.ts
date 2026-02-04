@@ -93,7 +93,12 @@ async function request<T>(
     throw new Error((err as { error?: string }).error || res.statusText);
   }
   if (res.status === 204) return undefined as T;
-  return res.json();
+  try {
+    return await res.json();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Invalid response';
+    throw new Error(`Server returned invalid JSON: ${msg}`);
+  }
 }
 
 export interface IdeaSubmissionBody {

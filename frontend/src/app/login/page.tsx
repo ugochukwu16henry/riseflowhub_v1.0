@@ -33,8 +33,16 @@ export default function LoginPage() {
     try {
       const tenantDomain = typeof window !== 'undefined' ? window.location.hostname : undefined;
       const data = await api.auth.login({ email, password }, tenantDomain);
+      if (!data || typeof data.token !== 'string') {
+        setError('Invalid login response (missing token). Try again or check backend logs.');
+        return;
+      }
+      if (!data.user) {
+        setError('Invalid login response (missing user). Try again or check backend logs.');
+        return;
+      }
       setStoredToken(data.token);
-      const role = data.user?.role;
+      const role = data.user.role;
       if (role === 'super_admin' || role === 'project_manager' || role === 'finance_admin' || role === 'cofounder') {
         router.push('/dashboard/admin');
       } else if (role === 'investor') {
@@ -51,11 +59,18 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Login failed';
-      if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('502') || msg.includes('Bad Gateway')) {
-        setError('Backend not responding (502). On Render free tier the app sleeps: open the backend health URL in a new tab, wait ~60s for it to load, then try again. Ensure NEXT_PUBLIC_API_URL is set on Vercel and FRONTEND_URL on Render, then redeploy both.');
-      } else if (msg === 'Unauthorized' || msg.toLowerCase().includes('invalid email or password')) {
-        setError('Invalid email or password. If this is a fresh deploy, seed the DB (see backend/RENDER_DEPLOY.md). Use the Super Admin or test user from seed (e.g. test-super_admin@example.com / Password123).');
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'string'
+            ? err
+            : 'Login failed. Check the browser console for details.';
+      if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('502') || msg.includes('Bad Gateway') || msg.includes('NetworkError')) {
+        setError('Backend not responding. On Render free tier the app may be sleeping: open your backend /api/v1/health in a new tab, wait ~60s, then try again. Ensure NEXT_PUBLIC_API_URL (Vercel) and FRONTEND_URL (Render) are set and redeploy both.');
+      } else if (msg === 'Unauthorized' || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('401')) {
+        setError('Invalid email or password. If this is a fresh deploy, seed the DB. Use the Super Admin from seed (e.g. test-super_admin@example.com / Password123).');
+      } else if (msg.includes('CORS') || msg.includes('Access-Control')) {
+        setError('Request blocked (CORS). Set FRONTEND_URL on Render to your Vercel site URL (no trailing slash), then redeploy the backend.');
       } else {
         setError(msg);
       }
