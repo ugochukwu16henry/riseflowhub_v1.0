@@ -193,6 +193,10 @@ model User {
   userBadges        UserBadge[]
   referralsSent     Referral[] @relation("ReferralReferrer")
   referralsReceived Referral[] @relation("ReferralReferred")
+  founderReputation FounderReputation?
+  forumPosts        ForumPost[]
+  forumComments     ForumComment[]
+  forumLikes        ForumLike[]
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -539,6 +543,7 @@ model StartupProfile {
   businessAccess   BusinessModuleAccess?
   businessGrowth   BusinessGrowth?
   businessFinancials BusinessFinancialSnapshot[]
+  milestoneTriggers MilestoneTrigger[]
 }
 
 // Business module access (premium founder feature)
@@ -1001,6 +1006,82 @@ model Referral {
 
   @@unique([referrerId, referredUserId])
   @@map("referrals")
+}
+
+// Founder reputation score (trust & professionalism)
+model FounderReputation {
+  userId      String   @id @map("user_id")
+  scoreTotal  Int      @map("score_total")
+  breakdown   Json?    @map("breakdown_json") @db.JsonB
+  lastUpdated DateTime @default(now()) @map("last_updated")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("founder_reputation")
+}
+
+// Milestone funding triggers (notify investors when startups hit key events)
+model MilestoneTrigger {
+  id               String   @id @default(uuid())
+  startupId        String   @map("startup_id")
+  milestone        String   @db.VarChar(60) // mvp_launched | first_revenue | 100_users | high_success_score | investor_ready_score
+  triggeredAt      DateTime @default(now()) @map("triggered_at")
+  investorNotified Boolean  @default(false) @map("investor_notified")
+
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId, milestone])
+  @@map("milestone_triggers")
+}
+
+// Community forum: posts, comments, likes
+model ForumPost {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  title        String   @db.VarChar(200)
+  body         String   @db.Text
+  category     String   @db.VarChar(60) // startup_help | funding | tech | marketing | founder_stories
+  isPinned     Boolean  @default(false) @map("is_pinned")
+  isLocked     Boolean  @default(false) @map("is_locked")
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments ForumComment[]
+  likes    ForumLike[]
+
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  body      String   @db.Text
+  isDeleted Boolean  @default(false) @map("is_deleted")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("forum_comments")
+}
+
+model ForumLike {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("forum_likes")
 }
 
 // Admin Leads (track and manage incoming leads; convert to project)
