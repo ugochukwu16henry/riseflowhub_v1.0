@@ -4,11 +4,19 @@ import type { AuthPayload } from '../middleware/auth';
 
 const prisma = new PrismaClient();
 
-/** GET /api/v1/legal/agreements — Legal team / Super Admin: view all agreements (assignments + hire contracts) */
+/** GET /api/v1/legal/agreements — Legal team / Super Admin: view all agreements. Optional filter: type, status, documentStatus. */
 export async function listAgreements(req: Request, res: Response): Promise<void> {
+  const type = req.query.type as string | undefined;
+  const status = req.query.status as string | undefined;
+  const documentStatus = req.query.documentStatus as string | undefined;
   const assignments = await prisma.assignedAgreement.findMany({
+    where: {
+      ...(type && { agreement: { type: type as 'NDA' | 'MOU' | 'CoFounder' | 'Terms' | 'FairTreatment' | 'HireContract' | 'Partnership' | 'Investor' } }),
+      ...(status && { status: status as 'Pending' | 'Signed' | 'Overdue' | 'Disputed' }),
+      ...(documentStatus && (documentStatus === 'Pending' || documentStatus === 'Completed') && { agreement: { status: documentStatus as 'Pending' | 'Completed' } }),
+    },
     include: {
-      agreement: { select: { id: true, title: true, type: true, createdAt: true } },
+      agreement: { select: { id: true, title: true, type: true, status: true, version: true, createdAt: true } },
       user: { select: { id: true, name: true, email: true } },
       auditLogs: { orderBy: { createdAt: 'desc' }, take: 20 },
     },
@@ -32,9 +40,12 @@ export async function listAgreements(req: Request, res: Response): Promise<void>
       agreement: a.agreement,
       userId: a.userId,
       user: a.user,
+      role: a.role,
       status: a.status,
       signedAt: a.signedAt,
       signatureUrl: a.signatureUrl,
+      ipAddress: a.ipAddress,
+      deviceInfo: a.deviceInfo,
       deadline: a.deadline,
       createdAt: a.createdAt,
       auditLogs: a.auditLogs,

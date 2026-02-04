@@ -384,8 +384,10 @@ export const api = {
       request<RatingItem>('/api/v1/ratings', { method: 'POST', body: JSON.stringify(body), token }),
   },
   legal: {
-    agreements: (token: string) =>
-      request<LegalAgreementsResponse>('/api/v1/legal/agreements', { token }),
+    agreements: (token: string, params?: { type?: string; status?: string; documentStatus?: string }) => {
+      const q = new URLSearchParams(params as Record<string, string>).toString();
+      return request<LegalAgreementsResponse>(`/api/v1/legal/agreements${q ? `?${q}` : ''}`, { token });
+    },
   },
   marketplaceFee: {
     createSession: (body: { type: 'talent_marketplace_fee' | 'hirer_platform_fee'; currency?: string }, token: string) =>
@@ -530,22 +532,42 @@ export const api = {
       request<Agreement>(`/api/v1/agreements/${id}`, { method: 'PUT', body: JSON.stringify(body), token }),
     delete: (id: string, token: string) =>
       request<void>(`/api/v1/agreements/${id}`, { method: 'DELETE', token }),
-    listAssignments: (token: string, params?: { status?: string; type?: string }) => {
+    listAssignments: (token: string, params?: { status?: string; type?: string; documentStatus?: string }) => {
       const q = new URLSearchParams(params as Record<string, string>).toString();
       return request<AssignedAgreementRow[]>(`/api/v1/agreements/assignments${q ? `?${q}` : ''}`, { token });
     },
-    assign: (agreementId: string, body: { userId?: string; userIds?: string[]; deadline?: string }, token: string) =>
+    assign: (agreementId: string, body: { userId?: string; userIds?: string[]; deadline?: string; roles?: Record<string, string> | string }, token: string) =>
       request<{ assigned: { id: string; userId: string; deadline: string | null }[] }>(`/api/v1/agreements/${agreementId}/assign`, {
         method: 'POST',
         body: JSON.stringify(body),
         token,
       }),
-    view: (id: string, token: string) => request<{ id: string; title: string; type: string; templateUrl: string | null }>(`/api/v1/agreements/${id}/view`, { token }),
-    sign: (id: string, body: { signatureText?: string; signatureUrl?: string }, token: string) =>
-      request<{ message: string; assignment: unknown }>(`/api/v1/agreements/${id}/sign`, { method: 'POST', body: JSON.stringify(body), token }),
+    view: (id: string, token: string) =>
+      request<{ id: string; title: string; type: string; templateUrl: string | null; contentHtml: string | null }>(`/api/v1/agreements/${id}/view`, { token }),
+    sign: (id: string, body: { signatureText?: string; signatureUrl?: string; deviceInfo?: string }, token: string) =>
+      request<{ message: string; assignment: unknown; allSigned?: boolean }>(`/api/v1/agreements/${id}/sign`, { method: 'POST', body: JSON.stringify(body), token }),
     status: (id: string, token: string) => request<unknown[]>(`/api/v1/agreements/${id}/status`, { token }),
     logs: (id: string, token: string) => request<AgreementAuditLog[]>(`/api/v1/agreements/${id}/logs`, { token }),
     listAssignedToMe: (token: string) => request<AssignedToMe[]>(`/api/v1/agreements/assigned`, { token }),
+    /** Fetch agreement HTML and trigger download (uses fetch + blob so auth is sent). */
+    exportDownload: async (id: string, token: string): Promise<void> => {
+      const base = API_BASE || '';
+      const res = await fetch(`${base}/api/v1/agreements/${id}/export`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(res.statusText);
+      const blob = await res.blob();
+      const name = res.headers.get('Content-Disposition')?.match(/filename="?([^";]+)/)?.[1] || `agreement-${id}.html`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    createFromTemplate: (
+      body: { title: string; type: string; dynamicData?: Record<string, string> },
+      token: string
+    ) =>
+      request<Agreement>(`/api/v1/agreements/from-template`, { method: 'POST', body: JSON.stringify(body), token }),
   },
   investors: {
     register: (body: InvestorRegisterBody) =>
@@ -963,7 +985,11 @@ export interface Agreement {
   id: string;
   title: string;
   type: AgreementType;
-  templateUrl: string | null;
+  templateUrl?: string | null;
+  contentHtml?: string | null;
+  createdById?: string | null;
+  status?: string;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }

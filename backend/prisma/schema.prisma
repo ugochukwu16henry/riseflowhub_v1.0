@@ -78,6 +78,14 @@ enum AgreementType {
   Terms
   FairTreatment
   HireContract
+  Partnership
+  Investor
+}
+
+// Document-level status: Pending until all signers have signed, then Completed
+enum AgreementDocumentStatus {
+  Pending
+  Completed
 }
 
 enum AssignedAgreementStatus {
@@ -162,6 +170,7 @@ model User {
   talentRatingsGiven   TalentRating[] @relation("TalentRatingFrom")
   talentRatingsReceived TalentRating[] @relation("TalentRatingTo")
   notifications     Notification[]
+  agreementsCreated Agreement[]   @relation("AgreementCreatedBy")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -373,15 +382,21 @@ model MaintenanceLog {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
-// Agreement Signing Feature
+// Agreement Signing Feature — digital document with tracked signatures
 model Agreement {
   id          String   @id @default(uuid())
   title       String
   type        AgreementType
   templateUrl String?  @map("template_url")
+  contentHtml String?  @map("content_html") @db.Text  // filled document content (no editing after any signature)
+  createdById String?  @map("created_by")
+  status      AgreementDocumentStatus @default(Pending) @map("status")  // Pending | Completed (all signed)
+  version     Int      @default(1) @map("version")  // version control
+  pdfHash     String?  @map("pdf_hash") @db.VarChar(64)  // SHA-256 of exported PDF for verification
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  createdBy   User?    @relation("AgreementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   assignedAgreements AssignedAgreement[]
   auditLogs          AgreementAuditLog[]
   hires              Hire[]
@@ -391,13 +406,15 @@ model AssignedAgreement {
   id          String                 @id @default(uuid())
   agreementId String                 @map("agreement_id")
   userId      String                 @map("user_id")
+  role        String?                @map("role") @db.VarChar(80)  // signer type e.g. "Founder", "Investor"
   status      AssignedAgreementStatus @default(Pending)
   signedAt    DateTime?              @map("signed_at")
   signatureUrl String?              @map("signature_url")
-  ipAddress  String?                @map("ip_address")
-  deadline   DateTime?              @map("deadline") @db.Date
-  createdAt  DateTime               @default(now()) @map("created_at")
-  updatedAt  DateTime               @updatedAt @map("updated_at")
+  ipAddress   String?                @map("ip_address")
+  deviceInfo  String?                @map("device_info") @db.VarChar(500)  // user agent / device
+  deadline    DateTime?              @map("deadline") @db.Date
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
 
   agreement Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -391,7 +391,74 @@ function DashboardLayoutInner({
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <div className="flex-1 flex flex-col min-h-0">
+        <header className="flex-shrink-0 flex items-center justify-end gap-2 h-12 px-4 border-b border-gray-200 bg-white">
+          <div className="relative" ref={notifRef}>
+            <button
+              type="button"
+              onClick={() => setNotifOpen((o) => !o)}
+              className="relative p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none"
+              aria-label="Notifications"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-1 w-80 rounded-xl border border-gray-200 bg-white shadow-lg z-50 max-h-[min(24rem,70vh)] flex flex-col">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+                  <span className="font-semibold text-secondary">Notifications</span>
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { markAllRead(); setNotifOpen(false); }}
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: primaryColor }}
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                <ul className="overflow-auto flex-1">
+                  {notifications.length === 0 ? (
+                    <li className="px-3 py-4 text-center text-sm text-gray-500">No notifications</li>
+                  ) : (
+                    notifications.slice(0, 15).map((n) => (
+                      <li key={n.id} className={`border-b border-gray-50 last:border-0 ${!n.read ? 'bg-primary/5' : ''}`}>
+                        <Link
+                          href={n.link || '/dashboard/notifications'}
+                          onClick={() => { if (!n.read) markOneRead(n.id); setNotifOpen(false); }}
+                          className="block px-3 py-2.5 hover:bg-gray-50"
+                        >
+                          <p className="font-medium text-sm text-secondary">{n.title}</p>
+                          {n.message && <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{n.message}</p>}
+                          <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleString()}</p>
+                        </Link>
+                      </li>
+                    ))
+                  )}
+                </ul>
+                <div className="border-t border-gray-100 px-3 py-2">
+                  <Link
+                    href="/dashboard/notifications"
+                    onClick={() => setNotifOpen(false)}
+                    className="text-sm font-medium block text-center py-1 hover:underline"
+                    style={{ color: primaryColor }}
+                  >
+                    View all
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </header>
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
       {showSetupModal && (
         <SetupModal
           user={user}
