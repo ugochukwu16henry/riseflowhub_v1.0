@@ -171,8 +171,8 @@ pnpm run db:seed
 ### Backend (Railway / Render / Fly.io / Node host)
 
 1. Set root/build to **`backend`**.
-2. **Build:** `pnpm install && pnpm prisma generate && pnpm prisma migrate deploy && pnpm run build`  
-   - **Important:** `prisma migrate deploy` applies pending migrations to the production database (e.g. `blocked_ips`, `security_events`, `support_banner_events`). Ensure `DATABASE_URL` is set in the host's environment so migrations run during build.
+2. **Build:** `pnpm install && pnpm run build`  
+   - Uses `prisma generate && tsc`. **Do not** run `prisma migrate deploy` in the Render build step — Supabase already has tables, so Prisma would hit P3005. Run migrations manually when you change schema (see Database section below).
 3. **Start:** `pnpm start` (runs `node dist/index.js`)
 4. **Environment variables:**
    - `DATABASE_URL` — production PostgreSQL (e.g. Supabase connection string)
@@ -188,7 +188,14 @@ pnpm run db:seed
 1. Create a Supabase project → **Project Settings → Database** → copy the **Connection string (URI)**.
 2. Put it in `backend/.env` as `DATABASE_URL` (use the **pooler** URI, port 6543, for production).
 3. **Apply schema:**  
-   - **Production (e.g. Render):** Use migrations. Ensure build runs `pnpm prisma migrate deploy` so tables like `blocked_ips`, `security_events`, `support_banner_events` exist.  
+   - **Render build:** Do **not** use `prisma migrate deploy` in the build (Supabase is never “empty”, so you’d get P3005). Use `pnpm install && pnpm run build` only.  
+   - **One-time baseline** (if you see **P3005** “The database schema is not empty”): Run **locally** with production `DATABASE_URL` in `backend/.env`:  
+     `cd backend && npx prisma migrate resolve --applied "0_baseline"`  
+     (Use the exact migration folder name under `backend/prisma/migrations/`, e.g. `0_baseline`.) That tells Prisma the DB is already in sync for that migration.  
+   - **One-time: create new tables** (e.g. `blocked_ips`, `security_events`, `support_banner_events`): After baselining, run **once** locally with prod `DATABASE_URL`:  
+     `cd backend && npx prisma migrate deploy`  
+     Then push and let Render redeploy (build stays without migrate deploy).  
+   - **Future schema changes:** Run `npx prisma migrate dev` locally, push, then run `npx prisma migrate deploy` locally against production when you’re ready — not in the Render build.  
    - **Local / one-off:** `cd backend && pnpm prisma generate && pnpm prisma db push && pnpm run db:seed`.
 4. Optional: enable Storage for file uploads; configure RLS if desired.
 
@@ -197,7 +204,7 @@ pnpm run db:seed
 ## 12. Pre-deploy checklist
 
 - [ ] **Supabase or Postgres** project created; `DATABASE_URL` set in backend `.env`
-- [ ] **Backend:** `pnpm prisma generate`, `pnpm prisma migrate deploy` (production) or `db push` (local), `pnpm run db:seed` if needed
+- [ ] **Backend:** `pnpm run build` on Render (no migrate deploy in build); run `prisma migrate resolve --applied "0_baseline"` and `prisma migrate deploy` locally against prod when needed; `pnpm run db:seed` if needed
 - [ ] **Frontend:** Tailwind and Next.js build succeed (`pnpm run build` in `frontend`)
 - [ ] **API routes** working: CMS, auth, startups, investors, payments (manual or E2E)
 - [ ] **Stripe (optional):** Test keys in backend env; integrate in `setupFeeController` for production payments
