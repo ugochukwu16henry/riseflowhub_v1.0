@@ -6,11 +6,12 @@ const prisma = new PrismaClient();
 
 /** POST /api/v1/ratings — Submit rating (hirer rates talent or talent rates hirer) after a completed hire */
 export async function create(req: Request, res: Response): Promise<void> {
-  const { toUserId, hireId, score, comment } = req.body as {
+  const { toUserId, hireId, score, comment, skillRating } = req.body as {
     toUserId: string;
     hireId?: string;
     score: number;
     comment?: string;
+    skillRating?: string;
   };
   const payload = (req as unknown as { user: AuthPayload }).user;
   const fromUserId = payload.userId;
@@ -57,6 +58,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       hireId: hireId?.trim() || null,
       score,
       comment: comment?.trim() || null,
+      skillRating: skillRating?.trim() || null,
     },
   });
 

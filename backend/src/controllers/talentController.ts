@@ -15,10 +15,19 @@ export async function apply(req: Request, res: Response): Promise<void> {
     password?: string;
     skills: string[];
     customRole?: string;
+    roleCategory?: string;
     yearsExperience: number;
     portfolioUrl?: string;
     resumeUrl?: string;
+    cvUrl?: string;
     pastProjects?: Array<{ title: string; description?: string; url?: string }>;
+    shortBio?: string;
+    availability?: 'full_time' | 'part_time' | 'freelance';
+    country?: string;
+    phone?: string;
+    services?: Array<{ title: string; description?: string; rate?: string }>;
+    skillRates?: Record<string, string>;
+    videoUrl?: string;
   };
   const {
     name,
@@ -26,10 +35,19 @@ export async function apply(req: Request, res: Response): Promise<void> {
     password,
     skills,
     customRole,
+    roleCategory,
     yearsExperience,
     portfolioUrl,
     resumeUrl,
+    cvUrl,
     pastProjects,
+    shortBio,
+    availability,
+    country,
+    phone,
+    services,
+    skillRates,
+    videoUrl,
   } = body;
 
   if (!Array.isArray(skills) || skills.length === 0 || typeof yearsExperience !== 'number') {
@@ -85,10 +103,19 @@ export async function apply(req: Request, res: Response): Promise<void> {
       userId,
       skills: skills.map((s) => String(s).trim()).filter(Boolean),
       customRole: customRole?.trim() || null,
+      roleCategory: roleCategory?.trim() || null,
       yearsExperience,
       portfolioUrl: portfolioUrl?.trim() || null,
       resumeUrl: resumeUrl?.trim() || null,
+      cvUrl: cvUrl?.trim() || null,
       pastProjects: pastProjects ?? null,
+      shortBio: shortBio?.trim() || null,
+      availability: availability ?? null,
+      country: country?.trim() || null,
+      phone: phone?.trim() || null,
+      services: services ?? null,
+      skillRates: skillRates ?? null,
+      videoUrl: videoUrl?.trim() || null,
       status: 'pending',
     },
     include: { user: { select: { id: true, name: true, email: true, role: true } } },
@@ -145,9 +172,16 @@ export async function marketplace(req: Request, res: Response): Promise<void> {
       name: t.user.name,
       skills: t.skills,
       customRole: t.customRole,
+      roleCategory: t.roleCategory,
       yearsExperience: t.yearsExperience,
       portfolioUrl: t.portfolioUrl,
       pastProjects: t.pastProjects,
+      shortBio: t.shortBio,
+      availability: t.availability,
+      country: t.country,
+      services: t.services,
+      skillRates: t.skillRates,
+      videoUrl: t.videoUrl,
       averageRating: t.averageRating != null ? Number(t.averageRating) : null,
       ratingCount: t.ratingCount,
     })),
@@ -170,16 +204,96 @@ export async function profile(req: Request, res: Response): Promise<void> {
     status: talent.status,
     skills: talent.skills,
     customRole: talent.customRole,
+    roleCategory: talent.roleCategory,
     yearsExperience: talent.yearsExperience,
     portfolioUrl: talent.portfolioUrl,
     resumeUrl: talent.resumeUrl,
+    cvUrl: talent.cvUrl,
     pastProjects: talent.pastProjects,
+    shortBio: talent.shortBio,
+    availability: talent.availability,
+    country: talent.country,
+    phone: talent.phone,
+    services: talent.services,
+    skillRates: talent.skillRates,
+    videoUrl: talent.videoUrl,
     feePaid: talent.feePaid,
     averageRating: talent.averageRating != null ? Number(talent.averageRating) : null,
     ratingCount: talent.ratingCount,
     createdAt: talent.createdAt,
     approvedAt: talent.approvedAt,
     user: talent.user,
+  });
+}
+
+/** PUT /api/v1/talent/profile — Talent: update own profile */
+export async function updateProfile(req: Request, res: Response): Promise<void> {
+  const payload = (req as unknown as { user: AuthPayload }).user;
+  const body = req.body as {
+    skills?: string[];
+    customRole?: string;
+    roleCategory?: string;
+    yearsExperience?: number;
+    portfolioUrl?: string;
+    resumeUrl?: string;
+    cvUrl?: string;
+    pastProjects?: Array<{ title: string; description?: string; url?: string }>;
+    shortBio?: string;
+    availability?: 'full_time' | 'part_time' | 'freelance';
+    country?: string;
+    phone?: string;
+    services?: Array<{ title: string; description?: string; rate?: string }>;
+    skillRates?: Record<string, string>;
+    videoUrl?: string;
+  };
+  const talent = await prisma.talent.findUnique({ where: { userId: payload.userId } });
+  if (!talent) {
+    res.status(404).json({ error: 'Talent profile not found' });
+    return;
+  }
+  const data: Record<string, unknown> = {};
+  if (body.skills !== undefined) data.skills = body.skills.map((s) => String(s).trim()).filter(Boolean);
+  if (body.customRole !== undefined) data.customRole = body.customRole?.trim() || null;
+  if (body.roleCategory !== undefined) data.roleCategory = body.roleCategory?.trim() || null;
+  if (body.yearsExperience !== undefined) data.yearsExperience = body.yearsExperience;
+  if (body.portfolioUrl !== undefined) data.portfolioUrl = body.portfolioUrl?.trim() || null;
+  if (body.resumeUrl !== undefined) data.resumeUrl = body.resumeUrl?.trim() || null;
+  if (body.cvUrl !== undefined) data.cvUrl = body.cvUrl?.trim() || null;
+  if (body.pastProjects !== undefined) data.pastProjects = body.pastProjects;
+  if (body.shortBio !== undefined) data.shortBio = body.shortBio?.trim() || null;
+  if (body.availability !== undefined) data.availability = body.availability;
+  if (body.country !== undefined) data.country = body.country?.trim() || null;
+  if (body.phone !== undefined) data.phone = body.phone?.trim() || null;
+  if (body.services !== undefined) data.services = body.services;
+  if (body.skillRates !== undefined) data.skillRates = body.skillRates;
+  if (body.videoUrl !== undefined) data.videoUrl = body.videoUrl?.trim() || null;
+  const updated = await prisma.talent.update({
+    where: { id: talent.id },
+    data: data as import('@prisma/client').Prisma.TalentUpdateInput,
+    include: { user: { select: { id: true, name: true, email: true, role: true } } },
+  });
+  res.json({
+    id: updated.id,
+    status: updated.status,
+    skills: updated.skills,
+    customRole: updated.customRole,
+    roleCategory: updated.roleCategory,
+    yearsExperience: updated.yearsExperience,
+    portfolioUrl: updated.portfolioUrl,
+    resumeUrl: updated.resumeUrl,
+    cvUrl: updated.cvUrl,
+    pastProjects: updated.pastProjects,
+    shortBio: updated.shortBio,
+    availability: updated.availability,
+    country: updated.country,
+    phone: updated.phone,
+    services: updated.services,
+    skillRates: updated.skillRates,
+    videoUrl: updated.videoUrl,
+    feePaid: updated.feePaid,
+    averageRating: updated.averageRating != null ? Number(updated.averageRating) : null,
+    ratingCount: updated.ratingCount,
+    user: updated.user,
   });
 }
 

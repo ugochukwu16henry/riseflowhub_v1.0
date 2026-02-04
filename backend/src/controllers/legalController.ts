@@ -51,3 +51,30 @@ export async function listAgreements(req: Request, res: Response): Promise<void>
     })),
   });
 }
+
+/** GET /api/v1/legal/disputes — Legal team / Super Admin: agreements with status Disputed */
+export async function listDisputes(req: Request, res: Response): Promise<void> {
+  const assignments = await prisma.assignedAgreement.findMany({
+    where: { status: 'Disputed' },
+    include: {
+      agreement: { select: { id: true, title: true, type: true } },
+      user: { select: { id: true, name: true, email: true } },
+      auditLogs: { orderBy: { createdAt: 'desc' }, take: 50 },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  res.json({
+    items: assignments.map((a) => ({
+      id: a.id,
+      agreementId: a.agreementId,
+      agreement: a.agreement,
+      user: a.user,
+      status: a.status,
+      signedAt: a.signedAt,
+      deadline: a.deadline,
+      createdAt: a.createdAt,
+      auditLogs: a.auditLogs,
+    })),
+  });
+}

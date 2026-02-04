@@ -16,6 +16,7 @@ router.use(authMiddleware);
 
 // Own profile
 router.get('/profile', requireRoles(UserRole.talent), talentController.profile);
+router.put('/profile', requireRoles(UserRole.talent), talentController.updateProfile);
 
 // HR / Super Admin: list all talents, approve/reject
 router.get('/', requireRoles(UserRole.super_admin, UserRole.hr_manager), talentController.list);

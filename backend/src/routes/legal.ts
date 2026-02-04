@@ -9,5 +9,6 @@ router.use(authMiddleware);
 router.use(requireRoles(UserRole.legal_team, UserRole.super_admin));
 
 router.get('/agreements', legalController.listAgreements);
+router.get('/disputes', legalController.listDisputes);
 
 export const legalRoutes = router;

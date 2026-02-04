@@ -14,6 +14,7 @@ export default function HiringPage() {
           </Link>
           <div className="flex items-center gap-6">
             <Link href="/talent-marketplace" className="text-sm font-medium text-gray-600 hover:text-primary transition">Talent Marketplace</Link>
+            <Link href="/partner" className="text-sm font-medium text-gray-600 hover:text-primary transition">Partner With Us</Link>
             <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-primary transition">Login</Link>
             <Link href="/register" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition">Get Started</Link>
           </div>

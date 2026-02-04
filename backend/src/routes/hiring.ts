@@ -1,9 +1,12 @@
 import { Router } from 'express';
-import { authMiddleware, requireRoles } from '../middleware/auth';
+import { authMiddleware, requireRoles, optionalAuth } from '../middleware/auth';
 import { UserRole } from '@prisma/client';
 import * as hiringController from '../controllers/hiringController';
 
 const router = Router();
+
+// Public: hiring config (role categories, skills, fees from CMS)
+router.get('/config', hiringController.getConfig);
 
 router.use(authMiddleware);
 

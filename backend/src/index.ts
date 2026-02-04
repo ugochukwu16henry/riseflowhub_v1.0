@@ -51,6 +51,8 @@ import { hiringRoutes } from './routes/hiring';
 import { ratingsRoutes } from './routes/ratings';
 import { legalRoutes } from './routes/legal';
 import { marketplaceFeeRoutes } from './routes/marketplaceFee';
+import { partnerRoutes } from './routes/partner';
+import { jobRequestRoutes } from './routes/jobRequests';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -97,6 +99,8 @@ app.use('/api/v1/hiring', hiringRoutes);
 app.use('/api/v1/ratings', ratingsRoutes);
 app.use('/api/v1/legal', legalRoutes);
 app.use('/api/v1/marketplace-fee', marketplaceFeeRoutes);
+app.use('/api/v1/partner', partnerRoutes);
+app.use('/api/v1/job-requests', jobRequestRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');

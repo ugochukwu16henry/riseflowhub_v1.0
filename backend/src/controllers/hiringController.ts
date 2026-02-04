@@ -5,6 +5,24 @@ import { createAuditLog } from '../services/auditLogService';
 
 const prisma = new PrismaClient();
 
+/** GET /api/v1/hiring/config — Public: role categories, skill list, fees from CMS */
+export async function getConfig(_req: Request, res: Response): Promise<void> {
+  const rows = await prisma.cmsContent.findMany({
+    where: { page: 'hiring' },
+    select: { key: true, value: true, type: true },
+  });
+  const config: Record<string, unknown> = {};
+  for (const row of rows) {
+    config[row.key] = row.type === 'json' ? (JSON.parse(row.value) as unknown) : row.value;
+  }
+  res.json({
+    roleCategories: (config['hiring.roleCategories'] as string[]) ?? ['Tech Roles', 'Creative Roles', 'Business Roles'],
+    skillList: (config['hiring.skillList'] as string[]) ?? [],
+    talentFeeUsd: Number(config['hiring.talentFeeUsd']) || 7,
+    companyFeeUsd: Number(config['hiring.companyFeeUsd']) || 20,
+  });
+}
+
 /** POST /api/v1/hiring/hire/:talentId — Hirer: send hire request (hirer must have paid fee + signed Fair Treatment) */
 export async function createHire(req: Request, res: Response): Promise<void> {
   const talentId = req.params.talentId as string;

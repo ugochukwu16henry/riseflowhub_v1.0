@@ -5,20 +5,32 @@ import { getStoredToken, api, type LegalAgreementsResponse } from '@/lib/api';
 
 export default function LegalDashboardPage() {
   const [data, setData] = useState<LegalAgreementsResponse | null>(null);
+  const [disputes, setDisputes] = useState<{ items: unknown[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
-    api.legal.agreements(token)
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.legal.agreements(token).then(setData).catch(() => setData(null)),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/legal/disputes`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.ok ? r.json() : { items: [] })
+        .then(setDisputes)
+        .catch(() => setDisputes({ items: [] })),
+    ]).finally(() => setLoading(false));
   }, []);
 
   if (loading) {
     return <div className="p-6"><p className="text-gray-500">Loading...</p></div>;
   }
+
+  const disputeList = (disputes?.items ?? []) as Array<{
+    id: string;
+    agreement?: { title: string; type: string };
+    user?: { name: string; email: string };
+    status: string;
+    createdAt: string;
+  }>;
 
   const assignments = (data?.assignments ?? []) as Array<{
     id: string;

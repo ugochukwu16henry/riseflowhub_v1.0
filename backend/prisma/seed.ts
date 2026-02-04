@@ -81,6 +81,11 @@ async function main() {
     { key: 'email.welcome.subject', value: 'Welcome to AfriLaunch Hub', type: 'text', page: 'email' },
     { key: 'legal.terms', value: 'Terms of Service content — edit in CMS Manager.', type: 'richtext', page: 'legal' },
     { key: 'legal.privacy', value: 'Privacy Policy content — edit in CMS Manager.', type: 'richtext', page: 'legal' },
+    // Hiring / Talent Marketplace — editable in CMS (Super Admin)
+    { key: 'hiring.roleCategories', value: JSON.stringify(['Tech Roles', 'Creative Roles', 'Business Roles']), type: 'json', page: 'hiring' },
+    { key: 'hiring.skillList', value: JSON.stringify(['Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Mobile Developer', 'DevOps Engineer', 'AI Engineer', 'Data Analyst', 'Cybersecurity', 'UI/UX Designer', 'Graphic Designer', 'Video Editor', 'Animator', 'Project Manager', 'HR Manager', 'Recruiter', 'Marketing Specialist', 'Social Media Manager']), type: 'json', page: 'hiring' },
+    { key: 'hiring.talentFeeUsd', value: '7', type: 'text', page: 'hiring' },
+    { key: 'hiring.companyFeeUsd', value: '20', type: 'text', page: 'hiring' },
   ];
   for (const entry of cmsEntries) {
     await prisma.cmsContent.upsert({
