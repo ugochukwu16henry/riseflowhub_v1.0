@@ -54,6 +54,7 @@ export function Nav() {
             <Link href="/pricing" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Pricing</Link>
             <a href="/#solution" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>How it works</a>
             <Link href="/investors" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Investors</Link>
+            <Link href="/hiring" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Hiring</Link>
             <a href="/#features" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Features</a>
             <Link href="/login" className="text-sm font-medium text-gray-700" onClick={() => setOpen(false)}>Login</Link>
             <Link
