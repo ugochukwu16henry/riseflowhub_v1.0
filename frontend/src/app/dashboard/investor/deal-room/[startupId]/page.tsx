@@ -179,6 +179,19 @@ export default function DealRoomStartupProfilePage() {
     );
   }
 
+  if (!startup) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Link href="/dashboard/investor/deal-room" className="text-sm text-primary hover:underline mb-4 inline-block">
+          ← Back to Deal Room
+        </Link>
+        <div className="rounded-lg bg-red-50 text-red-700 p-4">
+          <p>{error || 'Startup not found or access not granted.'}</p>
+        </div>
+      </div>
+    );
+  }
+
   const project = startup.project;
   const businessModel = project?.businessModel;
   const milestones = project?.milestones ?? [];
