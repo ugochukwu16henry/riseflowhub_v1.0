@@ -12,6 +12,10 @@ function isInvestor(role: string) {
 function isAdmin(role: string) {
   return ['super_admin', 'project_manager', 'finance_admin'].includes(role);
 }
+function isFounderOrAdminForStartup(payload: AuthPayload, startup: { project?: { client?: { userId?: string } } } | null) {
+  const founderUserId = startup?.project?.client?.userId;
+  return isAdmin(payload.role) || (!!founderUserId && founderUserId === payload.userId);
+}
 
 /** GET /api/v1/deal-room — List startups in Deal Room (approved + investorReady). Investor or admin. */
 export async function list(req: Request, res: Response): Promise<void> {
@@ -47,10 +51,6 @@ export async function list(req: Request, res: Response): Promise<void> {
 /** GET /api/v1/deal-room/:startupId — Startup profile for Deal Room; record view if investor. */
 export async function getStartup(req: Request, res: Response): Promise<void> {
   const payload = (req as unknown as { user: AuthPayload }).user;
-  if (!isInvestor(payload.role) && !isAdmin(payload.role)) {
-    res.status(403).json({ error: 'Investor or admin only' });
-    return;
-  }
   const { startupId } = req.params;
   const startup = await prisma.startupProfile.findUnique({
     where: { id: startupId },
@@ -79,6 +79,29 @@ export async function getStartup(req: Request, res: Response): Promise<void> {
   if (startup.visibilityStatus !== APPROVED || !startup.investorReady) {
     res.status(403).json({ error: 'Startup not in Deal Room' });
     return;
+  }
+  // Access control: startup owner, approved investors, Super Admin / finance_admin / project_manager / legal_team
+  const isLegalTeam = payload.role === 'legal_team';
+  if (!(isAdmin(payload.role) || isLegalTeam || isFounderOrAdminForStartup(payload, startup))) {
+    if (isInvestor(payload.role)) {
+      const investor = await prisma.investor.findUnique({ where: { userId: payload.userId } });
+      if (!investor) {
+        res.status(403).json({ error: 'Investor profile not found' });
+        return;
+      }
+      const access = await prisma.dealRoomAccess.findUnique({
+        where: {
+          investorId_startupId: { investorId: investor.id, startupId },
+        },
+      });
+      if (!access || access.status !== 'approved') {
+        res.status(403).json({ error: 'Deal Room access required. Request access from the founder.' });
+        return;
+      }
+    } else {
+      res.status(403).json({ error: 'Not authorized to view this Deal Room' });
+      return;
+    }
   }
   if (isInvestor(payload.role)) {
     const investor = await prisma.investor.findUnique({ where: { userId: payload.userId } });
@@ -160,6 +183,121 @@ export async function listSaved(req: Request, res: Response): Promise<void> {
     select: { startupId: true },
   });
   res.json(saved.map((s) => s.startupId));
+}
+
+/** POST /api/v1/deal-room/:startupId/request-access — Investor requests Deal Room access. */
+export async function requestAccess(req: Request, res: Response): Promise<void> {
+  const payload = (req as unknown as { user: AuthPayload }).user;
+  if (!isInvestor(payload.role)) {
+    res.status(403).json({ error: 'Investor only' });
+    return;
+  }
+  const { startupId } = req.params;
+  const investor = await prisma.investor.findUnique({ where: { userId: payload.userId } });
+  if (!investor) {
+    res.status(403).json({ error: 'Investor profile not found' });
+    return;
+  }
+  const startup = await prisma.startupProfile.findUnique({ where: { id: startupId } });
+  if (!startup || startup.visibilityStatus !== APPROVED || !startup.investorReady) {
+    res.status(404).json({ error: 'Startup not in Deal Room' });
+    return;
+  }
+  const access = await prisma.dealRoomAccess.upsert({
+    where: { investorId_startupId: { investorId: investor.id, startupId } },
+    create: { investorId: investor.id, startupId, status: 'requested' },
+    update: { status: 'requested', decidedAt: null },
+  });
+  res.status(201).json({ status: access.status });
+}
+
+/** GET /api/v1/deal-room/:startupId/access-status — Investor: check access status. */
+export async function accessStatus(req: Request, res: Response): Promise<void> {
+  const payload = (req as unknown as { user: AuthPayload }).user;
+  if (!isInvestor(payload.role)) {
+    res.status(403).json({ error: 'Investor only' });
+    return;
+  }
+  const { startupId } = req.params;
+  const investor = await prisma.investor.findUnique({ where: { userId: payload.userId } });
+  if (!investor) {
+    res.json({ status: 'none' });
+    return;
+  }
+  const access = await prisma.dealRoomAccess.findUnique({
+    where: { investorId_startupId: { investorId: investor.id, startupId } },
+  });
+  res.json({ status: access?.status ?? 'none' });
+}
+
+/** GET /api/v1/deal-room/:startupId/access-requests — Founder/Admin: list access requests. */
+export async function listAccessRequests(req: Request, res: Response): Promise<void> {
+  const payload = (req as unknown as { user: AuthPayload }).user;
+  const { startupId } = req.params;
+  const startup = await prisma.startupProfile.findUnique({
+    where: { id: startupId },
+    include: { project: { include: { client: { select: { userId: true } } } } },
+  });
+  if (!startup) {
+    res.status(404).json({ error: 'Startup not found' });
+    return;
+  }
+  if (!isFounderOrAdminForStartup(payload, startup)) {
+    res.status(403).json({ error: 'Only founder or admin can view access requests' });
+    return;
+  }
+  const rows = await prisma.dealRoomAccess.findMany({
+    where: { startupId },
+    orderBy: { createdAt: 'desc' },
+    include: { investor: { select: { id: true, name: true, email: true } } },
+  });
+  res.json({ items: rows });
+}
+
+/** POST /api/v1/deal-room/access/:id/approve — Founder/Admin approves access. */
+export async function approveAccess(req: Request, res: Response): Promise<void> {
+  const payload = (req as unknown as { user: AuthPayload }).user;
+  const { id } = req.params;
+  const access = await prisma.dealRoomAccess.findUnique({
+    where: { id },
+    include: { startup: { include: { project: { include: { client: { select: { userId: true } } } } } } },
+  });
+  if (!access) {
+    res.status(404).json({ error: 'Access request not found' });
+    return;
+  }
+  if (!isFounderOrAdminForStartup(payload, access.startup)) {
+    res.status(403).json({ error: 'Only founder or admin can approve access' });
+    return;
+  }
+  const updated = await prisma.dealRoomAccess.update({
+    where: { id },
+    data: { status: 'approved', decidedAt: new Date() },
+  });
+  res.json({ status: updated.status });
+}
+
+/** POST /api/v1/deal-room/access/:id/reject — Founder/Admin rejects access. */
+export async function rejectAccess(req: Request, res: Response): Promise<void> {
+  const payload = (req as unknown as { user: AuthPayload }).user;
+  const { id } = req.params;
+  const access = await prisma.dealRoomAccess.findUnique({
+    where: { id },
+    include: { startup: { include: { project: { include: { client: { select: { userId: true } } } } } } },
+  });
+  if (!access) {
+    res.status(404).json({ error: 'Access request not found' });
+    return;
+  }
+  if (!isFounderOrAdminForStartup(payload, access.startup)) {
+    res.status(403).json({ error: 'Only founder or admin can reject access' });
+    return;
+  }
+  const updated = await prisma.dealRoomAccess.update({
+    where: { id },
+    data: { status: 'rejected', decidedAt: new Date() },
+  });
+  res.json({ status: updated.status });
 }
 
 /** POST /api/v1/deal-room/messages — Send message (investmentId, message). Investor, founder, or admin. */

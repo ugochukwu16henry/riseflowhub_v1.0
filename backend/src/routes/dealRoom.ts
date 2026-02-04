@@ -10,6 +10,33 @@ router.use(authMiddleware);
 // GET /api/v1/deal-room — List startups in Deal Room (approved + investorReady)
 router.get('/', dealRoomController.list);
 
+// Access control: request and manage Deal Room access
+router.post('/:startupId/request-access', [param('startupId').isUUID()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  return dealRoomController.requestAccess(req, res);
+});
+router.get('/:startupId/access-status', [param('startupId').isUUID()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  return dealRoomController.accessStatus(req, res);
+});
+router.get('/:startupId/access-requests', [param('startupId').isUUID()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  return dealRoomController.listAccessRequests(req, res);
+});
+router.post('/access/:id/approve', [param('id').isUUID()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  return dealRoomController.approveAccess(req, res);
+});
+router.post('/access/:id/reject', [param('id').isUUID()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  return dealRoomController.rejectAccess(req, res);
+});
+
 // GET /api/v1/deal-room/admin/deals — Admin: list deals (must be before /:startupId)
 router.get('/admin/deals', dealRoomController.adminDeals);
 

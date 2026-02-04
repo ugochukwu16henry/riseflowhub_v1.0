@@ -456,6 +456,13 @@ enum InvestmentStatus {
   withdrawn
 }
 
+// Access control for Investor Deal Room
+enum DealRoomAccessStatus {
+  requested
+  approved
+  rejected
+}
+
 model Investor {
   id                   String   @id @default(uuid())
   userId               String   @unique @map("user_id")
@@ -474,6 +481,7 @@ model Investor {
   investments    Investment[]
   dealRoomViews  DealRoomView[]
   savedStartups  SavedStartup[]
+  dealRoomAccess DealRoomAccess[]
 }
 
 model StartupProfile {
@@ -501,6 +509,7 @@ model StartupProfile {
   investments   Investment[]
   dealRoomViews DealRoomView[]
   savedStartups SavedStartup[]
+  dealRoomAccess DealRoomAccess[]
 }
 
 model Investment {
@@ -558,6 +567,22 @@ model DealRoomMessage {
   sender     User       @relation("DealRoomMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@map("deal_room_messages")
+}
+
+// Investor Deal Room: access requests and approvals
+model DealRoomAccess {
+  id         String              @id @default(uuid())
+  investorId String              @map("investor_id")
+  startupId  String              @map("startup_id")
+  status     DealRoomAccessStatus @default(requested)
+  createdAt  DateTime            @default(now()) @map("created_at")
+  decidedAt  DateTime?           @map("decided_at")
+
+  investor Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  startup  StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([investorId, startupId])
+  @@map("deal_room_access")
 }
 
 // Marketing Analytics & Campaign Engine
