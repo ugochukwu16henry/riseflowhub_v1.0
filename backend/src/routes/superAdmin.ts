@@ -6,6 +6,7 @@ import * as emailLogsController from '../controllers/emailLogsController';
 import * as equityController from '../controllers/equityController';
 import * as businessModuleController from '../controllers/businessModuleController';
 import * as featureController from '../controllers/featureController';
+import * as adminMessagesController from '../controllers/adminMessagesController';
 
 const router = Router();
 
@@ -18,6 +19,8 @@ router.get('/activity', superAdminController.activity);
 router.get('/audit-logs', superAdminController.auditLogs);
 router.get('/reports', superAdminController.reports);
 router.get('/consultations', superAdminController.consultations);
+router.get('/messages', adminMessagesController.list);
+router.patch('/messages/:id', adminMessagesController.updateStatus);
 
 // Per-user feature unlock overview (Super Admin only).
 router.get('/users/:userId/features', featureController.adminUserFeatures);
