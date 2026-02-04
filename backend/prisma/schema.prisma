@@ -937,7 +937,8 @@ model ManualPayment {
   confirmedAt DateTime?           @map("confirmed_at")
   notes       String?             @db.Text
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications ManualPaymentNotification[]
 
   @@map("manual_payments")
 }
