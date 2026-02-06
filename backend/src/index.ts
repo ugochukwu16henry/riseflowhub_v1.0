@@ -115,11 +115,16 @@ app.use(compression({ level: 6, threshold: 512 }));
 app.use(blockedIpMiddleware);
 app.use(apiRateLimiter);
 
-// Stripe webhook needs raw body for signature verification (must be before express.json)
+// Stripe and Paystack webhooks need raw body for signature verification (must be before express.json)
 app.use(
   '/api/v1/webhooks/stripe',
   express.raw({ type: 'application/json' }),
   webhookController.stripeWebhook
+);
+app.use(
+  '/api/v1/webhooks/paystack',
+  express.raw({ type: 'application/json' }),
+  webhookController.paystackWebhook
 );
 
 app.use(express.json({ limit: '256kb' }));
