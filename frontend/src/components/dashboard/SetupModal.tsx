@@ -48,9 +48,22 @@ export function SetupModal({ user, onComplete, primaryColor }: SetupModalProps) 
     setError(null);
     try {
       const session = await api.setupFee.createSession({ currency: quote?.currency || 'USD' }, token);
+      if (!session?.checkoutUrl) {
+        setError('Invalid payment response. Please try again.');
+        setLoading(false);
+        return;
+      }
       window.location.href = session.checkoutUrl;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to start payment');
+      const msg = e instanceof Error ? e.message : 'Failed to start payment';
+      console.error('Setup fee payment error:', e);
+      if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('NetworkError') || msg.includes('502')) {
+        setError(
+          'Unable to connect to the payment server. Ensure the backend is running and NEXT_PUBLIC_API_URL is set (e.g. to your Render URL on Vercel). If using Render free tier, the backend may be sleeping — open the backend health URL in a new tab, wait ~60s, then try again.'
+        );
+      } else {
+        setError(msg);
+      }
       setLoading(false);
     }
   }
