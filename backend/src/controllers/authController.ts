@@ -39,6 +39,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
     password: string;
     role?: UserRole;
   };
+  try {
   const tenantId = await resolveTenantIdFromRequest(req);
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -77,6 +78,16 @@ export async function signup(req: Request, res: Response): Promise<void> {
     user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, setupPaid: user.setupPaid, setupReason: user.setupReason },
     token,
   });
+  } catch (e) {
+    if (isPrismaInitError(e)) {
+      console.error('[Auth] Signup failed: database config error.', (e as Error).message);
+      res.status(503).json({
+        error: 'Database not configured. Set DATABASE_URL to a valid postgresql:// or postgres:// connection string.',
+      });
+      return;
+    }
+    throw e;
+  }
 }
 
 function isPrismaInitError(e: unknown): boolean {

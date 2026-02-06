@@ -196,6 +196,17 @@ app.get('/api/v1/health', (_, res) => {
   res.json({ status: 'ok', service: 'afrilaunch-api' });
 });
 
+// 404 for API routes — return JSON so frontend gets consistent error shape
+app.use('/api', (_, res) => {
+  res.status(404).json({ error: 'Not Found', code: 'NOT_FOUND' });
+});
+
+// Global error handler: prevent unhandled rejection from crashing the process; return JSON
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('[Unhandled error]', err?.message || err);
+  res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
+});
+
 app.listen(PORT, () => {
   console.log(`AfriLaunch API running at http://localhost:${PORT}`);
 });

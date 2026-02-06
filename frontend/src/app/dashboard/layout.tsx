@@ -549,7 +549,9 @@ function DashboardLayoutInner({
               setHelpLoading(true);
               setHelpAnswer(null);
               try {
-                const res = await fetch('/api/v1/help-ai/ask', {
+                const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
+                const helpUrl = apiBase ? `${apiBase.replace(/\/+$/, '')}/api/v1/help-ai/ask` : '/api/v1/help-ai/ask';
+                const res = await fetch(helpUrl, {
                   method: 'POST',
                   headers: {
                     Authorization: `Bearer ${token}`,
