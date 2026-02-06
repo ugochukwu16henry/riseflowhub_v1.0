@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { authMiddleware, requireSuperAdmin } from '../middleware/auth';
+import { UserRole } from '@prisma/client';
+import { authMiddleware, requireSuperAdmin, requireRoles } from '../middleware/auth';
 import * as superAdminController from '../controllers/superAdminController';
 import * as adminSkillsController from '../controllers/adminSkillsController';
 import * as emailLogsController from '../controllers/emailLogsController';
@@ -7,10 +8,16 @@ import * as equityController from '../controllers/equityController';
 import * as businessModuleController from '../controllers/businessModuleController';
 import * as featureController from '../controllers/featureController';
 import * as adminMessagesController from '../controllers/adminMessagesController';
+import * as financeController from '../controllers/financeController';
 
 const router = Router();
 
 router.use(authMiddleware);
+
+// Finance dashboard & tax export — Super Admin and finance_admin (must be before requireSuperAdmin)
+router.get('/finance/summary', requireRoles(UserRole.super_admin, UserRole.finance_admin), financeController.summary);
+router.get('/finance/tax-summary', requireRoles(UserRole.super_admin, UserRole.finance_admin), financeController.taxSummary);
+
 router.use(requireSuperAdmin);
 
 router.get('/overview', superAdminController.overview);

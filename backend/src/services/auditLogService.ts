@@ -20,6 +20,8 @@ export type AuditActionType =
   | 'payment_rejected'
   | 'invoice_generated'
   | 'tax_export_downloaded'
+  | 'invoice_generated'
+  | 'tax_export_downloaded'
   | 'project_created'
   | 'startup_published'
   | 'talent_applied'

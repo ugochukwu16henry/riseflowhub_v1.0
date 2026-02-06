@@ -1,16 +1,16 @@
 /**
- * Generate PDF invoices for approved payments. Used when Super Admin confirms a manual payment.
+ * Auto PDF invoice generation for approved payments.
+ * Generates a buffer for email attachment; optionally can be saved to disk for download.
  */
 
 import PDFDocument from 'pdfkit';
-import { PassThrough } from 'stream';
 import type { PrismaClient } from '@prisma/client';
 
 const PLATFORM_NAME = 'AfriLaunch Hub';
 
 export interface ManualPaymentWithUser {
   id: string;
-  amount: import('@prisma/client').Decimal;
+  amount: number | { toString(): string };
   currency: string;
   paymentType: string;
   status: string;
@@ -19,40 +19,49 @@ export interface ManualPaymentWithUser {
   user: { name: string; email: string };
 }
 
-/** Generate PDF invoice for a manual payment; returns buffer and suggested filename. */
+/** Generate PDF invoice for a manual payment (confirmed). Returns buffer and suggested filename. */
 export async function generateInvoicePDF(
   payment: ManualPaymentWithUser
 ): Promise<{ buffer: Buffer; fileName: string }> {
-  const chunks: Buffer[] = [];
-  const stream = new PassThrough();
-  stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-
-  const doc = new PDFDocument({ margin: 50 });
-  doc.pipe(stream);
-
-  doc.fontSize(20).text(PLATFORM_NAME, { align: 'center' });
-  doc.moveDown();
-  doc.fontSize(16).text(`Invoice #${payment.id.slice(0, 8).toUpperCase()}`);
-  doc.fontSize(10).text(`Date: ${(payment.confirmedAt || payment.submittedAt).toLocaleDateString()}`);
-  doc.moveDown();
-  doc.text(`Bill to: ${payment.user.name}`);
-  doc.text(`Email: ${payment.user.email}`);
-  doc.moveDown();
-  doc.text(`Amount: ${Number(payment.amount).toLocaleString()} ${payment.currency}`);
-  doc.text(`Payment type: ${payment.paymentType}`);
-  doc.text(`Status: ${payment.status}`);
-  doc.moveDown();
-  doc.fontSize(10).text('Thank you for supporting AfriLaunch Hub.', { align: 'center' });
-
-  doc.end();
-
   return new Promise((resolve, reject) => {
-    stream.on('end', () => resolve({ buffer: Buffer.concat(chunks), fileName: `invoice_${payment.id.slice(0, 8)}.pdf` }));
-    stream.on('error', reject);
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks: Buffer[] = [];
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end', () => resolve({ buffer: Buffer.concat(chunks), fileName: `invoice_${payment.id}.pdf` }));
+    doc.on('error', reject);
+
+    const dateStr = payment.confirmedAt
+      ? new Date(payment.confirmedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    doc.fontSize(20).text(PLATFORM_NAME, { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(10).text('Payment Invoice', { align: 'center' });
+    doc.moveDown(1.5);
+
+    doc.fontSize(14).text(`Invoice #${payment.id.slice(0, 8).toUpperCase()}`, { continued: false });
+    doc.fontSize(10).text(`Date: ${dateStr}`);
+    doc.moveDown(1);
+
+    doc.text(`Bill to: ${payment.user.name}`);
+    doc.text(`Email: ${payment.user.email}`);
+    doc.moveDown(1);
+
+  const amountNum = typeof payment.amount === 'number' ? payment.amount : Number(String(payment.amount));
+  doc.fontSize(12).text('Amount paid', { underline: true });
+  doc.fontSize(10).text(`${amountNum.toLocaleString()} ${payment.currency}`);
+    doc.text(`Payment type: ${payment.paymentType === 'platform_fee' ? 'Platform setup fee' : payment.paymentType}`);
+    doc.text(`Status: ${payment.status}`);
+    doc.moveDown(1.5);
+
+    doc.fontSize(10).text('Thank you for supporting AfriLaunch Hub. This document serves as your payment receipt.', {
+      align: 'center',
+    });
+    doc.end();
   });
 }
 
-/** Load manual payment with user and return invoice buffer + filename. For use after confirm. */
+/** Load manual payment with user and generate invoice. Used after approval. */
 export async function generateInvoiceForPayment(
   prisma: PrismaClient,
   paymentId: string

@@ -103,11 +103,13 @@ export default function AdminFinancePage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             <MetricCard label="Total Revenue (USD)" value={`$${data.totalRevenueUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />
+            <MetricCard label="This Month (USD)" value={`$${data.revenueThisMonthUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />
+            <MetricCard label="This Year (USD)" value={`$${data.revenueThisYearUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />
             <MetricCard label="Paid Users" value={data.totalPaidUsers} />
             <MetricCard label="Pending Approvals" value={data.pendingApprovals} />
-            <MetricCard label="Refunds (USD)" value={`$${data.refundsUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />
+            <MetricCard label="Refunds (USD)" value={`$${(data.refundsTotalUsd ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2 mb-8">
@@ -131,7 +133,7 @@ export default function AdminFinancePage() {
 
             <section className="rounded-xl border border-gray-200 bg-white overflow-hidden">
               <h2 className="px-4 py-3 border-b border-gray-100 font-semibold text-secondary">
-                Revenue trend (manual vs gateway)
+                Revenue trend (last 12 months)
               </h2>
               <div className="p-4 h-72">
                 <ResponsiveContainer width="100%" height="100%">
@@ -139,10 +141,9 @@ export default function AdminFinancePage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
-                    <Tooltip formatter={(v: number) => [`$${v?.toFixed(2) ?? 0}`, '']} labelFormatter={(l) => `Month: ${l}`} />
+                    <Tooltip formatter={(v: number) => [`$${Number(v).toFixed(2)}`, 'Revenue (USD)']} labelFormatter={(l) => `Month: ${l}`} />
                     <Legend />
-                    <Line type="monotone" dataKey="manualUsd" name="Bank transfer (USD)" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="gatewayUsd" name="Gateway (USD)" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="totalUsd" name="Total (USD)" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -151,16 +152,16 @@ export default function AdminFinancePage() {
 
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden mb-8">
             <h2 className="px-4 py-3 border-b border-gray-100 font-semibold text-secondary">
-              Payment type breakdown (manual / bank transfer)
+              Payment method breakdown
             </h2>
             <div className="p-4">
-              {data.byPaymentType.length === 0 ? (
+              {data.paymentMethodBreakdown.length === 0 ? (
                 <p className="text-gray-500 text-sm">No confirmed manual payments yet.</p>
               ) : (
                 <ul className="space-y-2">
-                  {data.byPaymentType.map((t) => (
-                    <li key={t.type} className="flex justify-between items-center text-sm">
-                      <span className="capitalize text-gray-700">{t.type.replace(/_/g, ' ')}</span>
+                  {data.paymentMethodBreakdown.map((t) => (
+                    <li key={t.method} className="flex justify-between items-center text-sm">
+                      <span className="text-gray-700">{t.method}</span>
                       <span className="font-medium text-secondary">
                         {t.count} payment{t.count !== 1 ? 's' : ''} · {Number(t.totalAmount).toLocaleString()} total
                       </span>

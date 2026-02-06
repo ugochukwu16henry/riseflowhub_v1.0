@@ -1192,12 +1192,13 @@ export interface SuperAdminOverview {
 
 export interface FinanceSummary {
   totalRevenueUsd: number;
+  revenueThisMonthUsd: number;
+  revenueThisYearUsd: number;
   totalPaidUsers: number;
   pendingApprovals: number;
-  refundsUsd: number;
-  byPaymentType: { type: string; count: number; totalAmount: number }[];
-  revenueByMonth: { month: string; revenueUsd: number; manualUsd: number; gatewayUsd: number }[];
-  gatewayPaymentCount: number;
+  paymentMethodBreakdown: { method: string; count: number; totalAmount: number }[];
+  revenueByMonth: { month: string; totalUsd: number }[];
+  refundsTotalUsd: number;
 }
 
 export interface SuperAdminPaymentRow {
