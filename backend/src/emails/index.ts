@@ -16,6 +16,7 @@ import { interviewInviteEmail } from './interviewInviteEmail';
 import { passwordResetEmail } from './passwordResetEmail';
 import { securityAlertEmail } from './securityAlertEmail';
 import { platformMessageForwardEmail } from './platformMessageForwardEmail';
+import { paymentReceiptEmail } from './paymentReceiptEmail';
 
 export type EmailType =
   | 'account_created'
@@ -30,6 +31,7 @@ export type EmailType =
   | 'investor_interest_received'
   | 'team_invite'
   | 'payment_confirmation'
+  | 'payment_receipt'
   | 'talent_approval'
   | 'interview_invite'
   | 'password_reset'
@@ -70,4 +72,4 @@ export function getEmailContent(type: EmailType, dynamicData: Record<string, unk
   return fn(dynamicData);
 }
 
-export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail, paymentConfirmationEmail, talentApprovalEmail, interviewInviteEmail, passwordResetEmail, birthdayWishEmail, securityAlertEmail, platformMessageForwardEmail };
+export { welcomeEmail, consultationBookedEmail, ideaSubmissionEmail, proposalReadyEmail, agreementPendingEmail, agreementSignedEmail, paymentReminderEmail, milestoneCompletedEmail, projectLaunchedEmail, investorInterestEmail, teamInviteEmail, paymentConfirmationEmail, paymentReceiptEmail, talentApprovalEmail, interviewInviteEmail, passwordResetEmail, birthdayWishEmail, securityAlertEmail, platformMessageForwardEmail };

@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 import { notify } from '../services/notificationService';
 import { awardBadge } from '../services/badgeService';
+import { createAuditLog } from '../services/auditLogService';
+import { sendNotificationEmail } from '../services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -116,6 +118,34 @@ export async function confirm(req: Request, res: Response): Promise<void> {
     link: updated.paymentType === 'platform_fee' ? '/dashboard' : '/dashboard/payments',
   });
 
+  // Send official email receipt to user
+  sendNotificationEmail({
+    type: 'payment_receipt',
+    userEmail: updated.user.email,
+    dynamicData: {
+      name: updated.user.name,
+      amount: Number(updated.amount),
+      currency: updated.currency,
+      paymentType: updated.paymentType,
+      confirmedAt: updated.confirmedAt?.toISOString(),
+    },
+  }).catch((e) => console.error('[ManualPayment] Receipt email failed:', e));
+
+  // Audit: payment approved
+  createAuditLog(prisma, {
+    adminId: admin.userId,
+    actionType: 'payment_approved',
+    entityType: 'payment',
+    entityId: updated.id,
+    details: {
+      userId: updated.userId,
+      amount: Number(updated.amount),
+      currency: updated.currency,
+      paymentType: updated.paymentType,
+      confirmedAt: updated.confirmedAt?.toISOString(),
+    },
+  }).catch(() => {});
+
   res.json({
     id: updated.id,
     status: updated.status,
@@ -176,6 +206,21 @@ export async function reject(req: Request, res: Response): Promise<void> {
     message: `We could not confirm your bank transfer. Reason: ${reason.trim()}`,
     link: '/dashboard/payments',
   });
+
+  // Audit: payment rejected
+  createAuditLog(prisma, {
+    adminId: admin.userId,
+    actionType: 'payment_rejected',
+    entityType: 'payment',
+    entityId: updated.id,
+    details: {
+      userId: updated.userId,
+      amount: Number(updated.amount),
+      currency: updated.currency,
+      paymentType: updated.paymentType,
+      reason: reason.trim(),
+    },
+  }).catch(() => {});
 
   res.json({
     id: updated.id,
