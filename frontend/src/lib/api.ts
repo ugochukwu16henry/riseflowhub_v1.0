@@ -1078,6 +1078,19 @@ export const api = {
           token,
         }),
     },
+    finance: {
+      summary: (token: string) =>
+        request<FinanceSummary>(`/api/v1/super-admin/finance/summary`, { token }),
+      downloadTaxSummary: async (token: string, start: string, end: string): Promise<Blob> => {
+        const url = `${API_BASE}/api/v1/super-admin/finance/tax-summary?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error || res.statusText);
+        }
+        return res.blob();
+      },
+    },
   },
   team: {
     list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
@@ -1175,6 +1188,16 @@ export interface SuperAdminOverview {
   pendingTalents: number;
   pendingStartups: number;
   earlyFounderCount: number;
+}
+
+export interface FinanceSummary {
+  totalRevenueUsd: number;
+  totalPaidUsers: number;
+  pendingApprovals: number;
+  refundsUsd: number;
+  byPaymentType: { type: string; count: number; totalAmount: number }[];
+  revenueByMonth: { month: string; revenueUsd: number; manualUsd: number; gatewayUsd: number }[];
+  gatewayPaymentCount: number;
 }
 
 export interface SuperAdminPaymentRow {

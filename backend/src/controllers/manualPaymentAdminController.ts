@@ -4,7 +4,8 @@ import type { AuthPayload } from '../middleware/auth';
 import { notify } from '../services/notificationService';
 import { awardBadge } from '../services/badgeService';
 import { createAuditLog } from '../services/auditLogService';
-import { sendNotificationEmail } from '../services/emailService';
+import { sendNotificationEmail, sendInvoiceEmail } from '../services/emailService';
+import { generateInvoiceForPayment } from '../services/invoiceService';
 
 const prisma = new PrismaClient();
 
@@ -130,6 +131,26 @@ export async function confirm(req: Request, res: Response): Promise<void> {
       confirmedAt: updated.confirmedAt?.toISOString(),
     },
   }).catch((e) => console.error('[ManualPayment] Receipt email failed:', e));
+
+  // Generate PDF invoice and email to user
+  generateInvoiceForPayment(prisma, updated.id)
+    .then((result) => {
+      if (!result) return;
+      sendInvoiceEmail({
+        toEmail: updated.user.email,
+        subject: 'Your payment invoice — AfriLaunch Hub',
+        html: `<p>Dear ${updated.user.name},</p><p>Please find your payment invoice attached.</p><p>Thank you for supporting AfriLaunch Hub.</p>`,
+        attachment: { filename: result.fileName, content: result.buffer },
+      }).catch((e) => console.error('[ManualPayment] Invoice email failed:', e));
+      createAuditLog(prisma, {
+        adminId: admin.userId,
+        actionType: 'invoice_generated',
+        entityType: 'payment',
+        entityId: updated.id,
+        details: { userId: updated.userId, fileName: result.fileName },
+      }).catch(() => {});
+    })
+    .catch((e) => console.error('[ManualPayment] Invoice generation failed:', e));
 
   // Audit: payment approved
   createAuditLog(prisma, {

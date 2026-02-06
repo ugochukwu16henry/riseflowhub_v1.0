@@ -122,3 +122,36 @@ export async function sendNotificationEmail(params: {
     console.error('[Email] Send error:', e);
   }
 }
+
+/** Send email with PDF attachment (e.g. invoice). Fire-and-forget; logs on failure. */
+export async function sendInvoiceEmail(params: {
+  toEmail: string;
+  subject: string;
+  html: string;
+  attachment: { filename: string; content: Buffer };
+}): Promise<void> {
+  const logId = await logEmail({
+    type: 'invoice',
+    toEmail: params.toEmail,
+    subject: params.subject,
+    status: 'pending',
+    metadata: { attachment: params.attachment.filename },
+  }).catch(() => '');
+
+  const from = process.env.EMAIL_FROM || 'AfriLaunch Hub <noreply@afrilaunchhub.com>';
+  try {
+    const transport = getTransport();
+    await transport.sendMail({
+      from,
+      to: params.toEmail,
+      subject: params.subject,
+      html: params.html,
+      attachments: [{ filename: params.attachment.filename, content: params.attachment.content }],
+    });
+    if (logId) await updateEmailLog(logId, { status: 'sent', sentAt: new Date() });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (logId) await updateEmailLog(logId, { status: 'failed', errorMessage: msg, sentAt: null });
+    console.error('[Email] Invoice email failed:', msg);
+  }
+}

@@ -58,6 +58,7 @@ const TEMPLATES: Record<EmailType, (data: Record<string, unknown>) => { subject:
   investor_interest_received: investorInterestEmail,
   team_invite: teamInviteEmail,
   payment_confirmation: paymentConfirmationEmail,
+  payment_receipt: paymentReceiptEmail,
   talent_approval: talentApprovalEmail,
   interview_invite: interviewInviteEmail,
   password_reset: passwordResetEmail,

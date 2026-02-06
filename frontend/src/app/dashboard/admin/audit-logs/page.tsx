@@ -73,6 +73,8 @@ export default function SuperAdminAuditLogsPage() {
             <option value="payment_reported">Payment reported</option>
             <option value="payment_approved">Payment approved</option>
             <option value="payment_rejected">Payment rejected</option>
+            <option value="invoice_generated">Invoice generated</option>
+            <option value="tax_export_downloaded">Tax export downloaded</option>
             <option value="agreement_signed">Agreement signed</option>
             <option value="consultation_booked">Consultation booked</option>
             <option value="investor_interest">Investor interest</option>
