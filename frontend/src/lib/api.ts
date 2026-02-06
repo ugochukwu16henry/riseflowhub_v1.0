@@ -405,6 +405,23 @@ export const api = {
         body: JSON.stringify(body),
         token,
       }),
+    /** Upload receipt file (image or PDF); returns URL to use as proofUrl. Requires Cloudinary configured on backend. */
+    uploadReceipt: async (file: File, token: string): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'receipt');
+      const res = await fetch(`${API_BASE}/api/v1/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error || res.statusText);
+      }
+      const data = (await res.json()) as { url?: string; secureUrl?: string };
+      return data.secureUrl ?? data.url ?? '';
+    },
   },
   earlyAccess: {
     status: () => request<EarlyAccessStatusSummary>('/api/v1/early-access/status'),

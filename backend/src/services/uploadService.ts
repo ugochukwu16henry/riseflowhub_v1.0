@@ -13,7 +13,7 @@ if (cloudName && apiKey && apiSecret) {
   cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
 }
 
-export const UPLOAD_TYPES = ['resume', 'cv', 'portfolio', 'avatar', 'project_media'] as const;
+export const UPLOAD_TYPES = ['resume', 'cv', 'portfolio', 'avatar', 'project_media', 'receipt'] as const;
 export type UploadType = (typeof UPLOAD_TYPES)[number];
 
 const ALLOWED: Record<UploadType, string[]> = {
@@ -22,6 +22,7 @@ const ALLOWED: Record<UploadType, string[]> = {
   portfolio: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'],
   avatar: ['image/jpeg', 'image/png', 'image/webp'],
   project_media: ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'],
+  receipt: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
 };
 
 const MAX_SIZE_BYTES: Record<UploadType, number> = {
@@ -30,6 +31,7 @@ const MAX_SIZE_BYTES: Record<UploadType, number> = {
   portfolio: 10 * 1024 * 1024,
   avatar: 5 * 1024 * 1024,   // 5 MB
   project_media: 100 * 1024 * 1024, // 100 MB for video
+  receipt: 10 * 1024 * 1024, // 10 MB for payment receipt
 };
 
 export function isUploadEnabled(): boolean {

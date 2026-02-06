@@ -31,6 +31,7 @@ export async function list(req: Request, res: Response): Promise<void> {
       submittedAt: p.submittedAt,
       confirmedAt: p.confirmedAt,
       notes: p.notes,
+      proofUrl: p.proofUrl ?? undefined,
     })),
   });
 }
