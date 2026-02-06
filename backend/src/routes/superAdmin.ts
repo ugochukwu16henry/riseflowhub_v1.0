@@ -9,6 +9,7 @@ import * as businessModuleController from '../controllers/businessModuleControll
 import * as featureController from '../controllers/featureController';
 import * as adminMessagesController from '../controllers/adminMessagesController';
 import * as financeController from '../controllers/financeController';
+import * as systemHealthController from '../controllers/systemHealthController';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.get('/finance/tax-summary', requireRoles(UserRole.super_admin, UserRole.f
 router.use(requireSuperAdmin);
 
 router.get('/overview', superAdminController.overview);
+router.get('/system-health', systemHealthController.health);
 router.get('/payments', superAdminController.payments);
 router.get('/activity', superAdminController.activity);
 router.get('/audit-logs', superAdminController.auditLogs);

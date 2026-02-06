@@ -1091,6 +1091,8 @@ export const api = {
         return res.blob();
       },
     },
+    systemHealth: (token: string) =>
+      request<SystemHealthStatus>(`/api/v1/super-admin/system-health`, { token }),
   },
   team: {
     list: (token: string) => request<TeamMemberRow[]>(`/api/v1/team`, { token }),
@@ -1199,6 +1201,13 @@ export interface FinanceSummary {
   paymentMethodBreakdown: { method: string; count: number; totalAmount: number }[];
   revenueByMonth: { month: string; totalUsd: number }[];
   refundsTotalUsd: number;
+}
+
+export interface SystemHealthStatus {
+  email: { ok: boolean; error?: string };
+  ai: { ok: boolean; error?: string; provider: string };
+  payments: { ok: boolean; gateway: 'paystack' | 'stripe' | 'none'; error?: string };
+  database: { ok: boolean; error?: string };
 }
 
 export interface SuperAdminPaymentRow {
