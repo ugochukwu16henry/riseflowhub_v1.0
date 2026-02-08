@@ -173,7 +173,7 @@ export async function bulkUpdatePage(req: Request, res: Response): Promise<void>
     for (const item of body.contents) {
       if (!item.key || item.value === undefined) continue;
       const isJson = typeof item.value !== 'string';
-      const value = isJson ? JSON.stringify(item.value) : item.value;
+      const value: string = isJson ? JSON.stringify(item.value) : String(item.value);
       await prisma.cmsContent.upsert({
         where: { key: item.key },
         create: {

@@ -15,6 +15,7 @@ import {
   Section,
 } from '@/components/landing';
 import { RevenueModelSection } from '@/components/common/RevenueModelSection';
+import { PricingJourneySection } from '@/components/common/PricingJourneySection';
 import { type FaqItem } from '@/lib/api';
 import { pageContentFallback } from '@/data/pageContent';
 import type { HomePageContent } from '@/data/pageContent';

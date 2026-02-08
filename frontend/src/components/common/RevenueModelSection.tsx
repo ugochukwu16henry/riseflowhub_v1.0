@@ -124,7 +124,7 @@ export function RevenueModelSection({
   const heading = sectionTitle ?? title;
   const isCompact = variant === 'compact' || variant === 'panel';
   const isPanel = variant === 'panel';
-  const showStrategicBox = isInvestorSource && strategicAdvantage.length > 0;
+  const showStrategicBox = isInvestorSource && (strategicAdvantage?.length ?? 0) > 0;
   const showSummaryBox = summaryBullets.length > 0 && !showStrategicBox;
   const showSummaryBoxInvestor = showStrategicBox;
 

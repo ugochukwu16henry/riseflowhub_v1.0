@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Nav, Section, Footer, PricingPlans } from '@/components/landing';
 import { RevenueModelSection } from '@/components/common/RevenueModelSection';
+import { PricingJourneySection } from '@/components/common/PricingJourneySection';
 
 export const metadata = {
   title: 'Pricing — RiseFlow Hub',
