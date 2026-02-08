@@ -1,9 +1,9 @@
 import { LegalLayout } from '@/components/legal/LegalLayout';
 
 export const metadata = {
-  title: 'Terms of Service — AfriLaunch Hub',
+  title: 'Terms of Service — RiseFlow Hub',
   description:
-    'Terms of Service for AfriLaunch Hub: startup development, payments, milestones, IP ownership, and termination.',
+    'Terms of Service for RiseFlow Hub: startup development, payments, milestones, IP ownership, and termination.',
 };
 
 const LAST_UPDATED = 'January 2025';
@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <LegalLayout
       title="Terms of Service"
-      description="Please read these terms carefully before using AfriLaunch Hub."
+      description="Please read these terms carefully before using RiseFlow Hub."
       lastUpdated={LAST_UPDATED}
     >
       <h2 id="acceptance">1. Acceptance of Terms</h2>
@@ -22,7 +22,7 @@ export default function TermsPage() {
 
       <h2 id="platform">2. Nature of the Platform</h2>
       <p>
-        AfriLaunch Hub is a <strong>startup development service</strong>. We help entrepreneurs turn ideas into products and businesses by providing development, design, marketing, project management, and access to tools and resources. We do not provide legal, tax, or financial advice. Outcomes depend on your inputs, market conditions, and execution.
+        RiseFlow Hub is a <strong>startup development service</strong>. We help entrepreneurs turn ideas into products and businesses by providing development, design, marketing, project management, and access to tools and resources. We do not provide legal, tax, or financial advice. Outcomes depend on your inputs, market conditions, and execution.
       </p>
 
       <h2 id="payments">3. Payments & Milestone Terms</h2>

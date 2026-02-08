@@ -62,16 +62,16 @@ export interface AuthResponse {
 
 export function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('afrilaunch_token');
+  return localStorage.getItem('riseflow_token');
 }
 
 export function setStoredToken(token: string) {
-  if (typeof window !== 'undefined') localStorage.setItem('afrilaunch_token', token);
+  if (typeof window !== 'undefined') localStorage.setItem('riseflow_token', token);
 }
 
 export function clearStoredToken() {
   meCache = null;
-  if (typeof window !== 'undefined') localStorage.removeItem('afrilaunch_token');
+  if (typeof window !== 'undefined') localStorage.removeItem('riseflow_token');
 }
 
 let meCache: { token: string; user: User; at: number } | null = null;

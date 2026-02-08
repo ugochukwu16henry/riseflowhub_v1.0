@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const SITE_NAME = 'AfriLaunch Hub';
+const SITE_NAME = 'RiseFlow Hub';
 const SITE_DESCRIPTION =
-  'AfriLaunch Hub helps African entrepreneurs turn ideas into startups with technology, AI co-founder support, marketing, and investor access.';
+  'RiseFlow Hub is a global startup growth and venture enablement platform. We guide, structure, build, connect, and scale ideas from concept to company.';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -23,21 +23,22 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: `${SITE_NAME} — Where Ideas Become Real Businesses`,
+    default: `${SITE_NAME} — Where Ideas Rise and Businesses Take Shape`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   icons: { icon: '/favicon.ico' },
   keywords: [
-    'startup builder platform',
+    'startup growth platform',
+    'venture enablement',
     'build a startup from idea',
-    'tech for African entrepreneurs',
-    'startup development services',
+    'startup development',
     'AI startup mentor',
     'venture building platform',
-    'African startups',
     'founder support',
     'startup studio',
+    'innovation',
+    'launch',
   ],
   authors: [{ name: SITE_NAME }],
   robots: {
@@ -47,12 +48,12 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: APP_URL,
-    title: `${SITE_NAME} — Where Ideas Become Real Businesses`,
+    title: `${SITE_NAME} — Where Ideas Rise and Businesses Take Shape`,
     description: SITE_DESCRIPTION,
     siteName: SITE_NAME,
     images: [
       {
-        url: '/Afrilauch_logo.png',
+        url: '/RiseFlowHub%20logo.png',
         width: 1200,
         height: 630,
         alt: SITE_NAME,
@@ -61,9 +62,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} — Startup Launch Platform`,
+    title: `${SITE_NAME} — Global Startup Growth Platform`,
     description: SITE_DESCRIPTION,
-    images: ['/Afrilauch_logo.png'],
+    images: ['/RiseFlowHub%20logo.png'],
   },
 };
 
@@ -84,11 +85,11 @@ export default function RootLayout({
         '@type': 'Organization',
         name: SITE_NAME,
         url: APP_URL,
-        logo: `${APP_URL}/Afrilauch_logo.png`,
+        logo: `${APP_URL}/RiseFlowHub%20logo.png`,
         description: SITE_DESCRIPTION,
         sameAs: [
-          'https://www.linkedin.com/company/afrilaunch-hub',
-          'https://twitter.com/afrilaunchhub',
+          'https://www.linkedin.com/company/riseflow-hub',
+          'https://twitter.com/riseflowhub',
         ],
       },
       {
@@ -98,7 +99,7 @@ export default function RootLayout({
         operatingSystem: 'Web',
         url: APP_URL,
         description:
-          'A venture-building and startup development platform for African founders, investors, and talent.',
+          'A global startup growth and venture enablement platform. Ideas rise, businesses are built, innovation flows.',
       },
       {
         '@type': 'Service',
@@ -110,7 +111,7 @@ export default function RootLayout({
         },
         areaServed: {
           '@type': 'Place',
-          name: 'Africa',
+          name: 'Global',
         },
       },
     ],

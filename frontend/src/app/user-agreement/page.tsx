@@ -12,12 +12,12 @@ export default function UserAgreementPage() {
   return (
     <LegalLayout
       title="User Agreement"
-      description="Agreement governing your use of AfriLaunch Hub and digital agreements on the Platform."
+      description="Agreement governing your use of RiseFlow Hub and digital agreements on the Platform."
       lastUpdated={LAST_UPDATED}
     >
       <h2 id="scope">1. Scope</h2>
       <p>
-        This User Agreement applies to your use of AfriLaunch Hub (&quot;Platform&quot;) and to <strong>digital agreements</strong> (e.g., NDAs, MOUs, terms) that you sign or manage through the Platform. It works together with our Terms of Service and Privacy Policy.
+        This User Agreement applies to your use of RiseFlow Hub (&quot;Platform&quot;) and to <strong>digital agreements</strong> (e.g., NDAs, MOUs, terms) that you sign or manage through the Platform. It works together with our Terms of Service and Privacy Policy.
       </p>
 
       <h2 id="digital-agreements">2. Digital Agreements</h2>

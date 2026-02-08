@@ -10,8 +10,8 @@ const CONTACT_CARDS = [
   {
     title: 'Email support',
     desc: 'General questions and support.',
-    label: 'support@afrilaunchhub.com',
-    href: 'mailto:support@afrilaunchhub.com',
+    label: 'support@riseflowhub.com',
+    href: 'mailto:support@riseflowhub.com',
     icon: (
       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -32,8 +32,8 @@ const CONTACT_CARDS = [
   {
     title: 'Partnerships',
     desc: 'Investors, accelerators, and collaborators.',
-    label: 'partners@afrilaunchhub.com',
-    href: 'mailto:partners@afrilaunchhub.com',
+    label: 'partners@riseflowhub.com',
+    href: 'mailto:partners@riseflowhub.com',
     icon: (
       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
@@ -299,7 +299,7 @@ export default function ContactPage() {
             </nav>
           </div>
           <p className="mt-6 text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} AfriLaunch Hub. From idea to impact.
+            © {new Date().getFullYear()} RiseFlow Hub. Build. Grow. Launch.
           </p>
         </div>
       </footer>

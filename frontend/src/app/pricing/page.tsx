@@ -3,7 +3,7 @@ import { Nav, Section, Footer, PricingPlans } from '@/components/landing';
 import { RevenueModelSection } from '@/components/common/RevenueModelSection';
 
 export const metadata = {
-  title: 'Pricing — AfriLaunch Hub',
+  title: 'Pricing — RiseFlow Hub',
   description:
     'Transparent, startup-friendly pricing. We structure pricing based on scope, complexity, and growth goals — with setup fees, milestone payments, and optional subscription.',
 };

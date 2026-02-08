@@ -336,7 +336,7 @@ export default function ClientDashboardPage() {
             <div className="mt-4 border-t border-gray-100 pt-4">
               <p className="text-sm font-medium text-secondary mb-1">Invite a founder friend</p>
               <p className="text-xs text-gray-500 mb-2">
-                Share your personal link. When they submit an idea and launch, you both unlock extra perks in AfriLaunch Hub.
+                Share your personal link. When they submit an idea and launch, you both unlock extra perks in RiseFlow Hub.
               </p>
               <ReferralShare />
             </div>
@@ -635,7 +635,7 @@ function ReferralShare() {
   }
 
   const shareText = encodeURIComponent(
-    'I’m building my startup on AfriLaunch Hub. Use my link to submit your idea and unlock founder tools:'
+    'I’m building my startup on RiseFlow Hub. Use my link to submit your idea and unlock founder tools:'
   );
   const encodedUrl = encodeURIComponent(link);
 

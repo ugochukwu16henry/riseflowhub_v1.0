@@ -319,8 +319,8 @@ function DashboardLayoutInner({
                     ? '/dashboard/legal'
                     : '/dashboard';
   const primaryColor = user.tenant?.primaryColor || '#0FA958';
-  const brandName = user.tenant?.orgName || 'AfriLaunch Hub';
-  const logoUrl = user.tenant?.logo || '/Afrilauch_logo.png';
+  const brandName = user.tenant?.orgName || 'RiseFlow Hub';
+  const logoUrl = user.tenant?.logo || '/RiseFlowHub%20logo.png';
   const showSetupModal = needsSetupModal(user);
   const showWelcomePanel = isTeamMember(user.role) && user.welcomePanelSeen === false;
 
