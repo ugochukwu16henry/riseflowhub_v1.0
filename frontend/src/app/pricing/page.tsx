@@ -58,7 +58,8 @@ export default function PricingPage() {
             How Our Pricing Works
           </h2>
         </div>
-        <RevenueModelSection source="pricing" sectionTitle="Our Fair Growth-Based Pricing Model" variant="full" />
+        <RevenueModelSection source="pricing" variant="full" />
+        <PricingJourneySection className="mt-12" />
       </Section>
 
       {/* Payment structure */}

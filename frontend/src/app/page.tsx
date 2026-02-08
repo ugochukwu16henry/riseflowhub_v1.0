@@ -106,7 +106,8 @@ export default async function HomePage() {
               How Our Pricing Works
             </h2>
           </div>
-          <RevenueModelSection source="homepage" sectionTitle="Our Fair Growth-Based Pricing Model" variant="full" />
+          <RevenueModelSection source="homepage" variant="full" />
+          <PricingJourneySection className="mt-12" />
         </Section>
         <Vision content={content.vision} />
         <FAQPreview items={faqs} />

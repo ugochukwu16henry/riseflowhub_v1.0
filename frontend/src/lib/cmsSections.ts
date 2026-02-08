@@ -108,13 +108,19 @@ export const cmsSections: Record<string, CmsSectionConfig> = {
   'revenue-model': {
     pageName: 'revenue_model',
     title: 'Revenue Model Transparency',
-    description: 'Content and visibility for "Our Fair Growth-Based Pricing Model" (homepage, onboarding, dashboard, deal room). Toggle visible ON/OFF.',
+    description: 'Two variants: landing (conversion-focused) on homepage, pricing, onboarding, dashboard; investor (strategic) on deal room. Plus Pricing Journey (visual flow). Toggle visible in each JSON.',
     fields: [
       {
         key: 'revenue_model',
-        label: 'Revenue model content (JSON: visible, title, intro, sections[], summaryBullets[], revenueStreams[], marketPositioning)',
+        label: 'Revenue model content (JSON: visible, landing, investor)',
         type: 'json',
-        placeholder: '{"visible":true,"title":"...","intro":"...","sections":[...],"summaryBullets":[],"revenueStreams":[],"marketPositioning":"..."}',
+        placeholder: '{"visible":true,"landing":{...},"investor":{...}}',
+      },
+      {
+        key: 'pricing_journey',
+        label: 'Pricing Journey visual flow (JSON: visible, headline, subheadline, steps[], revenueTable[], diagramSteps[], diagramLabels[])',
+        type: 'json',
+        placeholder: '{"visible":true,"headline":"...","steps":[...],"revenueTable":[...]}',
       },
     ],
   },

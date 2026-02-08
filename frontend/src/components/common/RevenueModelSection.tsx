@@ -6,6 +6,18 @@ import { api, getStoredToken } from '@/lib/api';
 
 export type RevenueModelSource = 'homepage' | 'pricing' | 'onboarding' | 'dashboard' | 'deal_room';
 
+export interface RevenueModelSectionContent {
+  title?: string;
+  intro?: string;
+  sections?: Array<{ title: string; body: string }>;
+  summaryTitle?: string;
+  summaryBullets?: string[];
+  revenueStreams?: string[];
+  marketPositioning?: string;
+  strategicAdvantageTitle?: string;
+  strategicAdvantage?: string[];
+}
+
 export interface RevenueModelContent {
   visible?: boolean;
   title?: string;
@@ -14,6 +26,10 @@ export interface RevenueModelContent {
   summaryBullets?: string[];
   revenueStreams?: string[];
   marketPositioning?: string;
+  /** Landing page version (conversion-focused) */
+  landing?: RevenueModelSectionContent;
+  /** Investor version (professional + strategic) */
+  investor?: RevenueModelSectionContent;
 }
 
 interface RevenueModelSectionProps {
@@ -25,7 +41,19 @@ interface RevenueModelSectionProps {
   className?: string;
 }
 
-const SECTION_ICONS: Record<number, string> = {
+const SECTION_ICONS_LANDING: Record<number, string> = {
+  0: '🚀',
+  1: '📈',
+  2: '🌍',
+};
+const SECTION_ICONS_INVESTOR: Record<number, string> = {
+  0: '▸',
+  1: '▸',
+  2: '▸',
+  3: '▸',
+  4: '▸',
+};
+const SECTION_ICONS_LEGACY: Record<number, string> = {
   0: '💰',
   1: '🚀',
   2: '📈',
@@ -54,12 +82,35 @@ export function RevenueModelSection({
 
   const data = contents?.revenue_model as RevenueModelContent | undefined;
   const visible = data?.visible === true;
-  const title = data?.title ?? 'Our Fair Growth-Based Pricing Model';
-  const intro = data?.intro ?? '';
-  const sections = Array.isArray(data?.sections) ? data.sections : [];
-  const summaryBullets = Array.isArray(data?.summaryBullets) ? data.summaryBullets : [];
-  const revenueStreams = Array.isArray(data?.revenueStreams) ? data.revenueStreams : [];
-  const marketPositioning = data?.marketPositioning ?? '';
+
+  // Pick content: deal_room → investor; else → landing; fallback → legacy top-level
+  const isInvestorSource = source === 'deal_room';
+  const resolved: RevenueModelSectionContent = isInvestorSource && data?.investor
+    ? data.investor
+    : data?.landing
+      ? data.landing
+      : {
+          title: data?.title,
+          intro: data?.intro,
+          sections: data?.sections,
+          summaryBullets: data?.summaryBullets,
+          revenueStreams: data?.revenueStreams,
+          marketPositioning: data?.marketPositioning,
+        };
+
+  const title = resolved?.title ?? data?.title ?? 'Our Fair Growth-Based Pricing Model';
+  const intro = resolved?.intro ?? data?.intro ?? '';
+  const sections = Array.isArray(resolved?.sections) ? resolved.sections : Array.isArray(data?.sections) ? data.sections : [];
+  const summaryTitle = resolved?.summaryTitle ?? (isInvestorSource ? 'Strategic Advantage' : 'Fairness & trust');
+  const summaryBullets = Array.isArray(resolved?.summaryBullets) ? resolved.summaryBullets : Array.isArray(data?.summaryBullets) ? data.summaryBullets : [];
+  const revenueStreams = Array.isArray(resolved?.revenueStreams) ? resolved.revenueStreams : Array.isArray(data?.revenueStreams) ? data.revenueStreams : [];
+  const marketPositioning = resolved?.marketPositioning ?? data?.marketPositioning ?? '';
+  const strategicAdvantage = Array.isArray((resolved as RevenueModelSectionContent & { strategicAdvantage?: string[] })?.strategicAdvantage)
+    ? (resolved as RevenueModelSectionContent & { strategicAdvantage?: string[] }).strategicAdvantage
+    : [];
+  const strategicAdvantageTitle = (resolved as RevenueModelSectionContent & { strategicAdvantageTitle?: string })?.strategicAdvantageTitle ?? 'Strategic Advantage';
+
+  const iconMap = data?.investor && isInvestorSource ? SECTION_ICONS_INVESTOR : data?.landing && !isInvestorSource ? SECTION_ICONS_LANDING : SECTION_ICONS_LEGACY;
 
   useEffect(() => {
     if (!visible || tracked.current) return;
@@ -73,6 +124,9 @@ export function RevenueModelSection({
   const heading = sectionTitle ?? title;
   const isCompact = variant === 'compact' || variant === 'panel';
   const isPanel = variant === 'panel';
+  const showStrategicBox = isInvestorSource && strategicAdvantage.length > 0;
+  const showSummaryBox = summaryBullets.length > 0 && !showStrategicBox;
+  const showSummaryBoxInvestor = showStrategicBox;
 
   return (
     <div className={className}>
@@ -81,7 +135,7 @@ export function RevenueModelSection({
           {heading}
         </h2>
         {intro && (
-          <p className="text-gray-600 mb-6 max-w-3xl">
+          <p className="text-gray-600 mb-6 max-w-3xl whitespace-pre-wrap">
             {intro}
           </p>
         )}
@@ -91,7 +145,7 @@ export function RevenueModelSection({
             {sections.map((section, idx) => {
               const id = idx;
               const isExpanded = expandedId === id;
-              const icon = SECTION_ICONS[idx] ?? '•';
+              const icon = iconMap[idx] ?? '•';
               return (
                 <div
                   key={id}
@@ -104,7 +158,7 @@ export function RevenueModelSection({
                     aria-expanded={isExpanded}
                     title="Learn more"
                   >
-                    <span className="text-xl flex-shrink-0" aria-hidden>{icon}</span>
+                    <span className="text-xl flex-shrink-0 w-8 text-left" aria-hidden>{icon}</span>
                     <span className="font-semibold text-secondary flex-1">{section.title}</span>
                     <span className="text-gray-400 flex-shrink-0">
                       <svg
@@ -133,11 +187,11 @@ export function RevenueModelSection({
           </div>
         )}
 
-        {summaryBullets.length > 0 && (
+        {showSummaryBox && (
           <div className="mt-6 rounded-xl border border-emerald-200/80 bg-emerald-50/60 p-4 sm:p-5">
             <h3 className="font-semibold text-secondary mb-3 flex items-center gap-2">
               <CheckIcon />
-              Fairness & trust
+              {resolved?.summaryTitle ?? summaryTitle}
             </h3>
             <ul className="space-y-2">
               {summaryBullets.map((bullet, i) => (
@@ -150,7 +204,22 @@ export function RevenueModelSection({
           </div>
         )}
 
-        {revenueStreams.length > 0 && (
+        {showStrategicBox && (
+          <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+            <h3 className="font-semibold text-secondary mb-3">{strategicAdvantageTitle}</h3>
+            <p className="text-sm text-gray-600 mb-3">This structure:</p>
+            <ul className="space-y-2">
+              {strategicAdvantage.map((item, i) => (
+                <li key={i} className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
+                  <CheckIcon />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {revenueStreams.length > 0 && !isInvestorSource && (
           <div className="mt-6 rounded-xl border-2 border-primary/20 bg-primary/5 p-4 sm:p-5">
             <h3 className="font-semibold text-secondary mb-3">We earn through</h3>
             <ul className="space-y-2">

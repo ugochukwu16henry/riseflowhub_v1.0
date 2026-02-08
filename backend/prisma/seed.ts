@@ -113,55 +113,92 @@ async function main() {
 
   const defaultRevenueModel = {
     visible: true,
+    // Legacy single-version (fallback when landing/investor missing)
     title: 'Our Fair Growth-Based Pricing Model',
     intro:
       'Our pricing structure is designed to support entrepreneurs at early stages while ensuring sustainable growth for both users and the platform.',
     sections: [
-      {
-        title: 'Reducing Early Financial Pressure',
-        body:
-          'Startups often struggle with recurring costs. Monthly subscriptions can discourage early founders. Our one-time onboarding fee lowers entry barriers. This shows we are founder-friendly and growth-focused.',
-      },
-      {
-        title: 'We Are a Growth Platform, Not a Subscription Tool',
-        body:
-          'We are an entrepreneur enablement platform. Users are here to build, grow, and launch. We provide tools, structure, and guidance. We are a growth partner, not just a SaaS product.',
-      },
-      {
-        title: 'Revenue Is Tied to Progress',
-        body:
-          'Payments occur at development stages: consultation phases, feature upgrades, and project advancement. Our success grows as our users\' businesses grow.',
-      },
-      {
-        title: 'When Recurring Fees Begin',
-        body:
-          'Recurring fees apply only when a user\'s product goes live — such as a website, app, software platform, or online system. These recurring costs cover real infrastructure: database storage, frontend hosting (e.g. Vercel), backend hosting (e.g. Render/servers), security & monitoring, and ongoing maintenance. These are operational costs to keep live systems running, not platform access fees.',
-      },
-      {
-        title: 'Fairness & Trust',
-        body:
-          'No endless subscriptions. Recurring fees only when systems are live. Payments tied to real services. Transparent structure.',
-      },
-      {
-        title: 'Market Positioning',
-        body:
-          'Most platforms charge for time. We charge for growth and real execution. We are a startup growth partner and technical execution team.',
-      },
+      { title: 'Reducing Early Financial Pressure', body: 'Startups often struggle with recurring costs. Monthly subscriptions can discourage early founders. Our one-time onboarding fee lowers entry barriers. This shows we are founder-friendly and growth-focused.' },
+      { title: 'We Are a Growth Platform, Not a Subscription Tool', body: 'We are an entrepreneur enablement platform. Users are here to build, grow, and launch. We provide tools, structure, and guidance. We are a growth partner, not just a SaaS product.' },
+      { title: 'Revenue Is Tied to Progress', body: "Payments occur at development stages: consultation phases, feature upgrades, and project advancement. Our success grows as our users' businesses grow." },
+      { title: 'When Recurring Fees Begin', body: "Recurring fees apply only when a user's product goes live — such as a website, app, software platform, or online system. These recurring costs cover real infrastructure: database storage, frontend hosting (e.g. Vercel), backend hosting (e.g. Render/servers), security & monitoring, and ongoing maintenance. These are operational costs to keep live systems running, not platform access fees." },
+      { title: 'Fairness & Trust', body: 'No endless subscriptions. Recurring fees only when systems are live. Payments tied to real services. Transparent structure.' },
+      { title: 'Market Positioning', body: 'Most platforms charge for time. We charge for growth and real execution. We are a startup growth partner and technical execution team.' },
     ],
-    summaryBullets: [
-      'No endless subscriptions',
-      'Recurring fees only when systems are live',
-      'Payments tied to real services',
-      'Transparent structure',
-    ],
-    revenueStreams: [
-      'One-time onboarding',
-      'Milestone-based progress payments',
-      'Development & service work',
-      'Maintenance fees after launch',
-    ],
-    marketPositioning:
-      'Most platforms charge for time. We charge for growth and real execution. We are a startup growth partner and technical execution team.',
+    summaryBullets: ['No endless subscriptions', 'Recurring fees only when systems are live', 'Payments tied to real services', 'Transparent structure'],
+    revenueStreams: ['One-time onboarding', 'Milestone-based progress payments', 'Development & service work', 'Maintenance fees after launch'],
+    marketPositioning: 'Most platforms charge for time. We charge for growth and real execution. We are a startup growth partner and technical execution team.',
+    // 1) LANDING PAGE VERSION (conversion-focused)
+    landing: {
+      title: 'Built for Founders — Not Subscriptions',
+      intro:
+        'We don\'t believe in trapping entrepreneurs in monthly fees before they even launch.\n\nOur platform uses a growth-based model designed to support you from idea to launch without adding financial pressure.',
+      sections: [
+        {
+          title: 'One-Time Onboarding Fee',
+          body:
+            'A small one-time fee gets you into the system, unlocks tools, consultation access, and your startup dashboard.\n\nNo recurring charges just to "stay on the platform."',
+        },
+        {
+          title: 'You Pay as You Grow',
+          body:
+            'Instead of subscriptions, costs happen when your business progresses:\n\nDevelopment stages\nFeature upgrades\nExpert support\nProject milestones\n\nYour growth = our growth.',
+        },
+        {
+          title: 'When Do Monthly Fees Start?',
+          body:
+            'Only after your product is live (website/app/software running).\n\nThat\'s because real systems have real costs:\n\nHosting\nDatabase storage\nSecurity\nTechnical maintenance\n\nThese fees keep your live system running — not just platform access.',
+        },
+      ],
+      summaryTitle: 'Why Founders Love This',
+      summaryBullets: [
+        'No early subscription stress',
+        'Payments tied to real progress',
+        'Transparent and fair',
+        'Built for serious entrepreneurs',
+      ],
+    },
+    // 2) INVESTOR VERSION (professional + strategic)
+    investor: {
+      title: 'Revenue Model Strategy',
+      intro:
+        'Our platform operates on a growth-aligned monetization structure, designed to reduce early friction for users while creating diversified, scalable revenue streams.',
+      sections: [
+        {
+          title: '1. One-Time Onboarding Fee',
+          body:
+            'A low-friction entry point that:\n\nEncourages adoption\nReduces churn from subscription fatigue\nPositions the platform as founder-first\n\nThis increases early user acquisition rates.',
+        },
+        {
+          title: '2. Milestone-Based Monetization',
+          body:
+            'Revenue is triggered by user progress, including:\n\nConsultation phases\nDevelopment stages\nFeature unlocks\nTechnical services\n\nThis aligns platform revenue directly with startup growth outcomes.',
+        },
+        {
+          title: '3. Post-Launch Recurring Maintenance',
+          body:
+            'Recurring revenue begins only when user systems go live.\n\nCovers real infrastructure costs:\n\nCloud hosting\nDatabase storage\nSecurity monitoring\nOngoing system maintenance\n\nThis produces predictable recurring income while being value-justified.',
+        },
+        {
+          title: '4. Hybrid Revenue Model',
+          body:
+            'We generate income through:\n\nOnboarding fees\nService & development revenue\nMilestone payments\nPost-launch maintenance subscriptions\n\nThis creates both transactional and recurring revenue streams.',
+        },
+        {
+          title: '5. Market Differentiation',
+          body:
+            'Unlike traditional SaaS platforms that charge for time access, our model charges for:\n\nBusiness progress\nTechnical execution\nOperational support\n\nWe operate as a startup growth partner, not just a software tool.',
+        },
+      ],
+      strategicAdvantageTitle: 'Strategic Advantage',
+      strategicAdvantage: [
+        'Increases early adoption',
+        'Reduces pricing resistance',
+        'Aligns incentives with user success',
+        'Builds long-term retention',
+        'Improves lifetime customer value (LTV)',
+      ],
+    },
   };
   await prisma.cmsContent.upsert({
     where: { key: 'revenue_model' },
@@ -175,6 +212,102 @@ async function main() {
     },
   });
   console.log('Seeded CMS revenue_model (Revenue Model Transparency)');
+
+  const defaultPricingJourney = {
+    visible: true,
+    headline: 'Your Platform Pricing Journey',
+    subheadline: 'Think of it like a startup growth staircase, not a payment wall.',
+    steps: [
+      {
+        stageLabel: 'STEP 1 — ENTRY STAGE',
+        stageTitle: 'Founder Onboarding',
+        payLabel: 'What they pay:',
+        payValue: 'One-time setup fee',
+        unlocks: [
+          'Startup workspace',
+          'Idea validation tools',
+          'Dashboard access',
+          'Consultation booking',
+          'Guidance system',
+          'Business structure tools',
+        ],
+        purpose: 'Remove barriers and welcome serious founders without trapping them in subscriptions.',
+        color: 'green',
+      },
+      {
+        stageLabel: 'STEP 2 — BUILDING STAGE',
+        stageTitle: 'Startup Development Phase',
+        payLabel: 'No monthly subscription yet. Instead, payments happen only when needed:',
+        payValue: null,
+        tableRows: [
+          { growthAction: 'Expert consultation', paymentType: 'Session fee' },
+          { growthAction: 'Feature development', paymentType: 'Milestone fee' },
+          { growthAction: 'Product building', paymentType: 'Project phase payment' },
+          { growthAction: 'Special tools unlock', paymentType: 'Upgrade fee' },
+        ],
+        messageUser: 'You only pay when your startup moves forward.',
+        messageInvestor: 'Revenue tied to user progress = higher lifetime value.',
+        color: 'yellow',
+      },
+      {
+        stageLabel: 'STEP 3 — LAUNCH STAGE',
+        stageTitle: 'Startup Goes Live',
+        payLabel: 'Now their system exists publicly (website/app/software). This is where recurring maintenance begins.',
+        payValue: null,
+        tableRows: [
+          { whatItCovers: 'Cloud hosting', whyNeeded: 'Keeps app/site online' },
+          { whatItCovers: 'Database storage', whyNeeded: 'Saves user & business data' },
+          { whatItCovers: 'Security monitoring', whyNeeded: 'Protects system' },
+          { whatItCovers: 'System maintenance', whyNeeded: 'Prevents downtime' },
+        ],
+        note: 'This is not a platform fee. It is operational infrastructure cost.',
+        color: 'blue',
+      },
+      {
+        stageLabel: 'STEP 4 — SCALE STAGE',
+        stageTitle: 'Business Growth Expansion',
+        payLabel: 'As startups grow, they may choose:',
+        payValue: null,
+        options: [
+          'Advanced analytics',
+          'Automation tools',
+          'AI features',
+          'Marketplace promotion',
+          'Investor access',
+        ],
+        note: 'These create additional revenue layers.',
+        color: 'purple',
+      },
+    ],
+    revenueTable: [
+      { revenueType: 'Onboarding Fee', whenItHappens: 'At entry' },
+      { revenueType: 'Milestone Payments', whenItHappens: 'During building' },
+      { revenueType: 'Service/Development Fees', whenItHappens: 'When features are built' },
+      { revenueType: 'Maintenance Subscription', whenItHappens: 'After launch' },
+      { revenueType: 'Growth Upgrades', whenItHappens: 'During scaling' },
+    ],
+    revenueFlowLabel: 'Entry → Progress → Launch → Scale',
+    whyHeadline: 'Why This Model Is Powerful',
+    whyMostSay: 'Pay us every month or lose access.',
+    whyYouSay: 'Grow your business. Pay when there is real value.',
+    whyPartnerLabel: 'A partner',
+    whyBillLabel: 'Not a bill',
+    diagramHeadline: 'Simple view:',
+    diagramSteps: ['Join Platform', 'Build Your Startup', 'Launch Your Product', 'Scale Your Business'],
+    diagramLabels: ['One-Time Fee', 'Milestone Payments', 'Maintenance', 'Growth Tools'],
+  };
+  await prisma.cmsContent.upsert({
+    where: { key: 'pricing_journey' },
+    update: { value: JSON.stringify(defaultPricingJourney), type: 'json', page: 'revenue_model' },
+    create: {
+      key: 'pricing_journey',
+      value: JSON.stringify(defaultPricingJourney),
+      type: 'json',
+      page: 'revenue_model',
+      updatedById: null,
+    },
+  });
+  console.log('Seeded CMS pricing_journey (Pricing Journey Visual Flow)');
 
   for (const entry of cmsEntries) {
     await prisma.cmsContent.upsert({
