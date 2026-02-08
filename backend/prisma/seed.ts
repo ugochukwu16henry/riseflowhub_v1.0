@@ -101,7 +101,7 @@ async function main() {
     { key: 'home.cta.label', value: 'Get Started', type: 'text', page: 'home' },
     { key: 'pricing.setupFee', value: 'One-time setup fee to unlock your workspace.', type: 'text', page: 'pricing' },
     { key: 'pricing.investorFee', value: 'Investor onboarding fee for deal room access.', type: 'text', page: 'pricing' },
-    { key: 'email.welcome.subject', value: 'Welcome to AfriLaunch Hub', type: 'text', page: 'email' },
+    { key: 'email.welcome.subject', value: 'Welcome to RiseFlow Hub', type: 'text', page: 'email' },
     { key: 'legal.terms', value: 'Terms of Service content — edit in CMS Manager.', type: 'richtext', page: 'legal' },
     { key: 'legal.privacy', value: 'Privacy Policy content — edit in CMS Manager.', type: 'richtext', page: 'legal' },
     // Hiring / Talent Marketplace — editable in CMS (Super Admin)
@@ -417,7 +417,7 @@ async function main() {
           {
             question: 'What makes this platform different?',
             answer:
-              'AfriLaunch Hub combines product development, business intelligence, AI mentorship, and investor access in one system, with a focus on African founders and practical execution.',
+              'RiseFlow Hub combines product development, business intelligence, AI mentorship, and investor access in one system, with a focus on African founders and practical execution.',
             category: 'benefits',
             order: 1,
             isActive: true,

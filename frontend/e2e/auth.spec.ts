@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Auth', () => {
-  test('home page shows AfriLaunch Hub and login/register links', async ({ page }) => {
+  test('home page shows RiseFlow Hub and login/register links', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /AfriLaunch Hub/i })).toBeVisible();
+    await expect(page.getByText(/RiseFlow Hub/i).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Login/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Start Your Project/i })).toBeVisible();
   });
@@ -12,7 +12,7 @@ test.describe('Auth', () => {
     await page.goto('/');
     await page.getByRole('link', { name: /Login/i }).click();
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('heading', { name: /AfriLaunch Hub/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /RiseFlow Hub/i })).toBeVisible();
     await expect(page.getByLabel(/Email/i)).toBeVisible();
     await expect(page.getByLabel(/Password/i)).toBeVisible();
   });

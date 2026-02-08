@@ -19,8 +19,8 @@ async function main() {
       type: 'payment_confirmation',
       userEmail: to,
       dynamicData: {
-        name: 'AfriLaunch SMTP Test',
-        description: 'Test email from AfriLaunch backend',
+        name: 'RiseFlow Hub SMTP Test',
+        description: 'Test email from RiseFlow Hub backend',
         amount: '0 USD',
       },
     });
