@@ -209,7 +209,7 @@ export function RevenueModelSection({
             <h3 className="font-semibold text-secondary mb-3">{strategicAdvantageTitle}</h3>
             <p className="text-sm text-gray-600 mb-3">This structure:</p>
             <ul className="space-y-2">
-              {strategicAdvantage.map((item, i) => (
+              {(strategicAdvantage ?? []).map((item, i) => (
                 <li key={i} className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
                   <CheckIcon />
                   <span>{item}</span>
