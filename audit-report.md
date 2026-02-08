@@ -102,7 +102,7 @@
 | Item       | Detail                                                                                                           |
 | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | **Check**  | `frontend/src/lib/api.ts` uses `process.env.NEXT_PUBLIC_API_URL`; login/register and health check use same base. |
-| **Status** | Set `NEXT_PUBLIC_API_URL` on Vercel to backend URL (e.g. `https://riseflowhub-v1-0.vercel.app`).                 |
+| **Status** | Set `NEXT_PUBLIC_API_URL` on Vercel to backend URL (e.g. `https://riseflowhub-v1-0.onrender.com`).                 |
 
 
 ### 3.2 Login / Register pages — **RESOLVED**

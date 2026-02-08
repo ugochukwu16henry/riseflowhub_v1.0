@@ -19,7 +19,7 @@ npx playwright test tests/api --project=api
 **Against deployed backend (e.g. Render):**
 
 ```bash
-API_BASE_URL=https://riseflowhub-v1-0.vercel.app npx playwright test tests/api --project=api
+API_BASE_URL=https://riseflowhub-v1-0.onrender.com npx playwright test tests/api --project=api
 ```
 
 **List reporter (one line per test):**

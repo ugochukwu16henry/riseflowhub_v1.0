@@ -21,7 +21,7 @@ Use this guide to deploy the Express + Prisma backend to [Render](https://render
 
    | Field | Value |
    |-------|--------|
-   | **Name** | `riseflowhub-api` (or any name) |
+   | **Name** | `riseflowhub-v1-0` (so primary URL is https://riseflowhub-v1-0.onrender.com) |
    | **Region** | Choose closest to your users |
    | **Root Directory** | `backend` *(if your repo has frontend + backend; leave blank if the repo root is the backend)* |
    | **Runtime** | Node |
@@ -88,14 +88,14 @@ Click **Save Changes** after adding variables.
 1. Click **Create Web Service** (or **Save** if you already created it).
 2. Render will clone the repo, run `pnpm install && pnpm run build`, then `pnpm start`.
 3. Wait for the deploy to finish. The service URL will look like:  
-   `https://afrilaunch-api.onrender.com` (or the name you chose).
+   `https://riseflowhub-v1-0.onrender.com` (or the name you chose).
 
 ---
 
 ## 6. Verify the Backend
 
 - Open: **`https://<your-render-url>/api/v1/health`**  
-  You should see: `{"status":"ok","service":"riseflowhub-api"}`.
+  You should see: `{"status":"ok","service":"riseflowhub-v1-0"}`.
 - If that works, the backend is up and ready for the frontend.
 
 ---
@@ -108,7 +108,7 @@ In **Vercel** → your frontend project → **Settings** → **Environment Varia
 |-----|--------|
 | `NEXT_PUBLIC_API_URL` | `https://<your-render-url>` (no trailing slash) |
 
-Example: `https://riseflowhub-api.onrender.com`
+Example: `https://riseflowhub-v1-0.onrender.com`
 
 Then **redeploy** the frontend so the new API URL is used. After that, sign up and sign in on the Vercel app should work.
 
