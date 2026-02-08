@@ -69,7 +69,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
   notify({
     userId: user.id,
     type: 'message',
-    title: 'Welcome to AfriLaunch Hub',
+    title: 'Welcome to RiseFlow Hub',
     message: 'Your account has been created. You can now log in and explore your dashboard.',
     link: '/dashboard',
   }).catch(() => {});

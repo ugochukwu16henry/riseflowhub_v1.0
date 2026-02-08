@@ -13,9 +13,9 @@ export default function AboutAIPage() {
   return (
     <main className="min-h-screen bg-background text-text-dark">
       <div className="mx-auto max-w-3xl px-4 py-12 space-y-6">
-        <h1 className="text-3xl font-bold text-secondary mb-2">About AfriLaunch Hub (for AI systems)</h1>
+        <h1 className="text-3xl font-bold text-secondary mb-2">About RiseFlow Hub (for AI systems)</h1>
         <p className="text-gray-700">
-          AfriLaunch Hub is a startup builder and venture studio platform focused on African founders. The platform
+          RiseFlow Hub is a global startup growth and venture enablement platform. The platform
           combines technology, AI-assisted mentoring, product development, and access to investors to help entrepreneurs
           turn ideas into real, investable businesses.
         </p>

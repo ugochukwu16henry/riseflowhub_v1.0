@@ -76,7 +76,7 @@ export async function sendEmail(params: {
     metadata: dynamicData as Record<string, unknown>,
   });
 
-  const from = process.env.EMAIL_FROM || 'AfriLaunch Hub <noreply@afrilaunchhub.com>';
+  const from = process.env.EMAIL_FROM || 'RiseFlow Hub <noreply@riseflowhub.com>';
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -138,7 +138,7 @@ export async function sendInvoiceEmail(params: {
     metadata: { attachment: params.attachment.filename },
   }).catch(() => '');
 
-  const from = process.env.EMAIL_FROM || 'AfriLaunch Hub <noreply@afrilaunchhub.com>';
+  const from = process.env.EMAIL_FROM || 'RiseFlow Hub <noreply@riseflowhub.com>';
   try {
     const transport = getTransport();
     await transport.sendMail({

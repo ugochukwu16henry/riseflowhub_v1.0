@@ -1,4 +1,4 @@
-// AfriLaunch Hub - Database Schema (PostgreSQL)
+// RiseFlow Hub - Database Schema (PostgreSQL)
 // Matches specs: Users, Clients, Projects, Tasks, Messages, Files, Payments, Reports, Maintenance, Agreements
 
 generator client {

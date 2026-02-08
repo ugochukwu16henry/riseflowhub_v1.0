@@ -138,8 +138,8 @@ export async function confirm(req: Request, res: Response): Promise<void> {
       if (!result) return;
       sendInvoiceEmail({
         toEmail: updated.user.email,
-        subject: 'Your payment invoice — AfriLaunch Hub',
-        html: `<p>Dear ${updated.user.name},</p><p>Please find your payment invoice attached.</p><p>Thank you for supporting AfriLaunch Hub.</p>`,
+        subject: 'Your payment invoice — RiseFlow Hub',
+        html: `<p>Dear ${updated.user.name},</p><p>Please find your payment invoice attached.</p><p>Thank you for supporting RiseFlow Hub.</p>`,
         attachment: { filename: result.fileName, content: result.buffer },
       }).catch((e) => console.error('[ManualPayment] Invoice email failed:', e));
       createAuditLog(prisma, {

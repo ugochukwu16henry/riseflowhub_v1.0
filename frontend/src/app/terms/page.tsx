@@ -17,7 +17,7 @@ export default function TermsPage() {
     >
       <h2 id="acceptance">1. Acceptance of Terms</h2>
       <p>
-        By accessing or using AfriLaunch Hub (&quot;Platform&quot;, &quot;we&quot;, &quot;us&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.
+        By accessing or using RiseFlow Hub (&quot;Platform&quot;, &quot;we&quot;, &quot;us&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.
       </p>
 
       <h2 id="platform">2. Nature of the Platform</h2>

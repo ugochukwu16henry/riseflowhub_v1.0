@@ -200,7 +200,7 @@ app.use('/api/seo', seoRoutes);
 
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');
-  res.json({ status: 'ok', service: 'afrilaunch-api' });
+  res.json({ status: 'ok', service: 'riseflow-api' });
 });
 
 // 404 for API routes — return JSON so frontend gets consistent error shape
@@ -215,5 +215,5 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 app.listen(PORT, () => {
-  console.log(`AfriLaunch API running at http://localhost:${PORT}`);
+  console.log(`RiseFlow API running at http://localhost:${PORT}`);
 });

@@ -33,10 +33,10 @@ export function paymentReceiptEmail(data: Record<string, unknown>): { subject: s
       <tr style="background:#f9fafb;"><td style="padding:10px 12px;font-weight:600;">Date confirmed</td><td style="padding:10px 12px;">${escapeHtml(dateStr)}</td></tr>
     </table>
     <p style="margin:0 0 16px;">${paymentType === 'platform_fee' ? 'Your platform features are now unlocked. You can access the full dashboard and all services.' : 'Thank you for supporting our mission.'}</p>
-    <p style="margin:0;">— AfriLaunch Hub</p>
+    <p style="margin:0;">— RiseFlow Hub</p>
   `;
   return {
-    subject: 'Payment receipt — AfriLaunch Hub',
+    subject: 'Payment receipt — RiseFlow Hub',
     html: emailLayout(content, 'Your payment has been confirmed. Official receipt.'),
   };
 }

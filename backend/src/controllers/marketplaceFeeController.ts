@@ -87,7 +87,7 @@ export async function createSession(req: Request, res: Response): Promise<void> 
     try {
       const amountSmallest = paystackToSmallestUnit(converted.amount, converted.currency);
       const result = await initializeTransaction({
-        email: user?.email ?? `user-${payload.userId}@afrilaunchhub.com`,
+        email: user?.email ?? `user-${payload.userId}@riseflowhub.com`,
         amount: amountSmallest,
         reference,
         callbackUrl: successUrl,

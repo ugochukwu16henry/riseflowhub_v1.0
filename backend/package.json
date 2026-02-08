@@ -1,7 +1,7 @@
 {
-  "name": "afrilaunch-backend",
+  "name": "riseflow-backend",
   "version": "1.0.0",
-  "description": "AfriLaunch Hub API - Node.js + Express + Prisma",
+  "description": "RiseFlow Hub API - Node.js + Express + Prisma",
   "packageManager": "pnpm@9.0.0",
   "main": "dist/index.js",
   "scripts": {

@@ -52,7 +52,7 @@ async function main() {
     where: { domain: 'default' },
     update: {},
     create: {
-      orgName: 'AfriLaunch Hub',
+      orgName: 'RiseFlow Hub',
       domain: 'default',
       primaryColor: '#6366f1',
       planType: 'enterprise',
@@ -336,7 +336,7 @@ async function main() {
           {
             question: 'What is this platform about?',
             answer:
-              'AfriLaunch Hub is a venture-building platform that helps entrepreneurs turn ideas into real startups through technology, AI guidance, business structuring, and access to investors.',
+              'RiseFlow Hub is a global startup growth and venture enablement platform that helps entrepreneurs turn ideas into real startups through technology, guidance, and investor connection.',
             category: 'general',
             order: 1,
             isActive: true,
@@ -463,7 +463,7 @@ async function main() {
     ];
     try {
       for (const t of agreementTemplates) {
-        const contentHtml = fillAgreementTemplate(t.type, { date, partyName: '________________', companyName: 'AfriLaunch Hub', role: '________________' });
+        const contentHtml = fillAgreementTemplate(t.type, { date, partyName: '________________', companyName: 'RiseFlow Hub', role: '________________' });
         await prisma.agreement.create({
           data: { title: t.title, type: t.type, contentHtml, createdById, status: 'Pending', version: 1 },
         });
@@ -489,7 +489,7 @@ async function main() {
       if (existingNotif === 0) {
         await prisma.notification.createMany({
           data: [
-            { userId: clientUser.id, type: 'agreement', title: 'Welcome to AfriLaunch Hub', message: 'Complete your profile and explore the dashboard.', link: '/dashboard', read: false },
+            { userId: clientUser.id, type: 'agreement', title: 'Welcome to RiseFlow Hub', message: 'Complete your profile and explore the dashboard.', link: '/dashboard', read: false },
             { userId: clientUser.id, type: 'payment', title: 'Setup fee', message: 'Pay the one-time setup fee to unlock your workspace.', link: '/dashboard', read: false },
           ],
         });

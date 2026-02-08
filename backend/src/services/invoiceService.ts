@@ -6,7 +6,7 @@
 import PDFDocument from 'pdfkit';
 import type { PrismaClient } from '@prisma/client';
 
-const PLATFORM_NAME = 'AfriLaunch Hub';
+const PLATFORM_NAME = 'RiseFlow Hub';
 
 export interface ManualPaymentWithUser {
   id: string;
@@ -54,7 +54,7 @@ export async function generateInvoicePDF(
     doc.text(`Status: ${payment.status}`);
     doc.moveDown(1.5);
 
-    doc.fontSize(10).text('Thank you for supporting AfriLaunch Hub. This document serves as your payment receipt.', {
+    doc.fontSize(10).text('Thank you for supporting RiseFlow Hub. This document serves as your payment receipt.', {
       align: 'center',
     });
     doc.end();

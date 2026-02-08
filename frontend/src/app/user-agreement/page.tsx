@@ -1,9 +1,9 @@
 import { LegalLayout } from '@/components/legal/LegalLayout';
 
 export const metadata = {
-  title: 'User Agreement — AfriLaunch Hub',
+  title: 'User Agreement — RiseFlow Hub',
   description:
-    'User Agreement for AfriLaunch Hub: digital agreements, electronic signatures, and responsibilities.',
+    'User Agreement for RiseFlow Hub: digital agreements, electronic signatures, and responsibilities.',
 };
 
 const LAST_UPDATED = 'January 2025';
