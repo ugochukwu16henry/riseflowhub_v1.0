@@ -25,7 +25,7 @@
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Issue**  | CORS blocking requests from Vercel; “No Access-Control-Allow-Origin”; sometimes Prisma/DATABASE_URL errors.                                                                                                        |
 | **Cause**  | Single-origin CORS; FRONTEND_URL unset or wrong on Render; DATABASE_URL invalid on Render.                                                                                                                         |
-| **Fix**    | CORS in `backend/src/index.ts` now allows multiple origins: `FRONTEND_URL`, `http://localhost:3000`, `https://afrilauch-v1-0.vercel.app`. Login/signup return 503 with clear message when DATABASE_URL is invalid. |
+| **Fix**    | CORS in `backend/src/index.ts` now allows multiple origins: `FRONTEND_URL`, `http://localhost:3000`, `https://riseflowhub-v1-0.vercel.app`. Login/signup return 503 with clear message when DATABASE_URL is invalid. |
 | **Status** | Resolved                                                                                                                                                                                                           |
 
 
@@ -102,7 +102,7 @@
 | Item       | Detail                                                                                                           |
 | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | **Check**  | `frontend/src/lib/api.ts` uses `process.env.NEXT_PUBLIC_API_URL`; login/register and health check use same base. |
-| **Status** | Set `NEXT_PUBLIC_API_URL` on Vercel to backend URL (e.g. `https://afrilauch-v1-0.onrender.com`).                 |
+| **Status** | Set `NEXT_PUBLIC_API_URL` on Vercel to backend URL (e.g. `https://riseflowhub-v1-0.vercel.app`).                 |
 
 
 ### 3.2 Login / Register pages — **RESOLVED**

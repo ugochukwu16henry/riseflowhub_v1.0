@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * AfriLaunch Hub — Playwright E2E config
+ * RiseFlow Hub — Playwright E2E config
  * Prerequisites: backend running at http://localhost:4000, DB seeded (pnpm run db:seed in backend)
  * Run: pnpm exec playwright test (from frontend/)
  */

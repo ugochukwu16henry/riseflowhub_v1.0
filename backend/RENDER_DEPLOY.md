@@ -1,4 +1,4 @@
-# Deploy AfriLaunch Backend to Render
+# Deploy RiseFlow Hub Backend to Render
 
 Use this guide to deploy the Express + Prisma backend to [Render](https://render.com) so your Vercel frontend can use it for sign up, sign in, and all API endpoints.
 
@@ -21,7 +21,7 @@ Use this guide to deploy the Express + Prisma backend to [Render](https://render
 
    | Field | Value |
    |-------|--------|
-   | **Name** | `afrilaunch-api` (or any name) |
+   | **Name** | `riseflowhub-api` (or any name) |
    | **Region** | Choose closest to your users |
    | **Root Directory** | `backend` *(if your repo has frontend + backend; leave blank if the repo root is the backend)* |
    | **Runtime** | Node |
@@ -55,7 +55,7 @@ In your Render Web Service → **Environment** tab, add these variables.
 | `SMTP_HOST` | e.g. SendGrid / Mailgun host | Only if you send real emails. |
 | `SMTP_PORT` | `587` or `465` | |
 | `SMTP_USER` / `SMTP_PASS` | Your SMTP credentials | |
-| `EMAIL_FROM` | `AfriLaunch Hub <noreply@yourdomain.com>` | Sender for emails. |
+| `EMAIL_FROM` | `RiseFlow Hub <noreply@riseflowhub.com>` | Sender for emails. |
 
 Click **Save Changes** after adding variables.
 
@@ -95,7 +95,7 @@ Click **Save Changes** after adding variables.
 ## 6. Verify the Backend
 
 - Open: **`https://<your-render-url>/api/v1/health`**  
-  You should see: `{"status":"ok","service":"afrilaunch-api"}`.
+  You should see: `{"status":"ok","service":"riseflowhub-api"}`.
 - If that works, the backend is up and ready for the frontend.
 
 ---
@@ -108,7 +108,7 @@ In **Vercel** → your frontend project → **Settings** → **Environment Varia
 |-----|--------|
 | `NEXT_PUBLIC_API_URL` | `https://<your-render-url>` (no trailing slash) |
 
-Example: `https://afrilaunch-api.onrender.com`
+Example: `https://riseflowhub-api.onrender.com`
 
 Then **redeploy** the frontend so the new API URL is used. After that, sign up and sign in on the Vercel app should work.
 

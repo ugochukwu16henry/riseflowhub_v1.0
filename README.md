@@ -1,4 +1,4 @@
-# AfriLaunch Hub
+# RiseFlow Hub
 
 **From Idea to Impact.** — A platform to help African entrepreneurs turn ideas into websites, apps, and businesses.
 
@@ -13,7 +13,7 @@
 ## Project structure
 
 ```
-Afrilauch_v1.0/
+riseflowhub_v1.0/
 ├── frontend/          # Next.js app (Client + Super Admin dashboards)
 ├── backend/           # Express API (auth, users, clients, projects, tasks, agreements, etc.)
 ├── mobile/            # React Native (Expo) app — projects, tasks, agreements, chat, AI, push

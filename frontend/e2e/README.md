@@ -1,4 +1,4 @@
-# AfriLaunch Hub — Playwright E2E Tests
+# RiseFlow Hub — Playwright E2E Tests
 
 ## Prerequisites
 

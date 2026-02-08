@@ -93,7 +93,9 @@ const frontendOrigin = (process.env.FRONTEND_URL || '').replace(/\/+$/, '');
 const allowedOrigins = [
   frontendOrigin,
   'http://localhost:3000',
-  'https://afrilauch-v1-0.vercel.app',
+  'https://riseflowhub-v1-0.vercel.app',
+  'https://riseflowhubv10-git-main-henry-ugochukwus-projects.vercel.app',
+  'https://riseflowhubv10-rkdkgpfcp-henry-ugochukwus-projects.vercel.app',
 ].filter((o) => o && o.length > 0);
 const originSet = new Set(allowedOrigins);
 
