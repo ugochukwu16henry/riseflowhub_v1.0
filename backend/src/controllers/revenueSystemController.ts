@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import type { AuthPayload } from '../middleware/auth';
 
 const prisma = new PrismaClient();
@@ -140,7 +140,7 @@ export async function publish(req: Request, res: Response): Promise<void> {
       }),
       prisma.revenueSystemVersion.create({
         data: {
-          payload: { visibility: draft.visibility, revenueModel, pricingJourney },
+          payload: { visibility: draft.visibility, revenueModel, pricingJourney } as Prisma.InputJsonValue,
           versionType: 'published',
           editedById: user?.userId ?? null,
         },
