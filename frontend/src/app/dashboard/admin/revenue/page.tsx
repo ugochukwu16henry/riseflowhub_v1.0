@@ -19,6 +19,342 @@ function defaultVisibility(): VisibilityState {
   return Object.fromEntries(VISIBILITY_KEYS.map(({ key }) => [key, true]));
 }
 
+const STAGE_TYPES = [
+  { value: 'green', label: 'Idea / Entry Stage' },
+  { value: 'yellow', label: 'Development Stage' },
+  { value: 'blue', label: 'Live Product Stage' },
+  { value: 'purple', label: 'Scale Stage' },
+] as const;
+
+type StepRecord = {
+  stageLabel?: string;
+  stageTitle?: string;
+  payLabel?: string;
+  payValue?: string | null;
+  unlocks?: string[];
+  tableRows?: Array<Record<string, string>>;
+  options?: string[];
+  purpose?: string;
+  messageUser?: string;
+  messageInvestor?: string;
+  note?: string;
+  color?: string;
+};
+
+function JourneyTab({
+  pricingJourney,
+  setPricingJourney,
+}: {
+  pricingJourney: Record<string, unknown>;
+  setPricingJourney: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+}) {
+  const steps = (Array.isArray(pricingJourney.steps) ? pricingJourney.steps : []) as StepRecord[];
+
+  const updateSteps = (next: StepRecord[]) => {
+    setPricingJourney((p) => ({ ...p, steps: next }));
+  };
+
+  const addStep = () => {
+    updateSteps([...steps, { stageLabel: 'New Step', stageTitle: 'Title', color: 'green' }]);
+  };
+
+  const removeStep = (idx: number) => {
+    updateSteps(steps.filter((_, i) => i !== idx));
+  };
+
+  const moveStep = (idx: number, dir: 'up' | 'down') => {
+    const next = [...steps];
+    const j = dir === 'up' ? idx - 1 : idx + 1;
+    if (j < 0 || j >= next.length) return;
+    [next[idx], next[j]] = [next[j], next[idx]];
+    updateSteps(next);
+  };
+
+  const updateStep = (idx: number, field: keyof StepRecord, value: unknown) => {
+    const next = [...steps];
+    next[idx] = { ...next[idx], [field]: value };
+    updateSteps(next);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-semibold text-secondary">Pricing Journey Builder</h2>
+      <p className="text-sm text-gray-600">Add, edit, reorder steps. Each step appears as a card in the visual flow.</p>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Journey headline</label>
+        <input
+          type="text"
+          value={(pricingJourney.headline as string) ?? ''}
+          onChange={(e) => setPricingJourney((p) => ({ ...p, headline: e.target.value }))}
+          placeholder="Your Platform Pricing Journey"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Subheadline</label>
+        <input
+          type="text"
+          value={(pricingJourney.subheadline as string) ?? ''}
+          onChange={(e) => setPricingJourney((p) => ({ ...p, subheadline: e.target.value }))}
+          placeholder="Think of it like a startup growth staircase..."
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">Steps</label>
+          <button type="button" onClick={addStep} className="text-sm font-medium text-primary hover:underline">
+            ➕ Add Step
+          </button>
+        </div>
+        <div className="space-y-4">
+          {steps.map((step, idx) => (
+            <div key={idx} className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500">Step {idx + 1}</span>
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => moveStep(idx, 'up')} disabled={idx === 0} className="rounded px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 disabled:opacity-50">↕ Up</button>
+                  <button type="button" onClick={() => moveStep(idx, 'down')} disabled={idx === steps.length - 1} className="rounded px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 disabled:opacity-50">↕ Down</button>
+                  <button type="button" onClick={() => removeStep(idx)} className="rounded px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200">🗑 Delete</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-0.5">Stage label (e.g. STEP 1 — ENTRY STAGE)</label>
+                <input
+                  type="text"
+                  value={step.stageLabel ?? ''}
+                  onChange={(e) => updateStep(idx, 'stageLabel', e.target.value)}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-0.5">Step title</label>
+                <input
+                  type="text"
+                  value={step.stageTitle ?? ''}
+                  onChange={(e) => updateStep(idx, 'stageTitle', e.target.value)}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-0.5">Stage type</label>
+                <select
+                  value={step.color ?? 'green'}
+                  onChange={(e) => updateStep(idx, 'color', e.target.value)}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                >
+                  {STAGE_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-0.5">What they pay / description (optional)</label>
+                <input
+                  type="text"
+                  value={step.payValue ?? ''}
+                  onChange={(e) => updateStep(idx, 'payValue', e.target.value || null)}
+                  placeholder="e.g. One-time setup fee"
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-0.5">Unlocks or options (one per line, optional)</label>
+                <textarea
+                  value={(Array.isArray(step.unlocks) ? step.unlocks : step.options ?? []).join('\n')}
+                  onChange={(e) => {
+                    const lines = e.target.value.split('\n').filter(Boolean);
+                    const arr = lines.length ? lines : undefined;
+                    const next = [...steps];
+                    next[idx] = { ...next[idx], unlocks: arr, options: arr };
+                    updateSteps(next);
+                  }}
+                  rows={2}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-0.5">Purpose or note (optional)</label>
+                <input
+                  type="text"
+                  value={step.purpose ?? step.note ?? ''}
+                  onChange={(e) => { updateStep(idx, 'purpose', e.target.value); updateStep(idx, 'note', e.target.value); }}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RevenueTableTab({
+  pricingJourney,
+  setPricingJourney,
+}: {
+  pricingJourney: Record<string, unknown>;
+  setPricingJourney: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+}) {
+  const rows = (Array.isArray(pricingJourney.revenueTable) ? pricingJourney.revenueTable : []) as Array<{ revenueType?: string; whenItHappens?: string }>;
+
+  const updateRows = (next: Array<{ revenueType: string; whenItHappens: string }>) => {
+    setPricingJourney((p) => ({ ...p, revenueTable: next }));
+  };
+
+  const addRow = () => {
+    updateRows([...rows, { revenueType: '', whenItHappens: '' }]);
+  };
+
+  const removeRow = (idx: number) => {
+    updateRows(rows.filter((_, i) => i !== idx));
+  };
+
+  const updateRow = (idx: number, field: 'revenueType' | 'whenItHappens', value: string) => {
+    const next = rows.map((r, i) => (i === idx ? { ...r, [field]: value } : r));
+    updateRows(next);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-semibold text-secondary">Revenue Table Manager</h2>
+      <p className="text-sm text-gray-600">Stage name and when it happens. Shown as &quot;How Your Company Earns&quot;.</p>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Flow label (optional)</label>
+        <input
+          type="text"
+          value={(pricingJourney.revenueFlowLabel as string) ?? ''}
+          onChange={(e) => setPricingJourney((p) => ({ ...p, revenueFlowLabel: e.target.value }))}
+          placeholder="Entry → Progress → Launch → Scale"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">Rows</label>
+          <button type="button" onClick={addRow} className="text-sm font-medium text-primary hover:underline">➕ Add row</button>
+        </div>
+        <div className="space-y-2">
+          {rows.map((row, idx) => (
+            <div key={idx} className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={row.revenueType ?? ''}
+                onChange={(e) => updateRow(idx, 'revenueType', e.target.value)}
+                placeholder="Stage / Revenue type"
+                className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+              />
+              <input
+                type="text"
+                value={row.whenItHappens ?? ''}
+                onChange={(e) => updateRow(idx, 'whenItHappens', e.target.value)}
+                placeholder="When it happens"
+                className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+              />
+              <button type="button" onClick={() => removeRow(idx)} className="rounded px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200">Remove</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiagramTab({
+  pricingJourney,
+  setPricingJourney,
+}: {
+  pricingJourney: Record<string, unknown>;
+  setPricingJourney: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+}) {
+  const steps = (Array.isArray(pricingJourney.diagramSteps) ? pricingJourney.diagramSteps : []) as string[];
+  const labels = (Array.isArray(pricingJourney.diagramLabels) ? pricingJourney.diagramLabels : []) as string[];
+
+  const updateDiagram = (newSteps: string[], newLabels: string[]) => {
+    setPricingJourney((p) => ({ ...p, diagramSteps: newSteps, diagramLabels: newLabels }));
+  };
+
+  const addBlock = () => {
+    updateDiagram([...steps, 'New step'], [...labels, 'Label']);
+  };
+
+  const removeBlock = (idx: number) => {
+    updateDiagram(steps.filter((_, i) => i !== idx), labels.filter((_, i) => i !== idx));
+  };
+
+  const moveBlock = (idx: number, dir: 'up' | 'down') => {
+    const j = dir === 'up' ? idx - 1 : idx + 1;
+    if (j < 0 || j >= steps.length) return;
+    const s = [...steps];
+    const l = [...labels];
+    [s[idx], s[j]] = [s[j], s[idx]];
+    [l[idx], l[j]] = [l[j], l[idx]];
+    updateDiagram(s, l);
+  };
+
+  const setBlock = (idx: number, step: string, label: string) => {
+    const s = [...steps];
+    const l = [...labels];
+    while (l.length < s.length) l.push('');
+    s[idx] = step;
+    l[idx] = label;
+    updateDiagram(s, l);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-semibold text-secondary">Diagram Flow Builder</h2>
+      <p className="text-sm text-gray-600">Flow blocks shown as: Idea → Structuring → Build → Launch → Maintenance. Rename blocks below.</p>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Diagram headline (optional)</label>
+        <input
+          type="text"
+          value={(pricingJourney.diagramHeadline as string) ?? ''}
+          onChange={(e) => setPricingJourney((p) => ({ ...p, diagramHeadline: e.target.value }))}
+          placeholder="Simple view:"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">Flow blocks</label>
+          <button type="button" onClick={addBlock} className="text-sm font-medium text-primary hover:underline">➕ Add block</button>
+        </div>
+        <div className="space-y-2">
+          {steps.length === 0 ? (
+            <p className="text-sm text-gray-500">No blocks yet. Click &quot;➕ Add block&quot; to add flow steps.</p>
+          ) : (
+            steps.map((step, idx) => (
+              <div key={idx} className="flex gap-2 items-center flex-wrap">
+                <input
+                  type="text"
+                  value={step}
+                  onChange={(e) => setBlock(idx, e.target.value, labels[idx] ?? '')}
+                  placeholder="Block label"
+                  className="flex-1 min-w-[140px] rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  type="text"
+                  value={labels[idx] ?? ''}
+                  onChange={(e) => setBlock(idx, step, e.target.value)}
+                  placeholder="Sublabel (e.g. One-Time Fee)"
+                  className="flex-1 min-w-[120px] rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => moveBlock(idx, 'up')} disabled={idx === 0} className="rounded px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 disabled:opacity-50">↕</button>
+                  <button type="button" onClick={() => moveBlock(idx, 'down')} disabled={idx === steps.length - 1} className="rounded px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 disabled:opacity-50">↕</button>
+                  <button type="button" onClick={() => removeBlock(idx)} className="rounded px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200">Remove</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RevenueSystemPage() {
   const token = getStoredToken();
   const [loading, setLoading] = useState(true);
@@ -325,47 +661,15 @@ export default function RevenueSystemPage() {
           )}
 
           {activeTab === 'journey' && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-secondary">Pricing Journey Builder</h2>
-              <p className="text-sm text-gray-600">Headline and subheadline for the visual flow. Steps are managed in CMS → revenue-model (pricing_journey JSON) for now.</p>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Journey headline</label>
-                <input
-                  type="text"
-                  value={(pricingJourney.headline as string) ?? ''}
-                  onChange={(e) => setPricingJourney((p) => ({ ...p, headline: e.target.value }))}
-                  placeholder="Your Platform Pricing Journey"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subheadline</label>
-                <input
-                  type="text"
-                  value={(pricingJourney.subheadline as string) ?? ''}
-                  onChange={(e) => setPricingJourney((p) => ({ ...p, subheadline: e.target.value }))}
-                  placeholder="Think of it like a startup growth staircase..."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
-              <p className="text-xs text-gray-500">To edit steps, revenue table, and diagram in a builder UI, use CMS Manager → revenue-model and edit the pricing_journey JSON, or we can add a step builder in a future update.</p>
-            </div>
+            <JourneyTab pricingJourney={pricingJourney} setPricingJourney={setPricingJourney} />
           )}
 
           {activeTab === 'table' && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-secondary">Revenue Table</h2>
-              <p className="text-sm text-gray-600">Revenue table is defined inside pricing_journey.revenueTable in CMS. Edit via CMS → revenue-model (pricing_journey key) for full control.</p>
-              <Link href="/dashboard/admin/cms/revenue-model" className="text-sm text-primary hover:underline">Open CMS revenue-model →</Link>
-            </div>
+            <RevenueTableTab pricingJourney={pricingJourney} setPricingJourney={setPricingJourney} />
           )}
 
           {activeTab === 'diagram' && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-secondary">Diagram Flow</h2>
-              <p className="text-sm text-gray-600">Diagram steps and labels are in pricing_journey.diagramSteps and diagramLabels. Edit via CMS → revenue-model for now.</p>
-              <Link href="/dashboard/admin/cms/revenue-model" className="text-sm text-primary hover:underline">Open CMS revenue-model →</Link>
-            </div>
+            <DiagramTab pricingJourney={pricingJourney} setPricingJourney={setPricingJourney} />
           )}
 
           {activeTab === 'history' && (
