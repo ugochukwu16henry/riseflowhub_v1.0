@@ -199,7 +199,7 @@ function RevenueTableTab({
 }) {
   const rows = (Array.isArray(pricingJourney.revenueTable) ? pricingJourney.revenueTable : []) as Array<{ revenueType?: string; whenItHappens?: string }>;
 
-  const updateRows = (next: Array<{ revenueType: string; whenItHappens: string }>) => {
+  const updateRows = (next: Array<{ revenueType?: string; whenItHappens?: string }>) => {
     setPricingJourney((p) => ({ ...p, revenueTable: next }));
   };
 
