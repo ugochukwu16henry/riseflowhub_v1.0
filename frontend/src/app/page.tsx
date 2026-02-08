@@ -108,7 +108,7 @@ export default async function HomePage() {
             </h2>
           </div>
           <RevenueModelSection source="homepage" variant="full" />
-          <PricingJourneySection className="mt-12" />
+          <PricingJourneySection className="mt-12" source="homepage" />
         </Section>
         <Vision content={content.vision} />
         <FAQPreview items={faqs} />

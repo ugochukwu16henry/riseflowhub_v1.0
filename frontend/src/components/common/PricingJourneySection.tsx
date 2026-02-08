@@ -49,10 +49,19 @@ function CheckIcon() {
   );
 }
 
-export function PricingJourneySection({ className = '' }: { className?: string }) {
+export function PricingJourneySection({
+  className = '',
+  source,
+}: {
+  className?: string;
+  /** When set, visibility is checked for this place (e.g. homepage, pricing). */
+  source?: 'homepage' | 'pricing';
+}) {
   const { contents, loading, error } = useCMSPage('revenue_model');
-  const data = contents?.pricing_journey as PricingJourneyContent | undefined;
-  const visible = data?.visible === true;
+  const data = contents?.pricing_journey as PricingJourneyContent & { visibility?: Record<string, boolean> } | undefined;
+  const visibilityByPlace = data?.visibility;
+  const visibleBySource = source && visibilityByPlace && source in visibilityByPlace ? visibilityByPlace[source] : undefined;
+  const visible = visibleBySource !== undefined ? visibleBySource : (data?.visible === true);
   const headline = data?.headline ?? 'Your Platform Pricing Journey';
   const subheadline = data?.subheadline ?? 'Think of it like a startup growth staircase, not a payment wall.';
   const steps = Array.isArray(data?.steps) ? data.steps : [];

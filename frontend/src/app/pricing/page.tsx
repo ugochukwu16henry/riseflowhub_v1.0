@@ -60,7 +60,7 @@ export default function PricingPage() {
           </h2>
         </div>
         <RevenueModelSection source="pricing" variant="full" />
-        <PricingJourneySection className="mt-12" />
+        <PricingJourneySection className="mt-12" source="pricing" />
       </Section>
 
       {/* Payment structure */}

@@ -224,6 +224,7 @@ model User {
   securityEvents    SecurityEvent[]
   ipsBlocked        BlockedIp[]       @relation("BlockedIpCreatedBy")
   supportBannerEvents SupportBannerEvent[]
+  revenueSystemVersions RevenueSystemVersion[] @relation("RevenueSystemVersionEditor")
 }
 
 // Custom roles (Super Admin can add); display name + department
@@ -1257,6 +1258,20 @@ model RevenueModelViewLog {
   @@index([source, viewedAt])
   @@index([userId, viewedAt])
   @@map("revenue_model_view_logs")
+}
+
+// Revenue System control panel: version history (draft/publish, restore)
+model RevenueSystemVersion {
+  id          String   @id @default(uuid())
+  payload     Json     // { revenueModel, pricingJourney, visibility }
+  versionType String   @map("version_type") @db.VarChar(20) // draft | published
+  editedById  String?  @map("edited_by_id")
+  editedAt    DateTime @default(now()) @map("edited_at")
+
+  editedBy User? @relation("RevenueSystemVersionEditor", fields: [editedById], references: [id], onDelete: SetNull)
+
+  @@index([editedAt])
+  @@map("revenue_system_versions")
 }
 
 // Global social media handles managed by Super Admin

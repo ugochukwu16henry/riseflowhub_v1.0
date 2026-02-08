@@ -907,6 +907,43 @@ export const api = {
         body: JSON.stringify({ source }),
         ...(token ? { token } : {}),
       }),
+    revenueSystem: {
+      get: (token: string) =>
+        request<{
+          draft: { visibility?: Record<string, boolean>; revenueModel?: unknown; pricingJourney?: unknown } | null;
+          live: { revenueModel: unknown; pricingJourney: unknown };
+          versionHistory: Array<{ id: string; versionType: string; editedAt: string; editedBy: string }>;
+        }>('/api/v1/cms/revenue-system', { token }),
+      saveDraft: (
+        body: { visibility?: Record<string, boolean>; revenueModel?: unknown; pricingJourney?: unknown },
+        token: string
+      ) =>
+        request<{ ok: boolean; message: string }>('/api/v1/cms/revenue-system/draft', {
+          method: 'PUT',
+          body: JSON.stringify(body),
+          token,
+        }),
+      publish: (token: string) =>
+        request<{ ok: boolean; message: string }>('/api/v1/cms/revenue-system/publish', {
+          method: 'POST',
+          token,
+        }),
+      getHistory: (token: string) =>
+        request<{
+          items: Array<{
+            id: string;
+            payload: unknown;
+            versionType: string;
+            editedAt: string;
+            editedBy: string;
+          }>;
+        }>('/api/v1/cms/revenue-system/history', { token }),
+      restore: (versionId: string, token: string) =>
+        request<{ ok: boolean; message: string }>(`/api/v1/cms/revenue-system/restore/${encodeURIComponent(versionId)}`, {
+          method: 'POST',
+          token,
+        }),
+    },
   },
   socialLinks: {
     list: () => request<SocialMediaLink[]>('/api/v1/social-links'),

@@ -25,6 +25,7 @@ const clientNav = [
 
 const adminNav = [
   { href: '/dashboard/admin', label: 'Dashboard' },
+  { href: '/dashboard/admin/revenue', label: 'Revenue System' },
   { href: '/dashboard/team', label: 'Team Dashboard' },
   { href: '/dashboard/mentor', label: 'AI Mentor' },
   { href: '/dashboard/admin/leads', label: 'Leads' },
@@ -42,6 +43,7 @@ const adminNav = [
 const superAdminNav = [
   { href: '/dashboard/admin', label: 'Dashboard Overview' },
   { href: '/dashboard/admin/cms', label: 'CMS Manager' },
+  { href: '/dashboard/admin/revenue', label: 'Revenue System' },
   { href: '/dashboard/admin/knowledge', label: 'Internal Knowledge Center' },
   { href: '/dashboard/admin/hr', label: 'Hiring / Talent' },
   { href: '/dashboard/admin/skills', label: 'Skill Management' },

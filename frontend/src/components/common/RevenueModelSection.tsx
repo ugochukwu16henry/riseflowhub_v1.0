@@ -80,8 +80,10 @@ export function RevenueModelSection({
   const tracked = useRef(false);
   const [expandedId, setExpandedId] = useState<number | null>(variant === 'panel' || variant === 'compact' ? null : 0);
 
-  const data = contents?.revenue_model as RevenueModelContent | undefined;
-  const visible = data?.visible === true;
+  const data = contents?.revenue_model as RevenueModelContent & { visibility?: Record<string, boolean> } | undefined;
+  const visibilityByPlace = data?.visibility;
+  const visibleBySource = visibilityByPlace && source in visibilityByPlace ? visibilityByPlace[source] : undefined;
+  const visible = visibleBySource !== undefined ? visibleBySource : (data?.visible === true);
 
   // Pick content: deal_room → investor; else → landing; fallback → legacy top-level
   const isInvestorSource = source === 'deal_room';
