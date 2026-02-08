@@ -12,7 +12,9 @@ import {
   Footer,
   FAQPreview,
   SupportBanner,
+  Section,
 } from '@/components/landing';
+import { RevenueModelSection } from '@/components/common/RevenueModelSection';
 import { type FaqItem } from '@/lib/api';
 import { pageContentFallback } from '@/data/pageContent';
 import type { HomePageContent } from '@/data/pageContent';
@@ -98,6 +100,14 @@ export default async function HomePage() {
         <AIPower content={content.aiPower} />
         <ForInvestors content={content.forInvestors} />
         <PlatformFeatures content={content.platformFeatures} />
+        <Section id="how-pricing-works" variant="muted">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
+              How Our Pricing Works
+            </h2>
+          </div>
+          <RevenueModelSection source="homepage" sectionTitle="Our Fair Growth-Based Pricing Model" variant="full" />
+        </Section>
         <Vision content={content.vision} />
         <FAQPreview items={faqs} />
         <FinalCTA content={content.finalCta} />

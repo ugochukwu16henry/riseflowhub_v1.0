@@ -105,6 +105,19 @@ export const cmsSections: Record<string, CmsSectionConfig> = {
       { key: 'hiring.companyFeeUsd', label: 'Hiring company fee (USD)', type: 'text', placeholder: '20' },
     ],
   },
+  'revenue-model': {
+    pageName: 'revenue_model',
+    title: 'Revenue Model Transparency',
+    description: 'Content and visibility for "Our Fair Growth-Based Pricing Model" (homepage, onboarding, dashboard, deal room). Toggle visible ON/OFF.',
+    fields: [
+      {
+        key: 'revenue_model',
+        label: 'Revenue model content (JSON: visible, title, intro, sections[], summaryBullets[], revenueStreams[], marketPositioning)',
+        type: 'json',
+        placeholder: '{"visible":true,"title":"...","intro":"...","sections":[...],"summaryBullets":[],"revenueStreams":[],"marketPositioning":"..."}',
+      },
+    ],
+  },
 };
 
 export const cmsSectionSlugs = Object.keys(cmsSections) as string[];

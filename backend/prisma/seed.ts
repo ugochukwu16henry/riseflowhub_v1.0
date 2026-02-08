@@ -110,6 +110,72 @@ async function main() {
     { key: 'hiring.talentFeeUsd', value: '7', type: 'text', page: 'hiring' },
     { key: 'hiring.companyFeeUsd', value: '20', type: 'text', page: 'hiring' },
   ];
+
+  const defaultRevenueModel = {
+    visible: true,
+    title: 'Our Fair Growth-Based Pricing Model',
+    intro:
+      'Our pricing structure is designed to support entrepreneurs at early stages while ensuring sustainable growth for both users and the platform.',
+    sections: [
+      {
+        title: 'Reducing Early Financial Pressure',
+        body:
+          'Startups often struggle with recurring costs. Monthly subscriptions can discourage early founders. Our one-time onboarding fee lowers entry barriers. This shows we are founder-friendly and growth-focused.',
+      },
+      {
+        title: 'We Are a Growth Platform, Not a Subscription Tool',
+        body:
+          'We are an entrepreneur enablement platform. Users are here to build, grow, and launch. We provide tools, structure, and guidance. We are a growth partner, not just a SaaS product.',
+      },
+      {
+        title: 'Revenue Is Tied to Progress',
+        body:
+          'Payments occur at development stages: consultation phases, feature upgrades, and project advancement. Our success grows as our users\' businesses grow.',
+      },
+      {
+        title: 'When Recurring Fees Begin',
+        body:
+          'Recurring fees apply only when a user\'s product goes live — such as a website, app, software platform, or online system. These recurring costs cover real infrastructure: database storage, frontend hosting (e.g. Vercel), backend hosting (e.g. Render/servers), security & monitoring, and ongoing maintenance. These are operational costs to keep live systems running, not platform access fees.',
+      },
+      {
+        title: 'Fairness & Trust',
+        body:
+          'No endless subscriptions. Recurring fees only when systems are live. Payments tied to real services. Transparent structure.',
+      },
+      {
+        title: 'Market Positioning',
+        body:
+          'Most platforms charge for time. We charge for growth and real execution. We are a startup growth partner and technical execution team.',
+      },
+    ],
+    summaryBullets: [
+      'No endless subscriptions',
+      'Recurring fees only when systems are live',
+      'Payments tied to real services',
+      'Transparent structure',
+    ],
+    revenueStreams: [
+      'One-time onboarding',
+      'Milestone-based progress payments',
+      'Development & service work',
+      'Maintenance fees after launch',
+    ],
+    marketPositioning:
+      'Most platforms charge for time. We charge for growth and real execution. We are a startup growth partner and technical execution team.',
+  };
+  await prisma.cmsContent.upsert({
+    where: { key: 'revenue_model' },
+    update: { value: JSON.stringify(defaultRevenueModel), type: 'json', page: 'revenue_model' },
+    create: {
+      key: 'revenue_model',
+      value: JSON.stringify(defaultRevenueModel),
+      type: 'json',
+      page: 'revenue_model',
+      updatedById: null,
+    },
+  });
+  console.log('Seeded CMS revenue_model (Revenue Model Transparency)');
+
   for (const entry of cmsEntries) {
     await prisma.cmsContent.upsert({
       where: { key: entry.key },

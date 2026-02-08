@@ -1,0 +1,175 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useCMSPage } from '@/hooks/useCMS';
+import { api, getStoredToken } from '@/lib/api';
+
+export type RevenueModelSource = 'homepage' | 'pricing' | 'onboarding' | 'dashboard' | 'deal_room';
+
+export interface RevenueModelContent {
+  visible?: boolean;
+  title?: string;
+  intro?: string;
+  sections?: Array<{ title: string; body: string }>;
+  summaryBullets?: string[];
+  revenueStreams?: string[];
+  marketPositioning?: string;
+}
+
+interface RevenueModelSectionProps {
+  source: RevenueModelSource;
+  /** Section heading when embedded (e.g. "How Our Pricing Works", "Platform Cost Structure") */
+  sectionTitle?: string;
+  /** Compact layout for panels / onboarding */
+  variant?: 'full' | 'compact' | 'panel';
+  className?: string;
+}
+
+const SECTION_ICONS: Record<number, string> = {
+  0: '💰',
+  1: '🚀',
+  2: '📈',
+  3: '🔄',
+  4: '✓',
+  5: '🎯',
+};
+
+function CheckIcon() {
+  return (
+    <svg className="h-5 w-5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+export function RevenueModelSection({
+  source,
+  sectionTitle,
+  variant = 'full',
+  className = '',
+}: RevenueModelSectionProps) {
+  const { contents, loading, error } = useCMSPage('revenue_model');
+  const tracked = useRef(false);
+  const [expandedId, setExpandedId] = useState<number | null>(variant === 'panel' || variant === 'compact' ? null : 0);
+
+  const data = contents?.revenue_model as RevenueModelContent | undefined;
+  const visible = data?.visible === true;
+  const title = data?.title ?? 'Our Fair Growth-Based Pricing Model';
+  const intro = data?.intro ?? '';
+  const sections = Array.isArray(data?.sections) ? data.sections : [];
+  const summaryBullets = Array.isArray(data?.summaryBullets) ? data.summaryBullets : [];
+  const revenueStreams = Array.isArray(data?.revenueStreams) ? data.revenueStreams : [];
+  const marketPositioning = data?.marketPositioning ?? '';
+
+  useEffect(() => {
+    if (!visible || tracked.current) return;
+    tracked.current = true;
+    const token = getStoredToken();
+    api.cms.trackRevenueModelView(source, token).catch(() => {});
+  }, [source, visible]);
+
+  if (loading || error || !visible) return null;
+
+  const heading = sectionTitle ?? title;
+  const isCompact = variant === 'compact' || variant === 'panel';
+  const isPanel = variant === 'panel';
+
+  return (
+    <div className={className}>
+      <div className={isPanel ? 'rounded-xl border border-gray-200 bg-white p-5' : ''}>
+        <h2 className="text-xl font-bold text-secondary mb-2 sm:text-2xl">
+          {heading}
+        </h2>
+        {intro && (
+          <p className="text-gray-600 mb-6 max-w-3xl">
+            {intro}
+          </p>
+        )}
+
+        {sections.length > 0 && (
+          <div className="space-y-3">
+            {sections.map((section, idx) => {
+              const id = idx;
+              const isExpanded = expandedId === id;
+              const icon = SECTION_ICONS[idx] ?? '•';
+              return (
+                <div
+                  key={id}
+                  className="rounded-xl border border-gray-200/80 bg-gray-50/50 overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(isExpanded ? null : id)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-100/70 transition sm:py-4"
+                    aria-expanded={isExpanded}
+                    title="Learn more"
+                  >
+                    <span className="text-xl flex-shrink-0" aria-hidden>{icon}</span>
+                    <span className="font-semibold text-secondary flex-1">{section.title}</span>
+                    <span className="text-gray-400 flex-shrink-0">
+                      <svg
+                        className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                    aria-hidden={!isExpanded}
+                  >
+                    <div className="px-4 pb-4 pt-0">
+                      <p className="text-gray-700 text-sm sm:text-base pl-9 whitespace-pre-wrap">
+                        {section.body}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {summaryBullets.length > 0 && (
+          <div className="mt-6 rounded-xl border border-emerald-200/80 bg-emerald-50/60 p-4 sm:p-5">
+            <h3 className="font-semibold text-secondary mb-3 flex items-center gap-2">
+              <CheckIcon />
+              Fairness & trust
+            </h3>
+            <ul className="space-y-2">
+              {summaryBullets.map((bullet, i) => (
+                <li key={i} className="flex items-start gap-2 text-gray-700 text-sm sm:text-base">
+                  <CheckIcon />
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {revenueStreams.length > 0 && (
+          <div className="mt-6 rounded-xl border-2 border-primary/20 bg-primary/5 p-4 sm:p-5">
+            <h3 className="font-semibold text-secondary mb-3">We earn through</h3>
+            <ul className="space-y-2">
+              {revenueStreams.map((stream, i) => (
+                <li key={i} className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
+                  <CheckIcon />
+                  <span>{stream}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {marketPositioning && !isCompact && (
+          <p className="mt-6 text-gray-600 text-sm sm:text-base italic border-l-4 border-primary/40 pl-4">
+            {marketPositioning}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

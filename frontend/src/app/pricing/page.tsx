@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Nav, Section, Footer, PricingPlans } from '@/components/landing';
+import { RevenueModelSection } from '@/components/common/RevenueModelSection';
 
 export const metadata = {
   title: 'Pricing — AfriLaunch Hub',
@@ -48,6 +49,16 @@ export default function PricingPage() {
       {/* Plans */}
       <Section id="plans" variant="muted">
         <PricingPlans />
+      </Section>
+
+      {/* How our pricing works — Revenue model transparency */}
+      <Section id="how-pricing-works" variant="muted">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
+            How Our Pricing Works
+          </h2>
+        </div>
+        <RevenueModelSection source="pricing" sectionTitle="Our Fair Growth-Based Pricing Model" variant="full" />
       </Section>
 
       {/* Payment structure */}

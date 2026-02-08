@@ -1247,6 +1247,18 @@ model CmsContent {
   @@map("cms_content")
 }
 
+// Track views of the Revenue Model transparency section (for analytics / A/B)
+model RevenueModelViewLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  source    String   @db.VarChar(40) // homepage | onboarding | dashboard | deal_room
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+
+  @@index([source, viewedAt])
+  @@index([userId, viewedAt])
+  @@map("revenue_model_view_logs")
+}
+
 // Global social media handles managed by Super Admin
 model SocialMediaLink {
   id           String   @id @default(uuid())

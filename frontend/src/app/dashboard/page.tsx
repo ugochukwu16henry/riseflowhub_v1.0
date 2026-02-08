@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getStoredToken, api, type UserFeatureState } from '@/lib/api';
+import { RevenueModelSection } from '@/components/common/RevenueModelSection';
 import type {
   Project,
   AssignedToMe,
@@ -31,6 +32,7 @@ export default function ClientDashboardPage() {
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [reputation, setReputation] = useState<FounderReputationBreakdown | null>(null);
   const [features, setFeatures] = useState<UserFeatureState | null>(null);
+  const [costStructureOpen, setCostStructureOpen] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -154,6 +156,30 @@ export default function ClientDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Platform Cost Structure — Revenue Model transparency */}
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={() => setCostStructureOpen((o) => !o)}
+          className="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-left hover:bg-gray-50 transition"
+        >
+          <span className="font-semibold text-secondary">Platform Cost Structure</span>
+          <svg
+            className={`h-5 w-5 text-gray-400 transition-transform ${costStructureOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {costStructureOpen && (
+          <div className="mt-2 rounded-xl border border-gray-200 bg-white p-4">
+            <RevenueModelSection source="dashboard" sectionTitle="Platform Cost Structure" variant="panel" />
+          </div>
+        )}
+      </div>
 
       {loading && <p className="text-gray-500">Loading...</p>}
       {error && (

@@ -901,6 +901,12 @@ export const api = {
         body: JSON.stringify(body),
         token,
       }),
+    trackRevenueModelView: (source: 'homepage' | 'pricing' | 'onboarding' | 'dashboard' | 'deal_room', token?: string | null) =>
+      request<void>('/api/v1/cms/revenue-model-view', {
+        method: 'POST',
+        body: JSON.stringify({ source }),
+        ...(token ? { token } : {}),
+      }),
   },
   socialLinks: {
     list: () => request<SocialMediaLink[]>('/api/v1/social-links'),
