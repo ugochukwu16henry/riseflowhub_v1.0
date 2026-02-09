@@ -85,6 +85,7 @@ import { seoRoutes } from './routes/seo';
 import { supportBannerRoutes } from './routes/supportBanner';
 import * as webhookController from './controllers/webhookController';
 import { isPaystackEnabled, getPaystackPublicKey } from './services/paystackService';
+import { isAiGatewayConfigured, runAI } from './services/aiGatewayService';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -223,6 +224,29 @@ app.get('/api/v1/paystack/status', (_, res) => {
         ? 'Paystack not configured: set PAYSTACK_SECRET_KEY on the server (starts with sk_live_ or sk_test_).'
         : 'Paystack secret is set but PAYSTACK_PUBLIC_KEY is missing or invalid (must start with pk_).',
   });
+});
+
+/** GET /api/ai-test — simple connectivity test for Vercel AI Gateway */
+app.get('/api/ai-test', async (_req, res) => {
+  if (!isAiGatewayConfigured()) {
+    res.status(503).json({
+      success: false,
+      error: 'AI Gateway not configured',
+      message: 'Set AI_GATEWAY_API_KEY and AI_MODEL on the backend environment, then redeploy.',
+    });
+    return;
+  }
+
+  try {
+    const response = await runAI('Say: AI connection successful');
+    res.json({ success: true, response });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[ai-test] error:', err);
+    const message =
+      err instanceof Error ? err.message : 'AI test failed. Check backend logs for details.';
+    res.status(500).json({ success: false, error: message });
+  }
 });
 
 // 404 for API routes — return JSON so frontend gets consistent error shape

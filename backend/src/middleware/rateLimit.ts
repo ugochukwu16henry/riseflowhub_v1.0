@@ -58,3 +58,28 @@ export const loginRateLimiter = rateLimit({
   },
 });
 
+/** AI-specific rate limiter for /api/v1/ai endpoints (stricter to protect token usage). */
+export const aiRateLimiter = rateLimit({
+  windowMs: Number(process.env.SECURITY_AI_WINDOW_MS || 60_000), // default 1 minute
+  max: Number(process.env.SECURITY_AI_MAX_REQUESTS || 20), // per IP per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => getClientIp(req),
+  handler: async (req: Request, res: Response, _next: NextFunction, _options) => {
+    const ip = getClientIp(req);
+    await logSecurityEvent({
+      ip,
+      userId: (req as any).user?.userId ?? null,
+      userAgent: req.headers['user-agent'] as string | undefined,
+      type: 'rate_limit_exceeded',
+      severity: 'medium',
+      message: 'AI rate limit exceeded',
+      metadata: {
+        path: req.path,
+        method: req.method,
+      },
+    }).catch(() => {});
+    res.status(429).json({ error: 'Too many AI requests. Please slow down.' });
+  },
+});
+

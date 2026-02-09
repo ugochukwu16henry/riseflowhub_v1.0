@@ -2,10 +2,48 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authMiddleware, requireSetupPaid } from '../middleware/auth';
 import * as aiCofounderController from '../controllers/aiCofounderController';
+import { aiRateLimiter } from '../middleware/rateLimit';
+import { isAiGatewayConfigured, runAI } from '../services/aiGatewayService';
 
 const router = Router();
 
 router.use(authMiddleware);
+
+// ——— Generic AI generate endpoint (Vercel AI Gateway) ———
+router.post(
+  '/generate',
+  [body('prompt').trim().notEmpty()],
+  aiRateLimiter,
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    if (!isAiGatewayConfigured()) {
+      return res.status(503).json({
+        error: 'AI Gateway not configured',
+        message: 'Set AI_GATEWAY_API_KEY and AI_MODEL on the backend environment, then redeploy.',
+      });
+    }
+
+    const { prompt } = req.body as { prompt: string };
+
+    try {
+      const result = await runAI(prompt);
+      // Lightweight usage log for abuse detection (full analytics can be added via auditLog later)
+      // eslint-disable-next-line no-console
+      console.log('[ai.generate] user prompt length:', prompt.length);
+      return res.json({ result });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ai.generate] error:', err);
+      const message =
+        err instanceof Error ? err.message : 'AI request failed. Check backend logs for details.';
+      return res.status(500).json({ error: 'AI request failed', message });
+    }
+  }
+);
 
 // ——— AI Co-Founder (auth only; paid modules gated in controller) ———
 router.post('/idea-clarify', [body('idea').trim().notEmpty(), body('projectId').optional().isUUID(), body('industry').optional().trim(), body('country').optional().trim()], (req, res) => {
