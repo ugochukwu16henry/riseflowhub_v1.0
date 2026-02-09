@@ -18,29 +18,35 @@ export async function runAI(prompt: string): Promise<string> {
   }
 
   const result = await streamText({
-    model: AI_MODEL,
+    // When using Vercel AI Gateway, the model id is passed as a string
+    // e.g. "openai/gpt-5.2" and the gateway key is sent via Authorization.
+    model: AI_MODEL as any,
     prompt: trimmed,
     headers: {
       Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
     },
   });
 
-  // Vercel AI SDK exposes the full text on result.text
-  if (typeof (result as any).text === 'string') {
-    return (result as any).text as string;
+  // Preferred path in AI SDK v6: use the aggregated `text` helper if present.
+  const maybeText = (result as any).text;
+  if (typeof maybeText === 'string' && maybeText.trim().length > 0) {
+    return maybeText;
   }
 
-  // Fallback: concatenate chunks if text accessor is not present
+  // Fallback: read from the text stream (AI SDK exposes `textStream`).
   let fullText = '';
-  // eslint-disable-next-line no-restricted-syntax
-  for await (const chunk of (result as any).stream ?? []) {
-    const content = (chunk as any).content;
-    if (typeof content === 'string') {
-      fullText += content;
+  const stream = (result as any).textStream ?? (result as any).stream;
+  if (stream) {
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const part of stream) {
+      // `part` is usually { type: 'text', text: '...' }
+      if (typeof (part as any).text === 'string') {
+        fullText += (part as any).text;
+      }
     }
   }
 
-  if (!fullText) {
+  if (!fullText.trim()) {
     throw new Error('AI Gateway returned an empty response.');
   }
 
