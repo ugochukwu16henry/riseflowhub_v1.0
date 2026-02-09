@@ -84,6 +84,7 @@ import { publicDataRoutes } from './routes/publicData';
 import { seoRoutes } from './routes/seo';
 import { supportBannerRoutes } from './routes/supportBanner';
 import * as webhookController from './controllers/webhookController';
+import { isPaystackEnabled, getPaystackPublicKey } from './services/paystackService';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -205,6 +206,23 @@ app.use('/api/seo', seoRoutes);
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');
   res.json({ status: 'ok', service: 'riseflow-api' });
+});
+
+/** GET /api/v1/paystack/status — public check if Paystack is connected (no auth) */
+app.get('/api/v1/paystack/status', (_, res) => {
+  const enabled = isPaystackEnabled();
+  const publicKeySet = !!getPaystackPublicKey();
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  res.json({
+    connected: enabled && publicKeySet,
+    enabled,
+    publicKeySet,
+    message: enabled && publicKeySet
+      ? 'Paystack is connected and ready for payments.'
+      : !enabled
+        ? 'Paystack not configured: set PAYSTACK_SECRET_KEY on the server (starts with sk_live_ or sk_test_).'
+        : 'Paystack secret is set but PAYSTACK_PUBLIC_KEY is missing or invalid (must start with pk_).',
+  });
 });
 
 // 404 for API routes — return JSON so frontend gets consistent error shape
