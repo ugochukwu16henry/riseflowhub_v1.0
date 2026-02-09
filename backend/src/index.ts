@@ -245,6 +245,18 @@ app.get('/api/ai-test', async (_req, res) => {
     console.error('[ai-test] error:', err);
     const message =
       err instanceof Error ? err.message : 'AI test failed. Check backend logs for details.';
+
+    // If the only issue is an empty text response, treat it as "connected"
+    // but surface a soft warning message instead of a hard failure.
+    if (message === 'AI Gateway returned an empty response.') {
+      res.json({
+        success: true,
+        response: 'AI connection successful (model returned empty text; verify your Gateway model config).',
+        warning: message,
+      });
+      return;
+    }
+
     res.status(500).json({ success: false, error: message });
   }
 });
