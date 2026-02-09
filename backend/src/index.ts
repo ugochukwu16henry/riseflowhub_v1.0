@@ -104,6 +104,8 @@ app.use(
     origin: (origin, cb) => {
       if (!origin) return cb(null, true); // same-origin or tools like Postman
       if (originSet.has(origin)) return cb(null, origin);
+      // Allow any Vercel deployment (*.vercel.app, *-*-*.vercel.app)
+      if (origin && (origin.endsWith('.vercel.app') || origin.includes('vercel.app'))) return cb(null, origin);
       return cb(null, false);
     },
     credentials: true,
