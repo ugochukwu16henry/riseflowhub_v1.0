@@ -6,7 +6,7 @@ const config: Config = {
     extend: {
       colors: {
         // RiseFlow Hub brand (from specs)
-        primary: '#0FA958',   // Emerald Green - growth, African potential
+        primary: '#0FA958',   // Emerald Green - growth, global potential
         secondary: '#0B3C5D', // Deep Tech Blue - trust, professionalism
         accent: '#F4B400',   // Warm Gold - opportunity, CTAs
         background: '#F7F9FB',

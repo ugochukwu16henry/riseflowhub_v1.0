@@ -109,7 +109,7 @@ export async function confirm(req: Request, res: Response): Promise<void> {
   const extra =
     updated.paymentType === 'platform_fee'
       ? ' You now have full access to all platform features.'
-      : ' Thank you for supporting our mission. Your contribution helps host the platform, empower founders, and grow startups in Africa.';
+      : ' Thank you for supporting our mission. Your contribution helps host the platform, empower founders, and grow startups worldwide.';
 
   await notify({
     userId: updated.userId,

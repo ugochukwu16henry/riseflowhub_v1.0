@@ -345,7 +345,7 @@ async function main() {
           {
             question: 'Who is this platform for?',
             answer:
-              'It is built for founders with ideas, early-stage startups that need structure, and investors looking for vetted opportunities across Africa and beyond.',
+              'It is built for founders with ideas, early-stage startups that need structure, and investors looking for vetted opportunities around the world.',
             category: 'general',
             order: 2,
             isActive: true,
@@ -417,7 +417,7 @@ async function main() {
           {
             question: 'What makes this platform different?',
             answer:
-              'RiseFlow Hub combines product development, business intelligence, AI mentorship, and investor access in one system, with a focus on African founders and practical execution.',
+              'RiseFlow Hub combines product development, business intelligence, AI mentorship, and investor access in one system, with a focus on founders and practical execution.',
             category: 'benefits',
             order: 1,
             isActive: true,
@@ -426,7 +426,7 @@ async function main() {
           {
             question: 'What is the long-term goal of the platform?',
             answer:
-              'Our vision is to build a global ecosystem where great ideas are not lost due to lack of structure, technology, or funding — starting from Africa and expanding outward.',
+              'Our vision is to build a global ecosystem where great ideas are not lost due to lack of structure, technology, or funding — bringing founders together from all regions.',
             category: 'vision',
             order: 1,
             isActive: true,

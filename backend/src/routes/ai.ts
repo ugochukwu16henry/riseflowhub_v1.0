@@ -154,8 +154,8 @@ router.post(
         EUR: Math.round(amountUsd * rates.EUR * 100) / 100,
         GBP: Math.round(amountUsd * rates.GBP * 100) / 100,
       },
-      regionAdjustment: req.body.region === 'Africa' ? 0.9 : 1,
-      summary: `Pricing for ${amountUsd} USD. Multi-currency support.`,
+      regionAdjustment: 1,
+      summary: `Pricing for ${amountUsd} USD. Multi-currency support across regions.`,
     });
   }
 );
@@ -285,7 +285,7 @@ router.post(
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    const { idea, region = 'Africa', industry = 'Technology' } = req.body;
+    const { idea, region = 'Global', industry = 'Technology' } = req.body;
     res.json({
       marketSize: { tam: 'Total addressable market growing 15%+ CAGR', sam: 'Serviceable addressable market', som: 'Realistic Year 1–3 capture' },
       trends: ['Digital transformation', 'Mobile-first', 'Localization and trust', 'Regulation and compliance'],

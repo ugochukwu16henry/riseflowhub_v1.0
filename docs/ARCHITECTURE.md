@@ -98,7 +98,7 @@ Middleware: `checkRole(['super_admin', 'hr_manager'])` — use after `authMiddle
 
 ## 3. PAYMENT ARCHITECTURE
 
-**Stripe or Paystack** (Africa-friendly).
+**Stripe or Paystack** (multi-region friendly).
 
 - **Talent marketplace fee ($7):** Talent → Stripe Checkout → Webhook → `marketplace_access` (feePaid) = true  
 - **Company platform fee ($20):** Company → Payment → `verified_company` (Hirer.verified) = true  

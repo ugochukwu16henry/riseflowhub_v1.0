@@ -277,7 +277,7 @@ export default function ContactPage() {
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-xl font-semibold text-text-dark">Where we work</h2>
           <p className="mt-2 text-lg text-gray-600">
-            Africa-focused. Working globally.
+            Global startup-focused. Working worldwide.
           </p>
         </div>
       </Section>

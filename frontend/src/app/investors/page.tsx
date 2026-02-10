@@ -5,7 +5,7 @@ import { Nav, Section, Footer } from '@/components/landing';
 export const metadata = {
   title: 'For Investors — RiseFlow Hub',
   description:
-    'Discover high-potential African startups before the market does. Structured, investment-ready deal flow with verified founders and transparent tracking.',
+    'Discover high-potential startups before the market does. Structured, investment-ready deal flow with verified founders and transparent tracking.',
 };
 
 const PROBLEM_POINTS = [
@@ -258,7 +258,7 @@ export default function InvestorsPage() {
             Join the Investor Network
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Get early access to vetted, structured African startups. No random pitches — only deal flow that’s built and tracked.
+            Get early access to vetted, structured startups. No random pitches — only deal flow that’s built and tracked.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

@@ -1,6 +1,6 @@
 # RiseFlow Hub
 
-**From Idea to Impact.** — A platform to help African entrepreneurs turn ideas into websites, apps, and businesses.
+**From Idea to Impact.** — A platform to help entrepreneurs around the world turn ideas into websites, apps, and businesses.
 
 ## Tech stack
 
