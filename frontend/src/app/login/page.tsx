@@ -66,7 +66,7 @@ export default function LoginPage() {
             ? err
             : 'Login failed. Check the browser console for details.';
       if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('502') || msg.includes('Bad Gateway') || msg.includes('NetworkError')) {
-        setError('Backend not responding. On Render free tier the app may be sleeping: open your backend /api/v1/health in a new tab, wait ~60s, then try again. Ensure NEXT_PUBLIC_API_URL (Vercel) and FRONTEND_URL (Render) are set and redeploy both.');
+        setError('Backend not responding. Set NEXT_PUBLIC_API_URL on Vercel to your Render backend URL (e.g. https://riseflowhub-v1-0-1.onrender.com) and FRONTEND_URL on Render to this site’s URL, then redeploy both. If you’re on a paid plan and it still fails, check the Render dashboard that the service is running and the URL is correct.');
       } else if (msg === 'Unauthorized' || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('401')) {
         setError('Invalid email or password. If this is a fresh deploy, seed the DB. Use the Super Admin from seed (e.g. test-super_admin@example.com / Password123).');
       } else if (msg.includes('CORS') || msg.includes('Access-Control')) {
@@ -98,7 +98,7 @@ export default function LoginPage() {
           {apiStatus === 'fail' && (
             <div className="rounded-lg bg-amber-50 text-amber-800 px-3 py-2 text-sm space-y-1">
               <p className="font-medium">API unreachable (404 or 502).</p>
-              <p>Set <strong>NEXT_PUBLIC_API_URL</strong> on Vercel to your Render URL, redeploy without cache. Set <strong>FRONTEND_URL</strong> on Render to this site’s URL. 502 = backend sleeping: open your backend <code className="bg-amber-100 px-1">/api/v1/health</code> in a new tab, wait ~60s, then try again.</p>
+              <p>Set <strong>NEXT_PUBLIC_API_URL</strong> on Vercel to your Render backend URL (e.g. <code className="bg-amber-100 px-1">https://riseflowhub-v1-0-1.onrender.com</code>). Set <strong>FRONTEND_URL</strong> on Render to this site’s URL. Redeploy both (Vercel: clear cache if needed). If the backend is paid and still unreachable, check the Render dashboard that the service is running.</p>
             </div>
           )}
           {error && (
