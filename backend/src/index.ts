@@ -92,7 +92,7 @@ import { sendNotificationEmail } from './services/emailService';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// CORS: allow FRONTEND_URL, localhost, and known Vercel URL so requests succeed even if FRONTEND_URL is unset on Render
+// CORS: allow FRONTEND_URL, localhost, known Vercel URLs, and production *.riseflowhub.app subdomains
 const frontendOrigin = (process.env.FRONTEND_URL || '').replace(/\/+$/, '');
 const allowedOrigins = [
   frontendOrigin,
@@ -100,6 +100,11 @@ const allowedOrigins = [
   'https://riseflowhub-v1-0.vercel.app',
   'https://riseflowhubv10-git-main-henry-ugochukwus-projects.vercel.app',
   'https://riseflowhubv10-rkdkgpfcp-henry-ugochukwus-projects.vercel.app',
+  // Production domains (Vercel + custom)
+  'https://riseflowhub.app',
+  'https://app.riseflowhub.app',
+  'https://investors.riseflowhub.app',
+  'https://admin.riseflowhub.app',
 ].filter((o) => o && o.length > 0);
 const originSet = new Set(allowedOrigins);
 
@@ -110,6 +115,10 @@ app.use(
       if (originSet.has(origin)) return cb(null, origin);
       // Allow any Vercel deployment (*.vercel.app, *-*-*.vercel.app)
       if (origin && (origin.endsWith('.vercel.app') || origin.includes('vercel.app'))) return cb(null, origin);
+      // Allow any RiseFlow custom subdomain (*.riseflowhub.app) plus the root domain
+      if (origin && (origin === 'https://riseflowhub.app' || origin.endsWith('.riseflowhub.app'))) {
+        return cb(null, origin);
+      }
       return cb(null, false);
     },
     credentials: true,

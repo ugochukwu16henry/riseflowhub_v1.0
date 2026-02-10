@@ -43,20 +43,51 @@ export default function LoginPage() {
       }
       setStoredToken(data.token);
       const role = data.user.role;
+
+      // Multi-subdomain redirects: send each role to the correct subdomain/dashboard.
+      // Env vars let Vercel projects share the same code but point to different hosts.
+      const MAIN_SITE = process.env.NEXT_PUBLIC_MAIN_SITE || '';
+      const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
+      const INVESTOR_URL = process.env.NEXT_PUBLIC_INVESTOR_URL || '';
+      const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL || '';
+
+      const getBase = (preferred: string) => {
+        if (preferred) return preferred.replace(/\/+$/, '');
+        if (typeof window !== 'undefined') return window.location.origin;
+        return '';
+      };
+
+      const redirectTo = (base: string, path: string) => {
+        const cleanBase = base || (typeof window !== 'undefined' ? window.location.origin : '');
+        const url = `${cleanBase.replace(/\/+$/, '')}${path}`;
+        if (typeof window !== 'undefined') {
+          window.location.href = url;
+        } else {
+          router.push(path);
+        }
+      };
+
       if (role === 'super_admin' || role === 'project_manager' || role === 'finance_admin' || role === 'cofounder') {
-        router.push('/dashboard/admin');
+        // Super admin & internal leadership → admin subdomain
+        redirectTo(getBase(ADMIN_URL || MAIN_SITE), '/dashboard/admin');
       } else if (role === 'investor') {
-        router.push('/dashboard/investor');
+        // Investors → investor portal
+        redirectTo(getBase(INVESTOR_URL || MAIN_SITE), '/dashboard/investor');
       } else if (role === 'talent') {
-        router.push('/dashboard/talent');
+        // Talent → app dashboard (same app project)
+        redirectTo(getBase(APP_URL || MAIN_SITE), '/dashboard/talent');
       } else if (role === 'hirer' || role === 'hiring_company') {
-        router.push('/dashboard/hirer');
+        // Hiring side → app dashboard
+        redirectTo(getBase(APP_URL || MAIN_SITE), '/dashboard/hirer');
       } else if (role === 'hr_manager') {
-        router.push('/dashboard/admin/hr');
+        // HR → admin area
+        redirectTo(getBase(ADMIN_URL || MAIN_SITE), '/dashboard/admin/hr');
       } else if (role === 'legal_team') {
-        router.push('/dashboard/legal');
+        // Legal → admin/legal area
+        redirectTo(getBase(ADMIN_URL || MAIN_SITE), '/dashboard/legal');
       } else {
-        router.push('/dashboard');
+        // Default: founders / general users → main app dashboard
+        redirectTo(getBase(APP_URL || MAIN_SITE), '/dashboard');
       }
     } catch (err) {
       const msg =
