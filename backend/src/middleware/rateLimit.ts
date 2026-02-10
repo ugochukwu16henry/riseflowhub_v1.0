@@ -10,9 +10,10 @@ export const apiRateLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req: Request) => getClientIp(req),
   skip: (req: Request) => {
-    // Skip health checks and webhooks
-    if (req.path.startsWith('/api/v1/health')) return true;
+    // Skip health checks, webhooks, and monitor alert (for UptimeRobot etc.)
+    if (req.path === '/health' || req.path.startsWith('/api/v1/health')) return true;
     if (req.path.startsWith('/api/v1/webhooks/')) return true;
+    if (req.path === '/api/v1/monitor/alert') return true;
     return false;
   },
   handler: async (req: Request, res: Response, _next: NextFunction, _options) => {

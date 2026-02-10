@@ -86,6 +86,8 @@ import { supportBannerRoutes } from './routes/supportBanner';
 import * as webhookController from './controllers/webhookController';
 import { isPaystackEnabled, getPaystackPublicKey } from './services/paystackService';
 import { isAiGatewayConfigured, runAI } from './services/aiGatewayService';
+import { startKeepAlive } from './services/keepAliveService';
+import { sendNotificationEmail } from './services/emailService';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -204,9 +206,46 @@ app.use('/api/images', imagesRoutes);
 app.use('/api/public-data', publicDataRoutes);
 app.use('/api/seo', seoRoutes);
 
+/** GET /health — lightweight health check for Render / UptimeRobot (no auth, no DB, target under 50ms) */
+app.get('/health', (_req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=10');
+  res.status(200).json({
+    status: 'ok',
+    service: 'RiseFlow Hub API',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get('/api/v1/health', (_, res) => {
   res.setHeader('Cache-Control', 'public, max-age=10');
-  res.json({ status: 'ok', service: 'riseflow-api' });
+  res.json({ status: 'ok', service: 'riseflow-api', timestamp: new Date().toISOString() });
+});
+
+/** POST /api/v1/monitor/alert — webhook for UptimeRobot etc.; sends email to ADMIN_EMAIL */
+app.post('/api/v1/monitor/alert', (req, res) => {
+  const secret = process.env.MONITOR_ALERT_SECRET;
+  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const adminEmail = process.env.ADMIN_EMAIL || '';
+  if (!adminEmail) {
+    res.status(503).json({ error: 'ADMIN_EMAIL not configured' });
+    return;
+  }
+  const message =
+    (req.body && (req.body.message ?? req.body.alertMessage ?? req.body.text)) ||
+    'Backend health check failed. Check your Render service and logs.';
+  sendNotificationEmail({
+    type: 'security_alert',
+    userEmail: adminEmail,
+    dynamicData: {
+      message: `🚨 Backend Down Alert — ${message}`,
+      severity: 'critical',
+      name: 'Admin',
+    },
+  }).catch((e) => console.error('[monitor/alert] Email failed:', e));
+  res.sendStatus(200);
 });
 
 /** GET /api/v1/paystack/status — public check if Paystack is connected (no auth) */
@@ -274,4 +313,5 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 app.listen(PORT, () => {
   console.log(`RiseFlow API running at http://localhost:${PORT}`);
+  startKeepAlive();
 });
