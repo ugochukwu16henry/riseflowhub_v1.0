@@ -328,8 +328,10 @@ function DashboardLayoutInner({
     (rawBrand === 'AfriLaunch Hub' || rawBrand === 'AfriLaunch' || rawBrand.toLowerCase() === 'afrilaunch hub' || rawBrand.toLowerCase() === 'afrilaunch')
       ? 'RiseFlow Hub'
       : rawBrand;
+  const envName =
+    typeof process !== 'undefined' ? process.env?.NEXT_PUBLIC_APP_NAME : undefined;
   const brandName =
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_APP_NAME)?.trim() ||
+    (typeof envName === 'string' && envName.trim() ? envName.trim() : null) ||
     normalizedBrand;
   const logoUrl = user.tenant?.logo || '/RiseFlowHub%20logo.png';
   const showSetupModal = needsSetupModal(user);
