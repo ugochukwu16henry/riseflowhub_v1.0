@@ -58,7 +58,14 @@ async function main() {
       planType: 'enterprise',
     },
   });
-  console.log('Seeded default tenant:', defaultTenant.orgName);
+  // Brand purge: if default tenant still has old name, update it
+  if (defaultTenant.orgName === 'AfriLaunch Hub' || defaultTenant.orgName === 'AfriLaunch') {
+    await prisma.tenant.update({
+      where: { id: defaultTenant.id },
+      data: { orgName: 'RiseFlow Hub' },
+    });
+  }
+  console.log('Seeded default tenant:', defaultTenant.orgName === 'AfriLaunch Hub' || defaultTenant.orgName === 'AfriLaunch' ? 'RiseFlow Hub' : defaultTenant.orgName);
 
   for (let i = 0; i < roles.length; i++) {
     const role = roles[i];
