@@ -321,7 +321,16 @@ function DashboardLayoutInner({
                     ? '/dashboard/legal'
                     : '/dashboard';
   const primaryColor = user.tenant?.primaryColor || '#0FA958';
-  const brandName = user.tenant?.orgName || 'RiseFlow Hub';
+  // Brand: env override > normalized tenant name (legacy "AfriLaunch Hub" → "RiseFlow Hub") > fallback
+  const rawBrand = user.tenant?.orgName || 'RiseFlow Hub';
+  const normalizedBrand =
+    typeof rawBrand === 'string' &&
+    (rawBrand === 'AfriLaunch Hub' || rawBrand === 'AfriLaunch' || rawBrand.toLowerCase() === 'afrilaunch hub' || rawBrand.toLowerCase() === 'afrilaunch')
+      ? 'RiseFlow Hub'
+      : rawBrand;
+  const brandName =
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_APP_NAME)?.trim() ||
+    normalizedBrand;
   const logoUrl = user.tenant?.logo || '/RiseFlowHub%20logo.png';
   const showSetupModal = needsSetupModal(user);
   const showWelcomePanel = isTeamMember(user.role) && user.welcomePanelSeen === false;

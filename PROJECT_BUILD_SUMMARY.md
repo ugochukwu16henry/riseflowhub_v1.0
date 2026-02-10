@@ -114,10 +114,10 @@
 
 ## App logo & favicon
 
-- **Assets:** `Afrilauch_logo.png` and `favicon.ico` copied from `TECH Platform/` into `frontend/public/`.
+- **Assets:** RiseFlow Hub logo and favicon in `frontend/public/` (e.g. `RiseFlowHub%20logo.png`, `favicon-for-app/favicon.ico`).
 - **Usage:**
-  - **Favicon:** Root layout metadata `icons: { icon: '/favicon.ico' }` (browser tab).
-  - **Logo:** Home page, Login, Register, Investor register, and dashboard sidebar (with tenant logo fallback: `/Afrilauch_logo.png` when tenant has no custom logo).
+  - **Favicon:** Root layout metadata `icons: { icon: '/favicon-for-app/favicon.ico' }` (browser tab).
+  - **Logo:** Home page, Login, Register, Investor register, and dashboard sidebar (with tenant logo fallback: `/RiseFlowHub%20logo.png` when tenant has no custom logo).
 
 ---
 

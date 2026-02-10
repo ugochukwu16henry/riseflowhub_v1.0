@@ -43,7 +43,7 @@ Logo path **`/RiseFlowHub%20logo.png`** is used consistently in:
 - **Contact, Investors, Partner, Hiring, Talent Marketplace:** page headers.
 - **Public file:** `frontend/public/RiseFlowHub logo.png` exists.
 
-No remaining references to `Afrilauch_logo.png` in frontend or backend code.
+Logo and favicon use RiseFlow Hub assets only (`RiseFlowHub%20logo.png`, `favicon-for-app/favicon.ico`).
 
 ---
 

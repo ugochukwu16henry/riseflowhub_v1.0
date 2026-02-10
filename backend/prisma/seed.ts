@@ -417,7 +417,7 @@ async function main() {
           {
             question: 'What makes this platform different?',
             answer:
-              'RiseFlow Hub combines product development, business intelligence, AI mentorship, and investor access in one system, with a focus on founders and practical execution.',
+              'RiseFlow Hub combines product development, business intelligence, AI mentorship, structured venture support, and investor access in one integrated platform designed for global founders.',
             category: 'benefits',
             order: 1,
             isActive: true,
@@ -437,6 +437,23 @@ async function main() {
       console.log('Seeded initial FAQ items');
     } else {
       console.log('FAQ items already present, skipping');
+    }
+    // Brand purge: update "What makes this platform different?" if it still has old brand
+    const benefitsFaqNewAnswer =
+      'RiseFlow Hub combines product development, business intelligence, AI mentorship, structured venture support, and investor access in one integrated platform designed for global founders.';
+    const updated = await prisma.faqItem.updateMany({
+      where: {
+        question: 'What makes this platform different?',
+        category: 'benefits',
+        OR: [
+          { answer: { contains: 'AfriLaunch Hub', mode: 'insensitive' } },
+          { answer: { contains: 'AfriLaunch', mode: 'insensitive' } },
+        ],
+      },
+      data: { answer: benefitsFaqNewAnswer },
+    });
+    if (updated.count > 0) {
+      console.log(`Brand purge: updated ${updated.count} FAQ answer(s) from AfriLaunch to RiseFlow Hub`);
     }
   } catch (e: unknown) {
     const code = (e as { code?: string })?.code;
