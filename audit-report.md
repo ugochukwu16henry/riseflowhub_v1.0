@@ -1,4 +1,4 @@
-# AfriLaunch Platform — E2E Audit Report
+# RiseFlow Hub Platform — E2E Audit Report
 
 **Audit date:** February 2025  
 **Scope:** Authentication, frontend–backend–DB flows, production readiness.
@@ -56,7 +56,7 @@
 
 | Item       | Detail                                                                                                                                                                                      |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Check**  | JWT created in auth controller; frontend stores token in `localStorage` (`afrilaunch_token`); dashboard uses `getStoredToken()` and `api.auth.me(token)`; role-based redirects after login. |
+| **Check**  | JWT created in auth controller; frontend stores token in `localStorage` (`riseflow_token`); dashboard uses `getStoredToken()` and `api.auth.me(token)`; role-based redirects after login. |
 | **Status** | No code defects found; ensure `JWT_SECRET` is set on Render.                                                                                                                                |
 
 

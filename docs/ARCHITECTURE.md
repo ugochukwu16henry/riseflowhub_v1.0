@@ -1,4 +1,4 @@
-# AfriLaunch — System Architecture (Hiring + Talent + Legal)
+# RiseFlow Hub — System Architecture (Hiring + Talent + Legal)
 
 PostgreSQL • Next.js • Node.js/Express • JWT • Stripe/Paystack • RBAC
 

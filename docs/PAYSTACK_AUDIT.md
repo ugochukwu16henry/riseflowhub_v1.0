@@ -124,11 +124,11 @@ If the frontend shows “Failed to fetch” or 502 when creating a session or ca
 
 | Check | What to do |
 |-------|------------|
-| API base URL | Vercel: `NEXT_PUBLIC_API_URL` = backend URL (e.g. `https://afrilauch-v1-0.onrender.com` or `https://riseflowhub-v1-0.onrender.com`). Redeploy frontend (clear cache). |
+| API base URL | Vercel: `NEXT_PUBLIC_API_URL` = backend URL (e.g. `https://riseflowhub-v1-0-1.onrender.com`). Redeploy frontend (clear cache). |
 | CORS | Backend allows `FRONTEND_URL` and `*.vercel.app`. Set `FRONTEND_URL` on Render to your Vercel URL. |
 | HTTPS | Frontend and backend both HTTPS in production. |
 | Backend route | Backend deployed and `/api/v1/setup-fee/create-session` exists (POST). |
-| Backend sleeping | Render free tier: first request after idle can 502; wait ~60s and retry or wake with `GET /api/v1/health`. |
+| Backend cold start | On some hosts the first request after a long idle can 502; wait ~60s and retry or wake with `GET /api/v1/health`. |
 
 ---
 
@@ -165,7 +165,7 @@ Frontend: Super Admin → Payments (or equivalent) should list all Paystack (and
 | Config + public key | GET /api/v1/setup-fee/config |
 | Admin payments | GET /api/v1/super-admin/payments |
 
-**Paystack Dashboard:** Set webhook URL to `https://<your-backend>/api/v1/webhooks/paystack` (e.g. `https://afrilauch-v1-0.onrender.com/api/v1/webhooks/paystack` or your RiseFlow backend URL).
+**Paystack Dashboard:** Set webhook URL to `https://<your-backend>/api/v1/webhooks/paystack` (e.g. `https://riseflowhub-v1-0-1.onrender.com/api/v1/webhooks/paystack`).
 
 ---
 

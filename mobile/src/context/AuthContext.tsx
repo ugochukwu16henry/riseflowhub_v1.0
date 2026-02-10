@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { api, type User } from '../api';
 
-const TOKEN_KEY = 'afrilaunch_token';
+const TOKEN_KEY = 'riseflow_token';
+const LEGACY_TOKEN_KEY = 'afrilaunch_token';
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +23,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loadStoredToken() {
     try {
-      const stored = await SecureStore.getItemAsync(TOKEN_KEY);
+      // Prefer new key; fall back to legacy key for existing installs, then migrate.
+      let stored = await SecureStore.getItemAsync(TOKEN_KEY);
+      if (!stored) {
+        stored = await SecureStore.getItemAsync(LEGACY_TOKEN_KEY);
+        if (stored) {
+          // Migrate legacy token to new key and remove old key
+          await SecureStore.setItemAsync(TOKEN_KEY, stored);
+          await SecureStore.deleteItemAsync(LEGACY_TOKEN_KEY);
+        }
+      }
+
       if (stored) {
         setToken(stored);
         const me = await api.auth.me(stored);
@@ -33,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(LEGACY_TOKEN_KEY);
       setToken(null);
       setUser(null);
     } finally {
@@ -47,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     const res = await api.auth.login({ email, password });
     await SecureStore.setItemAsync(TOKEN_KEY, res.token);
+    await SecureStore.deleteItemAsync(LEGACY_TOKEN_KEY);
     setToken(res.token);
     setUser(res.user);
   }
@@ -54,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     if (token) api.auth.logout(token).catch(() => {});
     await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await SecureStore.deleteItemAsync(LEGACY_TOKEN_KEY);
     setToken(null);
     setUser(null);
   }

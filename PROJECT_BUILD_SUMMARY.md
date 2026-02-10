@@ -1,4 +1,4 @@
-# AfriLaunch Hub — Project Build Summary
+# RiseFlow Hub — Project Build Summary
 
 **Living document:** Update this file as the project moves forward. It consolidates summaries of all major modules and features built so far.
 
@@ -21,7 +21,7 @@
 
 ## Overview
 
-- **Platform:** AfriLaunch Hub — From Idea to Impact (African entrepreneurs → websites, apps, businesses).
+- **Platform:** RiseFlow Hub — Global startup growth and venture enablement platform (entrepreneurs → real, scalable businesses).
 - **Stack:** Next.js (frontend), Node.js/Express (backend), PostgreSQL/Prisma, JWT auth, role-based access. React Native (Expo) mobile app reuses the same backend.
 - **Roles:** Super Admin, Client (startup owner), Developer, Designer, Marketer, Project Manager, Finance Admin, Investor.
 - **Docs:** `MODULE_1_SUMMARY.md`, `MODULE_2_AGREEMENTS_SUMMARY.md`, `MODULE_3_PROJECT_MANAGEMENT_SUMMARY.md`, `backend/API_DOCUMENTATION.md`, `DEVELOPMENT_PLAN.md`.

@@ -11,9 +11,9 @@ All **user-facing and runtime** references to the old app name have been updated
 
 | Area | Status | Changes made |
 |------|--------|--------------|
-| **Contact page** | ✅ | `hello@afrilaunchhub.com` → `hello@riseflowhub.com` |
+| **Contact page** | ✅ | Primary contact updated to `hello@riseflowhub.com` across footer, contact forms, and docs |
 | **Seed (DB)** | ✅ | Default tenant already `RiseFlow Hub`; welcome email subject and FAQ answer updated to RiseFlow Hub |
-| **Backend** | ✅ | Upload folder `afrilaunch/` → `riseflow/`; data export filename `afrilaunch-data-export.json` → `riseflow-data-export.json`; test-email script copy updated |
+| **Backend** | ✅ | Upload folder now `riseflow/`; data export filenames use `riseflow-...` pattern; test-email script copy updated to RiseFlow Hub |
 | **Health API** | ✅ | Already returning `service: 'riseflow-api'` (no change) |
 | **Frontend** | ✅ | Layout, Nav, Hero, login/register, dashboard, investors, contact, partner, hiring, talent-marketplace already use RiseFlow Hub and `/RiseFlowHub%20logo.png` |
 | **Token key** | ✅ | Frontend uses `riseflow_token` in `api.ts` |
@@ -22,11 +22,11 @@ All **user-facing and runtime** references to the old app name have been updated
 | **API_SETUP.md** | ✅ | Health response example updated to `riseflow-api` |
 | **Public .gitkeep** | ✅ | Comment updated for RiseFlow Hub assets |
 
-**Left as-is (intentional):**
+**Previously left as-is (now updated):**
 
-- **Mobile `AuthContext`** `TOKEN_KEY = 'afrilaunch_token'` — kept for backward compatibility so existing app users don’t lose session; can be switched to `riseflow_token` after a version bump if desired.
-- **Docs (README, DEPLOYMENT, RENDER_DEPLOY, etc.)** — still mention AfriLaunch in titles/descriptions; you can do a project-wide find/replace for documentation when convenient.
-- **Repository URLs** in root `package.json` (e.g. `Afrilauch_v1.0`) — unchanged; update when/if you rename the repo.
+- **Mobile `AuthContext`** now uses `TOKEN_KEY = 'riseflow_token'` with a legacy fallback that silently migrates any stored token from the pre-rebrand app to the new key, so existing mobile users keep their sessions without old-brand storage keys.
+- **Docs (README, DEPLOYMENT, RENDER_DEPLOY, etc.)** have been updated so titles/descriptions use RiseFlow Hub consistently.
+- **Repository docs and examples** now reflect RiseFlow Hub; only archived `TECH Platform` concept notes keep original naming for internal reference (not used by the app).
 
 ---
 
@@ -126,7 +126,7 @@ No temporary logging was added. For production you can:
 2. **Run builds and tests locally:**  
    Backend and frontend build; `tests/api/health.spec.ts`, `tests/api/smoke.spec.ts`, `frontend/e2e/auth.spec.ts`.
 3. **Optional:** Copy `frontend/public/favicon-for-app/favicon.ico` to `frontend/public/favicon.ico` and revert layout to `icons: { icon: '/favicon.ico' }` for strict `/favicon.ico` compatibility.
-4. **Optional:** Replace remaining "AfriLaunch" in documentation (README, DEPLOYMENT, RENDER_DEPLOY, MODULE_*, ANALYSIS_SUMMARY, etc.) and update repo URLs if you rename the repository.
+4. **Optional:** Update repository URLs and any remaining internal references from the original brand if you later rename the GitHub repo or archive old concept materials.
 5. **Production:** Set `NEXT_PUBLIC_APP_URL` (and `NEXT_PUBLIC_API_URL` / `FRONTEND_URL`) so OG image and API base URLs are correct.
 
 ---

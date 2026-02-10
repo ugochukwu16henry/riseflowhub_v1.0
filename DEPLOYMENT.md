@@ -71,7 +71,7 @@ pnpm run db:seed
 ### Database options
 
 - **Supabase:** Create a project → get `DATABASE_URL` (PostgreSQL connection string) → use in `backend/.env`
-- **Local PostgreSQL:** `DATABASE_URL="postgresql://user:pass@localhost:5432/afrilaunch"`
+- **Local PostgreSQL:** `DATABASE_URL="postgresql://user:pass@localhost:5432/riseflowhub"`
 - **Other:** Any Postgres host (Railway, Neon, Render, etc.)
 
 ---

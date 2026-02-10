@@ -14,7 +14,7 @@ Mobile app for **client project tracking**, **task notifications**, **agreement 
 ## Setup
 
 1. **Backend**  
-   Ensure the AfriLaunch API is running (e.g. `cd backend && pnpm dev`) and reachable from your machine/emulator.
+   Ensure the RiseFlow Hub API is running (e.g. `cd backend && pnpm dev`) and reachable from your machine/emulator.
 
 2. **API URL**  
    Create `mobile/.env`:

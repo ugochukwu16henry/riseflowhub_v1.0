@@ -1,4 +1,4 @@
-# AfriLaunch Hub — Supabase setup
+# RiseFlow Hub — Supabase setup
 
 Use **Supabase** as the PostgreSQL database for the Express backend. The app keeps your existing Node/Express API; Supabase is the database (and optionally Storage later).
 

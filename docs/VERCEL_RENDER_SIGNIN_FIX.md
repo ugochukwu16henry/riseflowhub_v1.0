@@ -6,16 +6,13 @@ Use this checklist so the **Vercel frontend** can talk to the **Render backend**
 
 ## 1. Use the correct Render backend URL
 
-Your backend URL is fixed by the **Render service name**:
+Your backend URL is fixed by the **Render service name**. For the current RiseFlow Hub backend, use your active Render URL, e.g.:
 
-- If you still use the **old** service: **`https://afrilauch-v1-0.onrender.com`**
-- If you created a **new** service named `riseflowhub-v1-0`: **`https://riseflowhub-v1-0.onrender.com`**
+- **`https://riseflowhub-v1-0-1.onrender.com`**
 
-Open that URL in a browser and add `/api/v1/health`:
+Open that URL in a browser and add `/api/v1/health`, e.g.:
 
-- **`https://afrilauch-v1-0.onrender.com/api/v1/health`**  
-  or  
-- **`https://riseflowhub-v1-0.onrender.com/api/v1/health`**
+- **`https://riseflowhub-v1-0-1.onrender.com/api/v1/health`**
 
 You should see JSON like `{"status":"ok",...}`.  
 If you get 502 or it hangs, the service may be **sleeping** (free tier). Wait 30–60 seconds and try again.
@@ -28,7 +25,7 @@ If you get 502 or it hangs, the service may be **sleeping** (free tier). Wait 30
 2. Add or edit:
    - **Name:** `NEXT_PUBLIC_API_URL`
    - **Value:** your Render URL **with no trailing slash**, e.g.  
-     `https://afrilauch-v1-0.onrender.com` or `https://riseflowhub-v1-0.onrender.com`
+     `https://riseflowhub-v1-0-1.onrender.com`
    - **Environments:** Production (and Preview if you need login there).
 3. Save.
 
@@ -70,7 +67,7 @@ If you still get 502 on the first request after a long idle time, wait ~60 s and
 
 | Where   | Variable                 | Set to                                                                 |
 |---------|--------------------------|------------------------------------------------------------------------|
-| Vercel  | `NEXT_PUBLIC_API_URL`    | `https://afrilauch-v1-0.onrender.com` or `https://riseflowhub-v1-0.onrender.com` (no slash) |
+| Vercel  | `NEXT_PUBLIC_API_URL`    | `https://riseflowhub-v1-0-1.onrender.com` (no slash) |
 | Render  | `FRONTEND_URL`           | Your Vercel site URL, e.g. `https://riseflowhub-v1-0.vercel.app` (no slash) |
 
 Then **redeploy Vercel with cleared cache** so the new API URL is used.
