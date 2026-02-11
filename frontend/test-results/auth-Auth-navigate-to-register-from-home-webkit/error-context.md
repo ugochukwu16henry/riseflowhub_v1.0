@@ -5,28 +5,28 @@
   - generic [ref=e2]:
     - banner [ref=e3]:
       - navigation [ref=e4]:
-        - link "RiseFlow Hub RiseFlow Hub" [ref=e5] [cursor=pointer]:
+        - link "RiseFlow Hub RiseFlow Hub" [ref=e5]:
           - /url: /
           - img "RiseFlow Hub" [ref=e6]
           - generic [ref=e7]: RiseFlow Hub
         - generic [ref=e8]:
-          - link "About" [ref=e9] [cursor=pointer]:
+          - link "About" [ref=e9]:
             - /url: /about
-          - link "Team" [ref=e10] [cursor=pointer]:
+          - link "Team" [ref=e10]:
             - /url: /team
-          - link "How it works" [ref=e11] [cursor=pointer]:
+          - link "How it works" [ref=e11]:
             - /url: /#solution
-          - link "Investors" [ref=e12] [cursor=pointer]:
+          - link "Investors" [ref=e12]:
             - /url: /investors
-          - link "Hiring" [ref=e13] [cursor=pointer]:
+          - link "Hiring" [ref=e13]:
             - /url: /hiring
-          - link "Partner With Us" [ref=e14] [cursor=pointer]:
+          - link "Partner With Us" [ref=e14]:
             - /url: /partner
-          - link "Features" [ref=e15] [cursor=pointer]:
+          - link "Features" [ref=e15]:
             - /url: /#features
-          - link "Login" [ref=e16] [cursor=pointer]:
+          - link "Login" [ref=e16]:
             - /url: /login
-          - link "Launch My Idea" [ref=e17] [cursor=pointer]:
+          - link "Launch My Idea" [ref=e17]:
             - /url: /register
     - main [ref=e20]:
       - generic [ref=e24]:
@@ -35,22 +35,22 @@
         - heading "Where Ideas Rise and Businesses Take Shape" [level=1] [ref=e27]
         - paragraph [ref=e28]: RiseFlow Hub is a structured startup growth platform that helps entrepreneurs turn ideas into real, scalable companies through technology, guidance, and investor connection.
         - generic [ref=e29]:
-          - link "Start Building Your Idea" [ref=e30] [cursor=pointer]:
+          - link "Start Building Your Idea" [ref=e30]:
             - /url: /submit-idea
-          - link "Explore Startups & Investors" [ref=e31] [cursor=pointer]:
+          - link "Explore Startups & Investors" [ref=e31]:
             - /url: /dashboard/investor/marketplace
         - paragraph [ref=e32]: Helping founders move from idea to launch with clarity, structure, and real support.
         - generic [ref=e34]:
           - generic [ref=e35]: "Share this page:"
-          - link "WhatsApp" [ref=e36] [cursor=pointer]:
+          - link "WhatsApp" [ref=e36]:
             - /url: https://wa.me/?text=RiseFlow%20Hub%20is%20a%20structured%20startup%20growth%20platform%20that%20helps%20entrepreneurs%20turn%20ideas%20into%20real%2C%20scalable%20companies%20through%20technology%2C%20guidance%2C%20and%20investor%20connection.%20http%3A%2F%2Flocalhost%3A3000%2F
-          - link "X" [ref=e37] [cursor=pointer]:
+          - link "X" [ref=e37]:
             - /url: https://twitter.com/intent/tweet?text=RiseFlow%20Hub%20is%20a%20structured%20startup%20growth%20platform%20that%20helps%20entrepreneurs%20turn%20ideas%20into%20real%2C%20scalable%20companies%20through%20technology%2C%20guidance%2C%20and%20investor%20connection.&url=http%3A%2F%2Flocalhost%3A3000%2F
-          - link "LinkedIn" [ref=e38] [cursor=pointer]:
+          - link "LinkedIn" [ref=e38]:
             - /url: https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A3000%2F
-          - link "Facebook" [ref=e39] [cursor=pointer]:
+          - link "Facebook" [ref=e39]:
             - /url: https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A3000%2F
-          - link "Telegram" [ref=e40] [cursor=pointer]:
+          - link "Telegram" [ref=e40]:
             - /url: https://t.me/share/url?url=http%3A%2F%2Flocalhost%3A3000%2F&text=RiseFlow%20Hub%20is%20a%20structured%20startup%20growth%20platform%20that%20helps%20entrepreneurs%20turn%20ideas%20into%20real%2C%20scalable%20companies%20through%20technology%2C%20guidance%2C%20and%20investor%20connection.
       - generic [ref=e42]:
         - generic [ref=e43]:
@@ -115,7 +115,7 @@
             - generic [ref=e124]: "5"
             - heading "Meet Investors" [level=3] [ref=e125]
             - paragraph [ref=e126]: Access our investor network and startup marketplace.
-        - link "Start with step 1" [ref=e128] [cursor=pointer]:
+        - link "Start with step 1" [ref=e128]:
           - /url: /register
       - generic [ref=e131]:
         - generic [ref=e132]:
@@ -138,7 +138,7 @@
         - generic [ref=e159]:
           - heading "Discover High-Potential Startups" [level=2] [ref=e160]
           - paragraph [ref=e161]: Investors can browse vetted startups, view traction and milestones, and fund innovation — all in one marketplace.
-          - link "Explore Marketplace" [ref=e162] [cursor=pointer]:
+          - link "Explore Marketplace" [ref=e162]:
             - /url: /dashboard/investor/marketplace
         - list [ref=e164]:
           - listitem [ref=e165]:
@@ -181,45 +181,45 @@
           - paragraph [ref=e225]: Frequently asked questions
           - heading "Understand exactly how RiseFlow Hub works." [level=2] [ref=e226]
           - paragraph [ref=e227]: We built RiseFlow Hub to feel like a startup studio and business school in one. Here are a few common questions from founders and investors.
-          - link "View full FAQ →" [ref=e228] [cursor=pointer]:
+          - link "View full FAQ →" [ref=e228]:
             - /url: /faq
         - paragraph [ref=e230]: More questions answered in the full FAQ.
       - generic [ref=e233]:
         - heading "Have an Idea? Let's Build It." [level=2] [ref=e234]
         - paragraph [ref=e235]: Start your project or book a consultation — we're here to help you launch.
         - generic [ref=e236]:
-          - link "Start My Project" [ref=e237] [cursor=pointer]:
+          - link "Start My Project" [ref=e237]:
             - /url: /register
-          - link "Book a Consultation" [ref=e238] [cursor=pointer]:
+          - link "Book a Consultation" [ref=e238]:
             - /url: /book-consultation
       - generic [ref=e240]:
         - generic [ref=e241]:
-          - link "RiseFlow Hub RiseFlow Hub" [ref=e242] [cursor=pointer]:
+          - link "RiseFlow Hub RiseFlow Hub" [ref=e242]:
             - /url: /
             - img "RiseFlow Hub" [ref=e243]
             - generic [ref=e244]: RiseFlow Hub
           - navigation [ref=e245]:
-            - link "About" [ref=e246] [cursor=pointer]:
+            - link "About" [ref=e246]:
               - /url: /about
-            - link "Team" [ref=e247] [cursor=pointer]:
+            - link "Team" [ref=e247]:
               - /url: /team
-            - link "Submit idea" [ref=e248] [cursor=pointer]:
+            - link "Submit idea" [ref=e248]:
               - /url: /submit-idea
-            - link "Book consultation" [ref=e249] [cursor=pointer]:
+            - link "Book consultation" [ref=e249]:
               - /url: /book-consultation
-            - link "Investors" [ref=e250] [cursor=pointer]:
+            - link "Investors" [ref=e250]:
               - /url: /investors
-            - link "Startups" [ref=e251] [cursor=pointer]:
+            - link "Startups" [ref=e251]:
               - /url: /startups
-            - link "Pricing" [ref=e252] [cursor=pointer]:
+            - link "Pricing" [ref=e252]:
               - /url: /pricing
-            - link "Contact" [ref=e253] [cursor=pointer]:
+            - link "Contact" [ref=e253]:
               - /url: /contact
-            - link "Terms" [ref=e254] [cursor=pointer]:
+            - link "Terms" [ref=e254]:
               - /url: /terms
-            - link "Privacy" [ref=e255] [cursor=pointer]:
+            - link "Privacy" [ref=e255]:
               - /url: /privacy
-            - link "User Agreement" [ref=e256] [cursor=pointer]:
+            - link "User Agreement" [ref=e256]:
               - /url: /user-agreement
         - paragraph [ref=e257]: © 2026 RiseFlow Hub. Build. Grow. Launch.
   - alert [ref=e258]
