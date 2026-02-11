@@ -13,7 +13,7 @@ test.describe('Admin Dashboard', () => {
     await expect(page.getByRole('link', { name: /Dashboard/i }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Users/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Agreements/i })).toBeVisible();
+    await expect(page.locator('a[href="/dashboard/admin/agreements"]')).toBeVisible();
     await expect(page.getByRole('link', { name: /Reports/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Settings/i })).toBeVisible();
   });
@@ -32,20 +32,20 @@ test.describe('Admin Dashboard', () => {
   });
 
   test('navigate to Agreements page', async ({ page }) => {
-    await page.getByRole('link', { name: /Agreements/i }).click();
+    await page.locator('a[href="/dashboard/admin/agreements"]').click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/agreements/);
     await expect(page.getByText(/Agreement Management|Agreement management/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /Add New Agreement/i })).toBeVisible();
   });
 
   test('Agreements page has table and filters', async ({ page }) => {
-    await page.getByRole('link', { name: /Agreements/i }).click();
+    await page.locator('a[href="/dashboard/admin/agreements"]').click();
     await expect(page.getByPlaceholder(/Search by user or agreement/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /Assign Agreement/i })).toBeVisible();
   });
 
   test('Add New Agreement modal opens and closes', async ({ page }) => {
-    await page.getByRole('link', { name: /Agreements/i }).click();
+    await page.locator('a[href="/dashboard/admin/agreements"]').click();
     await page.getByRole('button', { name: /Add New Agreement/i }).click();
     await expect(page.getByRole('heading', { name: /Add New Agreement/i })).toBeVisible();
     await expect(page.getByLabel(/Title/i)).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('Admin Dashboard', () => {
   });
 
   test('Assign Agreement modal opens', async ({ page }) => {
-    await page.getByRole('link', { name: /Agreements/i }).click();
+    await page.locator('a[href="/dashboard/admin/agreements"]').click();
     await page.getByRole('button', { name: /Assign Agreement/i }).click();
     await expect(page.getByRole('heading', { name: /Assign Agreement/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Cancel/i })).toBeVisible();
