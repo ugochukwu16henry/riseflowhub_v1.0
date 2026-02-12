@@ -1,0 +1,12 @@
+# RiseFlow Hub Backend — Railway config
+# Set this service's Root Directory to "backend" in the Railway dashboard.
+# See docs/RAILWAY_DEPLOY.md for full setup.
+
+[build]
+builder = "nixpacks"
+buildCommand = "pnpm install && pnpm run build:deploy"
+
+[deploy]
+startCommand = "pnpm start"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
