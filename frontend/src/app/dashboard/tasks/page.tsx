@@ -65,7 +65,11 @@ export default function TasksPage() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {columns.map((col) => (
-          <div key={col} className="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+          <div
+            key={col}
+            className="rounded-xl border border-gray-200 bg-gray-50/50 p-4"
+            data-testid={col === 'InProgress' ? 'kanban-column-inprogress' : `kanban-column-${col.toLowerCase()}`}
+          >
             <h2 className="font-semibold text-secondary mb-3 capitalize">
               {col === 'InProgress' ? 'In Progress' : col}
             </h2>

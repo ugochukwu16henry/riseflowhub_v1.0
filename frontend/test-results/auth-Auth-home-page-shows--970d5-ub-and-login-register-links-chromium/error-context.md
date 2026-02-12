@@ -1,0 +1,212 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - navigation [ref=e4]:
+      - link "RiseFlow Hub RiseFlow Hub" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img "RiseFlow Hub" [ref=e6]
+        - generic [ref=e7]: RiseFlow Hub
+      - generic [ref=e8]:
+        - link "About" [ref=e9] [cursor=pointer]:
+          - /url: /about
+        - link "Team" [ref=e10] [cursor=pointer]:
+          - /url: /team
+        - link "How it works" [ref=e11] [cursor=pointer]:
+          - /url: /#solution
+        - link "Investors" [ref=e12] [cursor=pointer]:
+          - /url: /investors
+        - link "Hiring" [ref=e13] [cursor=pointer]:
+          - /url: /hiring
+        - link "Partner With Us" [ref=e14] [cursor=pointer]:
+          - /url: /partner
+        - link "Features" [ref=e15] [cursor=pointer]:
+          - /url: /#features
+        - link "Login" [ref=e16] [cursor=pointer]:
+          - /url: /login
+        - link "Launch My Idea" [ref=e17] [cursor=pointer]:
+          - /url: /register
+  - main [ref=e20]:
+    - generic [ref=e24]:
+      - img "RiseFlow Hub" [ref=e25]
+      - paragraph [ref=e26]: Build. Grow. Launch.
+      - heading "Where Ideas Rise and Businesses Take Shape" [level=1] [ref=e27]
+      - paragraph [ref=e28]: RiseFlow Hub is a structured startup growth platform that helps entrepreneurs turn ideas into real, scalable companies through technology, guidance, and investor connection.
+      - generic [ref=e29]:
+        - link "Start Building Your Idea" [ref=e30] [cursor=pointer]:
+          - /url: /submit-idea
+        - link "Explore Startups & Investors" [ref=e31] [cursor=pointer]:
+          - /url: /dashboard/investor/marketplace
+      - paragraph [ref=e32]: Helping founders move from idea to launch with clarity, structure, and real support.
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - heading "Great Ideas Shouldn't Die in Notebooks" [level=2] [ref=e36]
+        - paragraph [ref=e37]: Many entrepreneurs have the vision — but lack the tech, structure, and visibility to turn it into a real business.
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - img [ref=e41]
+          - heading "No tech team" [level=3] [ref=e43]
+          - paragraph [ref=e44]: Ideas stay on paper without the engineering to build products.
+        - generic [ref=e45]:
+          - img [ref=e47]
+          - heading "No guidance" [level=3] [ref=e49]
+          - paragraph [ref=e50]: Missing structure, business planning, and clear milestones.
+        - generic [ref=e51]:
+          - img [ref=e53]
+          - heading "No access to investors" [level=3] [ref=e55]
+          - paragraph [ref=e56]: Great ideas never get in front of the right capital.
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - heading "A Startup Launch Ecosystem" [level=2] [ref=e60]
+        - paragraph [ref=e61]: Not just an agency — we combine build, structure, and growth in one place.
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - img [ref=e65]
+          - heading "Build" [level=3] [ref=e67]
+          - paragraph [ref=e68]: We turn ideas into websites, software, and apps.
+        - generic [ref=e69]:
+          - img [ref=e71]
+          - heading "Structure" [level=3] [ref=e73]
+          - paragraph [ref=e74]: Business consulting, AI evaluation, and startup planning.
+        - generic [ref=e75]:
+          - img [ref=e77]
+          - heading "Grow" [level=3] [ref=e79]
+          - paragraph [ref=e80]: Marketing systems and investor visibility.
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - heading "How It Works" [level=2] [ref=e84]
+        - paragraph [ref=e85]: From idea to launch in five clear steps.
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]: "1"
+          - heading "Submit Your Idea" [level=3] [ref=e89]
+          - paragraph [ref=e90]: Share your vision and goals in a simple form.
+          - img [ref=e92]
+        - generic [ref=e94]:
+          - generic [ref=e95]: "2"
+          - heading "Get AI Evaluation & Proposal" [level=3] [ref=e96]
+          - paragraph [ref=e97]: Receive feasibility scoring, scope, and a tailored proposal.
+          - img [ref=e99]
+        - generic [ref=e101]:
+          - generic [ref=e102]: "3"
+          - heading "We Build Your Product" [level=3] [ref=e103]
+          - paragraph [ref=e104]: Our team builds your website, app, or software.
+          - img [ref=e106]
+        - generic [ref=e108]:
+          - generic [ref=e109]: "4"
+          - heading "Launch & Market" [level=3] [ref=e110]
+          - paragraph [ref=e111]: Go live with marketing systems and analytics.
+          - img [ref=e113]
+        - generic [ref=e115]:
+          - generic [ref=e116]: "5"
+          - heading "Meet Investors" [level=3] [ref=e117]
+          - paragraph [ref=e118]: Access our investor network and startup marketplace.
+      - link "Start with step 1" [ref=e120] [cursor=pointer]:
+        - /url: /register
+    - generic [ref=e123]:
+      - generic [ref=e124]:
+        - heading "AI-Powered Startup Intelligence" [level=2] [ref=e125]
+        - paragraph [ref=e126]: Our platform uses AI to evaluate your idea, generate proposals, suggest pricing, and surface growth insights — so you make data-backed decisions from day one.
+      - list [ref=e127]:
+        - listitem [ref=e128]:
+          - img [ref=e130]
+          - generic [ref=e132]: Idea feasibility scoring
+        - listitem [ref=e133]:
+          - img [ref=e135]
+          - generic [ref=e137]: Auto proposals & scope
+        - listitem [ref=e138]:
+          - img [ref=e140]
+          - generic [ref=e142]: Smart pricing & multi-currency
+        - listitem [ref=e143]:
+          - img [ref=e145]
+          - generic [ref=e147]: Growth insights & marketing suggestions
+    - generic [ref=e150]:
+      - generic [ref=e151]:
+        - heading "Discover High-Potential Startups" [level=2] [ref=e152]
+        - paragraph [ref=e153]: Investors can browse vetted startups, view traction and milestones, and fund innovation — all in one marketplace.
+        - link "Explore Marketplace" [ref=e154] [cursor=pointer]:
+          - /url: /dashboard/investor/marketplace
+      - list [ref=e156]:
+        - listitem [ref=e157]:
+          - img [ref=e159]
+          - text: Vetted startup profiles
+        - listitem [ref=e161]:
+          - img [ref=e163]
+          - text: Traction & milestones
+        - listitem [ref=e165]:
+          - img [ref=e167]
+          - text: Express interest & commit
+    - generic [ref=e170]:
+      - generic [ref=e171]:
+        - heading "Platform Features" [level=2] [ref=e172]
+        - paragraph [ref=e173]: Everything you need to build, track, and scale — in one place.
+      - generic [ref=e174]:
+        - generic [ref=e175]:
+          - img [ref=e177]
+          - generic [ref=e179]: Client dashboards
+        - generic [ref=e180]:
+          - img [ref=e182]
+          - generic [ref=e184]: Project tracking
+        - generic [ref=e185]:
+          - img [ref=e187]
+          - generic [ref=e189]: Milestones & tasks
+        - generic [ref=e190]:
+          - img [ref=e192]
+          - generic [ref=e194]: Repo links
+        - generic [ref=e195]:
+          - img [ref=e197]
+          - generic [ref=e199]: Marketing analytics
+        - generic [ref=e200]:
+          - img [ref=e202]
+          - generic [ref=e204]: Secure agreements
+    - heading "How Our Pricing Works" [level=2] [ref=e208]
+    - blockquote [ref=e211]:
+      - paragraph [ref=e212]: We are building the infrastructure that ensures great ideas don't die — they scale.
+    - generic [ref=e215]:
+      - generic [ref=e216]:
+        - paragraph [ref=e217]: Frequently asked questions
+        - heading "Understand exactly how RiseFlow Hub works." [level=2] [ref=e218]
+        - paragraph [ref=e219]: We built RiseFlow Hub to feel like a startup studio and business school in one. Here are a few common questions from founders and investors.
+        - link "View full FAQ →" [ref=e220] [cursor=pointer]:
+          - /url: /faq
+      - paragraph [ref=e222]: More questions answered in the full FAQ.
+    - generic [ref=e225]:
+      - heading "Have an Idea? Let's Build It." [level=2] [ref=e226]
+      - paragraph [ref=e227]: Start your project or book a consultation — we're here to help you launch.
+      - generic [ref=e228]:
+        - link "Start My Project" [ref=e229] [cursor=pointer]:
+          - /url: /register
+        - link "Book a Consultation" [ref=e230] [cursor=pointer]:
+          - /url: /book-consultation
+    - generic [ref=e232]:
+      - generic [ref=e233]:
+        - link "RiseFlow Hub RiseFlow Hub" [ref=e234] [cursor=pointer]:
+          - /url: /
+          - img "RiseFlow Hub" [ref=e235]
+          - generic [ref=e236]: RiseFlow Hub
+        - navigation [ref=e237]:
+          - link "About" [ref=e238] [cursor=pointer]:
+            - /url: /about
+          - link "Team" [ref=e239] [cursor=pointer]:
+            - /url: /team
+          - link "Submit idea" [ref=e240] [cursor=pointer]:
+            - /url: /submit-idea
+          - link "Book consultation" [ref=e241] [cursor=pointer]:
+            - /url: /book-consultation
+          - link "Investors" [ref=e242] [cursor=pointer]:
+            - /url: /investors
+          - link "Startups" [ref=e243] [cursor=pointer]:
+            - /url: /startups
+          - link "Pricing" [ref=e244] [cursor=pointer]:
+            - /url: /pricing
+          - link "Contact" [ref=e245] [cursor=pointer]:
+            - /url: /contact
+          - link "Terms" [ref=e246] [cursor=pointer]:
+            - /url: /terms
+          - link "Privacy" [ref=e247] [cursor=pointer]:
+            - /url: /privacy
+          - link "User Agreement" [ref=e248] [cursor=pointer]:
+            - /url: /user-agreement
+      - paragraph [ref=e249]: © 2026 RiseFlow Hub. Build. Grow. Launch.
+```

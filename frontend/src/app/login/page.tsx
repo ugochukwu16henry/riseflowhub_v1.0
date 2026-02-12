@@ -133,7 +133,7 @@ export default function LoginPage() {
             </div>
           )}
           {error && (
-            <div className="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>
+            <div className="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm" data-testid="auth-error">{error}</div>
           )}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">

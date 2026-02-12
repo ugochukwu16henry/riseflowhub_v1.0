@@ -2,8 +2,9 @@
 
 ```yaml
 - generic [active] [ref=e1]:
-  - generic [ref=e3]:
-    - heading "404" [level=1] [ref=e4]
-    - heading "This page could not be found." [level=2] [ref=e6]
-  - alert [ref=e7]
+  - generic [ref=e2]:
+    - complementary [ref=e3]
+    - main [ref=e4]:
+      - paragraph [ref=e5]: Loading...
+  - alert [ref=e6]
 ```
