@@ -1,0 +1,55 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - link "RiseFlow Hub RiseFlow Hub" [ref=e5] [cursor=pointer]:
+        - /url: /dashboard
+        - img "RiseFlow Hub" [ref=e6]
+        - generic [ref=e7]: RiseFlow Hub
+      - navigation [ref=e8]:
+        - link "Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard
+        - link "AI Mentor" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard/mentor
+        - link "Project" [active] [ref=e14] [cursor=pointer]:
+          - /url: /dashboard/project
+        - link "Publish to Marketplace" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard/startup
+        - link "Business OS (beta)" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/business
+        - link "Marketing" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard/marketing
+        - link "Tasks" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/tasks
+        - link "Files" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard/files
+        - link "Messages" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard/messages
+        - link "Payments" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/payments
+        - link "Reports" [ref=e30] [cursor=pointer]:
+          - /url: /dashboard/reports
+        - link "Community" [ref=e32] [cursor=pointer]:
+          - /url: /dashboard/community
+      - generic [ref=e33]:
+        - paragraph [ref=e34]: test-client@example.com
+        - paragraph [ref=e35]: client
+        - button "Log out" [ref=e36] [cursor=pointer]
+    - generic [ref=e37]:
+      - banner [ref=e38]:
+        - button "Notifications" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+          - generic [ref=e43]: "2"
+      - main [ref=e44]:
+        - generic [ref=e45]:
+          - heading "Welcome back" [level=1] [ref=e46]
+          - paragraph [ref=e47]: Here’s an overview of your project and next steps.
+          - button "Platform Cost Structure" [ref=e49] [cursor=pointer]:
+            - generic [ref=e50]: Platform Cost Structure
+            - img [ref=e51]
+          - paragraph [ref=e53]: Loading...
+    - button "Help and tutorials" [ref=e54] [cursor=pointer]: "?"
+  - alert [ref=e55]
+```
