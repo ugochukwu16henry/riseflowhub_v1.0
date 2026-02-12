@@ -73,13 +73,22 @@ Use this order when you see the Railway create menu (e.g. after **New Project** 
 ### Step 5 — Database migrations and seed
 
 - **Migrations:** If your backend build uses `pnpm run build:deploy`, migrations run during build. Otherwise run them once (e.g. Railway **Shell** or **Run** for the backend: `pnpm run build:deploy` or `npx prisma migrate deploy`).
-- **Seed (once):** In the backend service, open **Settings** → run a one-off command, or use Railway CLI from your machine:
-  ```bash
-  cd backend
-  railway link   # select this project and backend service
-  railway run pnpm run db:seed
-  ```
-  That creates the default tenant and super-admin user (e.g. `test-super_admin@example.com` / `Password123`).
+- **Seed (once):** The backend uses `DATABASE_URL` with Railway’s **private** host (`postgres.railway.internal`), which is only reachable from inside Railway. When you run `railway run pnpm run db:seed` **from your PC**, that same private URL is used, so the connection fails. Use the **public** URL instead:
+  1. In Railway → open your **PostgreSQL** service → **Variables** (or **Connect**). If you don’t see it, enable **TCP Proxy** under **Settings** → **Networking** for the Postgres service.
+  2. Copy the value of **`DATABASE_PUBLIC_URL`** (the one that uses a public host like `*.proxy.rlwy.net`, not `postgres.railway.internal`).
+  3. From your machine, in the backend folder, run the seed with that URL:
+     ```bash
+     cd backend
+     set DATABASE_URL=<paste DATABASE_PUBLIC_URL here>
+     pnpm run db:seed
+     ```
+     On **PowerShell** use:
+     ```powershell
+     $env:DATABASE_URL="postgresql://user:pass@host:port/railway"
+     pnpm run db:seed
+     ```
+     (Paste your real `DATABASE_PUBLIC_URL` in the quotes.)
+  4. That creates the default tenant and super-admin user (e.g. `test-super_admin@example.com` / `Password123`).
 
 ---
 
@@ -112,6 +121,75 @@ Notes:
 - **Root Directory** is required for the monorepo: without it, Railway builds from the repo root and won’t find `backend/` or `frontend/` correctly. Set it first, then build/start commands apply to that folder.
 - If you set **Railway Config File** to `railway.toml`, the build/start commands from `backend/railway.toml` or `frontend/railway.toml` are used (and can override the dashboard). With Root Directory set, the path is relative to that root, so `railway.toml` is correct.
 - Use **pnpm**: the repo uses pnpm. If the default builder runs `npm run build`, override with the **Custom Build Command** above so it runs `pnpm install && pnpm run build:deploy` (backend) or `pnpm install && pnpm run build` (frontend).
+
+---
+
+## Backend variables checklist (Railway)
+
+Set these in the **backend** service → **Variables**.
+
+**Required (app won't work without these)**
+
+| Variable | How to set | Example |
+|----------|------------|---------|
+| `DATABASE_URL` | Variable Reference → PostgreSQL → `DATABASE_URL` | (from Postgres) |
+| `FRONTEND_URL` | Plain variable | `https://your-frontend.up.railway.app` (no trailing slash) |
+| `JWT_SECRET` | Plain variable | Long random string (32+ chars) |
+
+`PORT` is set by Railway automatically.
+
+**Required for file uploads (Railway bucket)**
+
+| Variable | Example |
+|----------|---------|
+| `BUCKET` | `riseflowhubbucket-fxmrxvg` |
+| `REGION` | `auto` |
+| `ENDPOINT` | `https://storage.railway.app` |
+| `ACCESS_KEY_ID` | (from bucket Credentials) |
+| `SECRET_ACCESS_KEY` | (from bucket Credentials) |
+
+**Optional (add when you use the feature)**
+
+- **Payments:** `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` — or `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- **Email:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
+- **Keep-alive / alerts:** `SELF_URL` (backend public URL), `ADMIN_EMAIL`, `MONITOR_ALERT_SECRET`
+- **Cloudinary:** only if you don't use Railway bucket — `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- **Other:** `JWT_EXPIRES_IN`, `RECAPTCHA_SECRET_KEY`, `INTERNAL_API_KEY`, `PLATFORM_NAME`, `FOUNDER_EMAIL_PRIMARY`, `FOUNDER_EMAIL_SECONDARY`, Hugging Face / AI vars — add as needed.
+
+---
+
+## Frontend variables checklist (Railway)
+
+Set these in the **frontend** service → **Variables**. All must be **plain variables** (no references); Next.js bakes `NEXT_PUBLIC_*` into the build.
+
+**Required**
+
+| Variable | Example | Notes |
+|----------|---------|--------|
+| `NEXT_PUBLIC_API_URL` | `https://your-backend.up.railway.app` | Backend public URL — **no trailing slash** |
+| `NEXT_PUBLIC_APP_URL` | `https://your-frontend.up.railway.app` | Frontend (this app) URL; used for links and redirects |
+| `NEXT_PUBLIC_MAIN_SITE` | Same as `NEXT_PUBLIC_APP_URL` | Main site URL (can match app URL if single domain) |
+| `NEXT_PUBLIC_APP_NAME` | `RiseFlow Hub` | Brand name in UI |
+
+**Recommended (same app on one domain)**
+
+| Variable | Example |
+|----------|---------|
+| `NEXT_PUBLIC_INVESTOR_URL` | Same as `NEXT_PUBLIC_APP_URL` |
+| `NEXT_PUBLIC_ADMIN_URL` | Same as `NEXT_PUBLIC_APP_URL` |
+
+**Optional**
+
+| Variable | Use |
+|----------|-----|
+| `NEXT_PUBLIC_BRAND`, `NEXT_PUBLIC_PLATFORM` | Same as app name if you want them set |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics |
+| `NEXT_PUBLIC_FB_PIXEL_ID` | Facebook Pixel |
+| `NEXT_PUBLIC_LINKEDIN_INSIGHT_ID` | LinkedIn Insight |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console verification |
+| `NEXT_PUBLIC_SMTP_HOST` | Shown in admin system-health (cosmetic) |
+
+**Order of setup:** Generate the frontend domain first, then set `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_MAIN_SITE`, etc. to that URL. Set `NEXT_PUBLIC_API_URL` to your **backend** domain.
 
 ---
 
