@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+/**
+ * Admin dashboard tests use storageState (super_admin) from auth.setup.ts.
+ * No UI login in each test — run with project admin-chromium, admin-firefox, or admin-webkit.
+ */
 test.describe('Admin Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.waitForLoadState('domcontentloaded');
-    await page.getByLabel(/Email/i).fill('test-super_admin@example.com');
-    await page.getByLabel(/Password/i).fill('Password123');
-    await page.getByRole('button', { name: /Sign in/i }).click();
+    await page.goto('/dashboard/admin');
     await expect(page).toHaveURL(/\/dashboard\/admin/);
     await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
   });
