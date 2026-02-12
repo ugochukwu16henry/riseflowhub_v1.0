@@ -9,6 +9,7 @@ import * as fs from 'fs';
  */
 export const SUPERADMIN_STORAGE = path.join(process.cwd(), 'playwright', '.auth', 'superadmin.json');
 const AUTH_DIR = path.dirname(SUPERADMIN_STORAGE);
+const BACKEND_HEALTH = 'http://localhost:4000/api/v1/health';
 
 function ensureAuthDir() {
   if (!fs.existsSync(AUTH_DIR)) {
@@ -16,8 +17,21 @@ function ensureAuthDir() {
   }
 }
 
-setup.beforeAll(() => {
+async function ensureBackendUp(): Promise<void> {
+  try {
+    const res = await fetch(BACKEND_HEALTH);
+    if (!res.ok) throw new Error(`Backend health returned ${res.status}`);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(
+      `Backend not running at http://localhost:4000. Start it (e.g. cd backend && pnpm run dev) and ensure DB is seeded (pnpm run db:seed). ${msg}`
+    );
+  }
+}
+
+setup.beforeAll(async () => {
   ensureAuthDir();
+  await ensureBackendUp();
 });
 
 setup('authenticate as super_admin', async ({ page }) => {
