@@ -10,7 +10,7 @@ test.describe('Agreements flow', () => {
     await expect(page).toHaveURL(/\/dashboard\/admin/);
     await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
 
-    await page.locator('a[href="/dashboard/admin/agreements"]').click();
+    await page.getByRole('link', { name: 'Agreements', exact: true }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/agreements/);
     await page.getByRole('button', { name: /Add New Agreement/i }).click();
     await page.getByLabel(/Title/i).fill(`E2E Agreement ${Date.now()}`);

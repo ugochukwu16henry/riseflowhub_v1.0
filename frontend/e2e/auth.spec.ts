@@ -6,7 +6,7 @@ test.describe('Auth', () => {
     await page.waitForLoadState('domcontentloaded');
     await expect(page.getByText(/RiseFlow Hub/i).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Login/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Launch My Idea|Register|Start Your Project|Start Building/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Launch My Idea|Register|Start Your Project|Start Building/i }).first()).toBeVisible();
   });
 
   test('navigate to login from home', async ({ page }) => {
