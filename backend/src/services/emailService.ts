@@ -11,17 +11,19 @@ const RETRY_DELAY_MS = 1000;
 let transporter: Transporter | null = null;
 
 const isTestEnv = process.env.NODE_ENV === 'test' || process.env.DISABLE_SMTP === 'true';
+const hasSmtpConfig = typeof process.env.SMTP_HOST === 'string' && process.env.SMTP_HOST.trim() !== '';
 
 function getTransport(): Transporter {
   if (transporter) return transporter;
-  if (isTestEnv) {
+  // Do not connect to real SMTP in test or when SMTP is not configured (avoids ECONNREFUSED 127.0.0.1:1025)
+  if (isTestEnv || !hasSmtpConfig) {
     transporter = nodemailer.createTransport({
       jsonTransport: true,
     }) as Transporter;
     return transporter;
   }
-  const host = process.env.SMTP_HOST || 'localhost';
-  const port = Number(process.env.SMTP_PORT) || 1025;
+  const host = process.env.SMTP_HOST!.trim();
+  const port = Number(process.env.SMTP_PORT) || 587;
   const secure = process.env.SMTP_SECURE === 'true';
   const user = process.env.SMTP_USER || '';
   const pass = process.env.SMTP_PASS || '';
@@ -36,7 +38,7 @@ function getTransport(): Transporter {
 
 /** Verify SMTP connection (for health check / debugging). Returns { ok, error }. */
 export async function verifyConnection(): Promise<{ ok: boolean; error?: string }> {
-  if (isTestEnv) return { ok: true };
+  if (isTestEnv || !hasSmtpConfig) return { ok: true };
   try {
     const transport = getTransport();
     await transport.verify();

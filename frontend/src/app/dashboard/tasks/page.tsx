@@ -31,7 +31,8 @@ export default function TasksPage() {
   const byStatus = (status: string) => tasksToShow.filter((t) => t.status === status);
 
   if (loading) return <p className="text-gray-500">Loading...</p>;
-  if (view === 'mine' && myTasks.length === 0 && tasksForProject.length === 0) {
+  // Empty state without toggle only for non-team users; team users must always see "My tasks / By project" toggle
+  if (view === 'mine' && myTasks.length === 0 && tasksForProject.length === 0 && !isTeam) {
     return (
       <div className="max-w-5xl">
         <h1 className="text-2xl font-bold text-secondary mb-6">Tasks</h1>
