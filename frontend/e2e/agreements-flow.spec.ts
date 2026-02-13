@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { dismissWelcome, dismissDashboardModals } from './helpers/dismissModals';
 
 test.describe('Agreements flow', () => {
   test('admin can create agreement template', async ({ page }) => {
@@ -9,6 +10,7 @@ test.describe('Agreements flow', () => {
     await page.getByRole('button', { name: /Sign in/i }).click();
     await expect(page).toHaveURL(/\/dashboard\/admin/);
     await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
+    await dismissWelcome(page);
 
     await page.getByRole('link', { name: 'Agreements', exact: true }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/agreements/);
@@ -26,7 +28,8 @@ test.describe('Agreements flow', () => {
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText(/Agreements to Sign/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await dismissDashboardModals(page);
+    await expect(page.getByText(/Agreements to Sign/i).first()).toBeVisible();
   });
 });

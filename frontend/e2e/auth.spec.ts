@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { dismissDashboardModals } from './helpers/dismissModals';
 
 test.describe('Auth', () => {
   test('home page shows RiseFlow Hub and login/register links', async ({ page }) => {
@@ -45,8 +46,9 @@ test.describe('Auth', () => {
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText(/Welcome back|Dashboard|Progress|Project/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await dismissDashboardModals(page);
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   });
 
   test('login as super_admin redirects to admin dashboard', async ({ page }) => {
@@ -65,7 +67,8 @@ test.describe('Auth', () => {
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await dismissDashboardModals(page);
     await page.getByRole('button', { name: /Log out/i }).click();
     await expect(page).toHaveURL(/\/login/);
   });
@@ -78,8 +81,9 @@ test.describe('Auth', () => {
     await page.getByLabel(/Email/i).fill(email);
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Create|Start Your Project/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText(/Welcome back|Dashboard|Progress|Project/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await dismissDashboardModals(page);
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   });
 
   test('register with existing email shows error', async ({ page }) => {

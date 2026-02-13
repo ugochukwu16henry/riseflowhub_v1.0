@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { dismissWelcome } from './helpers/dismissModals';
 
 /**
  * Admin dashboard tests use storageState (super_admin) from auth.setup.ts.
@@ -9,6 +10,7 @@ test.describe('Admin Dashboard', () => {
     await page.goto('/dashboard/admin');
     await expect(page).toHaveURL(/\/dashboard\/admin/);
     await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
+    await dismissWelcome(page);
   });
 
   test('admin dashboard shows nav: Projects, Users, Agreements', async ({ page }) => {
