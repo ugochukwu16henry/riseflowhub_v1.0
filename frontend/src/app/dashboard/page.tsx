@@ -205,7 +205,7 @@ export default function ClientDashboardPage() {
             Agreements to Sign
           </h2>
           {agreements.length === 0 ? (
-            <p className="text-gray-500 text-sm">No agreements to sign</p>
+            <p className="text-gray-500 text-sm">No agreements assigned to you</p>
           ) : (
             <ul className="space-y-2">
               {agreements.map((a) => (

@@ -43,7 +43,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
   const tenantId = await resolveTenantIdFromRequest(req);
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    res.status(400).json({ error: 'Email already registered' });
+    res.status(409).json({ message: 'Email already exists' });
     return;
   }
   const passwordHash = await hashPassword(password);

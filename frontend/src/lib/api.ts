@@ -89,8 +89,8 @@ async function request<T>(
   if (token) (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error || res.statusText);
+    const err = await res.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(err.message || err.error || res.statusText);
   }
   if (res.status === 204) return undefined as T;
   try {

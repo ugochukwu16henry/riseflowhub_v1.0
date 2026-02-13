@@ -242,6 +242,10 @@ function DashboardLayoutInner({
     }).finally(() => setLoading(false));
   }, [router]);
 
+  useEffect(() => {
+    if (!loading && !user) router.replace('/login');
+  }, [loading, user, router]);
+
   // After payment redirect: verify and refresh user
   useEffect(() => {
     const token = getStoredToken();
@@ -282,7 +286,13 @@ function DashboardLayoutInner({
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen flex bg-background text-text-dark items-center justify-center">
+        <p className="text-secondary text-sm">Redirecting to login...</p>
+      </div>
+    );
+  }
 
   const nav =
     user.role === 'super_admin'
