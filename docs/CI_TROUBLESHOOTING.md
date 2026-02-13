@@ -15,7 +15,7 @@ When you see **"CI check suite failed"** on a PR or push, the automated pipeline
 | Workflow        | When it runs                         | What it does                                      |
 |----------------|---------------------------------------|---------------------------------------------------|
 | **Backend**     | Push/PR when `backend/**` (or this workflow) changes | `pnpm install`, `pnpm run build` in `backend/`     |
-| **Playwright Tests** | Every push/PR to main/master           | Postgres + backend install → db push/seed → build → start backend → run e2e |
+| **Playwright Tests** | Every push/PR to main/master           | Postgres + backend install → db push/seed → build → start backend → run e2e (Chromium only in CI, ~10–15 min) |
 
 - If **Backend** fails: the problem is in backend code, build, or dependencies (see below).
 - If **Playwright Tests** fails: could be backend start, DB seed, or frontend e2e tests; check which step failed in the log.

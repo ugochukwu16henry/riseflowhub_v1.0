@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { isStripeEnabled } from '../services/stripeService';
 import { isPaystackEnabled } from '../services/paystackService';
-import { logEmail } from '../services/emailService';
+import { verifyConnection } from '../services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -16,24 +16,12 @@ async function checkDatabase(): Promise<{ ok: boolean; error?: string }> {
 }
 
 async function checkEmail(): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT;
-    if (!host || !port) {
-      return { ok: false, error: 'SMTP_HOST/SMTP_PORT not set' };
-    }
-    // Log a synthetic health-check email entry (no actual send)
-    await logEmail({
-      type: 'health_check',
-      toEmail: process.env.SMTP_USER || 'health-check@example.com',
-      subject: 'Email health check',
-      status: 'pending',
-      metadata: { check: 'system_health' },
-    });
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT;
+  if (!host || !port) {
+    return { ok: false, error: 'SMTP_HOST/SMTP_PORT not set' };
   }
+  return verifyConnection();
 }
 
 async function checkAi(): Promise<{ ok: boolean; error?: string; provider: string }> {

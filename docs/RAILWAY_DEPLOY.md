@@ -1,6 +1,8 @@
 # Deploy RiseFlow Hub to Railway (Full Stack)
 
-This guide walks you through moving **backend**, **frontend**, **PostgreSQL**, and **Storage Buckets** to a single Railway project.
+**Current production stack:** Frontend, backend, and storage all run on **Railway** (plus Railway Postgres for the database). No Vercel or Render in production.
+
+This guide walks you through setting up **backend**, **frontend**, **PostgreSQL**, and **Storage Buckets** in a single Railway project.
 
 ---
 

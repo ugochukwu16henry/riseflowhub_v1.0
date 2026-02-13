@@ -26,6 +26,18 @@ function getTransport(): Transporter {
   return transporter;
 }
 
+/** Verify SMTP connection (for health check / debugging). Returns { ok, error }. */
+export async function verifyConnection(): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const transport = getTransport();
+    await transport.verify();
+    return { ok: true };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return { ok: false, error: message };
+  }
+}
+
 /** Log email attempt to DB (pending -> sent | failed) */
 export async function logEmail(params: {
   type: string;
