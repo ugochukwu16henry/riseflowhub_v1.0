@@ -51,6 +51,8 @@ jobs:
       - name: Build backend
         run: pnpm run build
         working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/railway
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
