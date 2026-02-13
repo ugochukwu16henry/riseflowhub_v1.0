@@ -5,8 +5,9 @@ export async function dismissWelcome(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog', { name: 'Welcome' });
   const btn = page.getByRole('button', { name: 'Get started' });
   try {
-    if (await dialog.isVisible({ timeout: 1500 })) {
-      await btn.click({ timeout: 3000 });
+    if (await dialog.isVisible({ timeout: 3000 })) {
+      await btn.click({ timeout: 5000 });
+      await page.waitForTimeout(400);
     }
   } catch {
     // No Welcome modal

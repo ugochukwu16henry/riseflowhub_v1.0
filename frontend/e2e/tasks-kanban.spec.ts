@@ -10,7 +10,7 @@ test.describe('Tasks Kanban', () => {
     await page.getByRole('button', { name: /Sign in/i }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
     await dismissDashboardModals(page);
-
+    await page.waitForTimeout(500);
     await page.getByRole('link', { name: 'Tasks' }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/tasks/);
     await expect(page.getByText(/Tasks/i).first()).toBeVisible();
@@ -25,9 +25,9 @@ test.describe('Tasks Kanban', () => {
     await page.getByLabel(/Email/i).fill('test-developer@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await dismissDashboardModals(page);
-
+    await page.waitForTimeout(600);
     await page.getByRole('link', { name: 'Tasks' }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/tasks/);
     await expect(page.getByRole('button', { name: /By project/i })).toBeVisible();

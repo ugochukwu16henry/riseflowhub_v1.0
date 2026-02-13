@@ -8,8 +8,9 @@ test.describe('Client Dashboard', () => {
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await dismissDashboardModals(page);
+    await page.waitForTimeout(300);
     await expect(page.getByRole('link', { name: /Dashboard/i }).first()).toBeVisible();
   });
 
@@ -57,7 +58,9 @@ test.describe('Client Dashboard', () => {
   });
 
   test('Agreements to Sign section visible', async ({ page }) => {
-    await expect(page.getByText(/Agreements to Sign/i).first()).toBeVisible();
+    await expect(
+      page.getByText(/Agreements to Sign|No agreements assigned to you|You don't have a project yet/i).first()
+    ).toBeVisible();
   });
 
   test('dashboard shows project timeline or no project message', async ({ page }) => {

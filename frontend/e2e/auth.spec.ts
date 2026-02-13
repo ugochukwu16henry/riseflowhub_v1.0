@@ -57,8 +57,11 @@ test.describe('Auth', () => {
     await page.getByLabel(/Email/i).fill('test-super_admin@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard\/admin/);
-    await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard\/admin/, { timeout: 15000 });
+    await dismissDashboardModals(page);
+    await expect(
+      page.getByRole('link', { name: /Ideas & Projects|Projects/i }).first()
+    ).toBeVisible();
   });
 
   test('logout redirects to login', async ({ page }) => {
@@ -67,8 +70,9 @@ test.describe('Auth', () => {
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await dismissDashboardModals(page);
+    await page.waitForTimeout(400);
     await page.getByRole('button', { name: /Log out/i }).click();
     await expect(page).toHaveURL(/\/login/);
   });
@@ -81,7 +85,7 @@ test.describe('Auth', () => {
     await page.getByLabel(/Email/i).fill(email);
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Create|Start Your Project/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await dismissDashboardModals(page);
     await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   });

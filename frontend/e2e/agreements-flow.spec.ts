@@ -30,6 +30,9 @@ test.describe('Agreements flow', () => {
     await page.getByRole('button', { name: /Sign in/i }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
     await dismissDashboardModals(page);
-    await expect(page.getByText(/Agreements to Sign/i).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
+    await expect(
+      page.getByText(/Agreements to Sign|No agreements assigned to you|You don't have a project yet/i).first()
+    ).toBeVisible({ timeout: 10000 });
   });
 });

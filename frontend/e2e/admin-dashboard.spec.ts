@@ -9,29 +9,31 @@ test.describe('Admin Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard/admin');
     await expect(page).toHaveURL(/\/dashboard\/admin/);
-    await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
     await dismissWelcome(page);
+    await expect(
+      page.getByRole('link', { name: /Ideas & Projects|Projects/i }).first()
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('admin dashboard shows nav: Projects, Users, Agreements', async ({ page }) => {
     await expect(page.getByRole('link', { name: /Dashboard/i }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /Projects/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Users/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Ideas & Projects|Projects/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Users', exact: true }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Agreements', exact: true }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Reports/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Settings/i })).toBeVisible();
   });
 
   test('navigate to Projects page', async ({ page }) => {
-    await page.getByRole('link', { name: /Projects/i }).click();
+    await page.getByRole('link', { name: /Ideas & Projects|Projects/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/projects/);
-    await expect(page.getByText(/Projects|Ideas/i)).toBeVisible();
+    await expect(page.getByText(/Projects|Ideas|All projects/i).first()).toBeVisible();
   });
 
   test('navigate to Users page', async ({ page }) => {
-    await page.getByRole('link', { name: /Users/i }).click();
+    await page.getByRole('link', { name: 'Users', exact: true }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/users/);
-    await expect(page.getByText(/Users/i)).toBeVisible();
+    await expect(page.getByText(/Users/i).first()).toBeVisible();
     await expect(page.getByRole('table')).toBeVisible();
   });
 
@@ -44,7 +46,9 @@ test.describe('Admin Dashboard', () => {
   test('Agreements page has table and filters', async ({ page }) => {
     await page.getByRole('link', { name: 'Agreements', exact: true }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/agreements/);
-    await expect(page.getByPlaceholder(/Search by user or agreement/i).or(page.getByRole('button', { name: /Assign Agreement/i }))).toBeVisible();
+    await expect(
+      page.getByPlaceholder(/Search by user or agreement/i).or(page.getByRole('button', { name: /Assign Agreement/i })).first()
+    ).toBeVisible();
   });
 
   test('Add New Agreement modal opens and closes', async ({ page }) => {
