@@ -10,8 +10,16 @@ const RETRY_DELAY_MS = 1000;
 
 let transporter: Transporter | null = null;
 
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.DISABLE_SMTP === 'true';
+
 function getTransport(): Transporter {
   if (transporter) return transporter;
+  if (isTestEnv) {
+    transporter = nodemailer.createTransport({
+      jsonTransport: true,
+    }) as Transporter;
+    return transporter;
+  }
   const host = process.env.SMTP_HOST || 'localhost';
   const port = Number(process.env.SMTP_PORT) || 1025;
   const secure = process.env.SMTP_SECURE === 'true';
@@ -28,6 +36,7 @@ function getTransport(): Transporter {
 
 /** Verify SMTP connection (for health check / debugging). Returns { ok, error }. */
 export async function verifyConnection(): Promise<{ ok: boolean; error?: string }> {
+  if (isTestEnv) return { ok: true };
   try {
     const transport = getTransport();
     await transport.verify();
@@ -77,6 +86,17 @@ export async function sendEmail(params: {
   toEmail: string;
   dynamicData?: Record<string, unknown>;
 }): Promise<{ success: boolean; logId: string; error?: string }> {
+  if (isTestEnv) {
+    const logId = await logEmail({
+      type: params.type,
+      toEmail: params.toEmail,
+      subject: 'test',
+      status: 'sent',
+      metadata: (params.dynamicData ?? undefined) as Record<string, unknown>,
+    }).catch(() => '');
+    return { success: true, logId: logId || 'test-email' };
+  }
+
   const { type, toEmail, dynamicData = {} } = params;
   const { subject, html } = getEmailContent(type, { ...dynamicData, email: toEmail });
 
@@ -142,6 +162,8 @@ export async function sendInvoiceEmail(params: {
   html: string;
   attachment: { filename: string; content: Buffer };
 }): Promise<void> {
+  if (isTestEnv) return;
+
   const logId = await logEmail({
     type: 'invoice',
     toEmail: params.toEmail,

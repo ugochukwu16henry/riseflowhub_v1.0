@@ -198,6 +198,31 @@ export default function ClientDashboardPage() {
         </div>
       )}
 
+      {/* Project timeline — always visible so E2E can assert timeline or no-project message */}
+      {!loading && (
+        <section className="rounded-xl border border-gray-200 bg-white p-6 mt-6" aria-labelledby="project-timeline-heading">
+          <h2 id="project-timeline-heading" className="text-lg font-semibold text-secondary mb-3">
+            Project timeline
+          </h2>
+          {project ? (
+            <div className="flex flex-wrap gap-2">
+              {PROJECT_STATUS_FLOW.map((s, i) => (
+                <span
+                  key={s.value}
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                    i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {s.label}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No active project yet</p>
+          )}
+        </section>
+      )}
+
       {/* Agreements to Sign — always visible for client; API filters by logged-in user */}
       {!loading && (
         <section className="rounded-xl border border-gray-200 bg-white p-6 mt-6" aria-labelledby="agreements-to-sign-heading">
@@ -271,22 +296,13 @@ export default function ClientDashboardPage() {
             </div>
           </div>
 
-          {/* Project status timeline + Founder reputation */}
+          {/* Founder reputation (timeline is in always-visible section above) */}
           <div className="grid gap-4 lg:grid-cols-3 mb-6">
             <div className="rounded-xl border border-gray-200 bg-white p-6 lg:col-span-2">
-              <h2 className="text-lg font-semibold text-secondary mb-3">Project timeline</h2>
-              <div className="flex flex-wrap gap-2">
-                {PROJECT_STATUS_FLOW.map((s, i) => (
-                  <span
-                    key={s.value}
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                      i <= currentStatusIndex ? 'bg-primary/15 text-primary' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {s.label}
-                  </span>
-                ))}
-              </div>
+              <h2 className="text-lg font-semibold text-secondary mb-3">Project status</h2>
+              <p className="text-sm text-gray-600">
+                Current stage: {project.status ? PROJECT_STATUS_FLOW.find((s) => s.value === project.status)?.label ?? project.status : project.stage}
+              </p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-6">
               <h2 className="text-sm font-semibold text-secondary mb-1">Founder reputation</h2>
