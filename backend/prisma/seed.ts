@@ -505,6 +505,34 @@ async function main() {
     console.log('Agreements already present, skipping');
   }
 
+  // Assign one agreement to test-client so client dashboard "Agreements to Sign" has content in E2E
+  try {
+    const clientUser = await prisma.user.findFirst({ where: { email: 'test-client@example.com' }, select: { id: true } });
+    const firstAgreement = await prisma.agreement.findFirst({ select: { id: true } });
+    if (clientUser && firstAgreement) {
+      const existing = await prisma.assignedAgreement.count({
+        where: { userId: clientUser.id, agreementId: firstAgreement.id },
+      });
+      if (existing === 0) {
+        await prisma.assignedAgreement.create({
+          data: {
+            agreementId: firstAgreement.id,
+            userId: clientUser.id,
+            status: 'Pending',
+          },
+        });
+        console.log('Seeded 1 assigned agreement (Pending) for test-client');
+      }
+    }
+  } catch (e: unknown) {
+    const code = (e as { code?: string })?.code;
+    if (code === 'P2021' || code === 'P2003') {
+      console.log('Skipping assigned agreement seed (table or relation missing). Run: pnpm run db:push');
+    } else {
+      throw e;
+    }
+  }
+
   // Sample notifications (so the bell has something to show)
   try {
     const clientUser = await prisma.user.findFirst({ where: { email: 'test-client@example.com' }, select: { id: true } });

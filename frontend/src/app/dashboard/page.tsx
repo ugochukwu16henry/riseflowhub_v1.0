@@ -198,6 +198,45 @@ export default function ClientDashboardPage() {
         </div>
       )}
 
+      {/* Agreements to Sign — always visible for client; API filters by logged-in user */}
+      {!loading && (
+        <section className="rounded-xl border border-gray-200 bg-white p-6 mt-6" aria-labelledby="agreements-to-sign-heading">
+          <h2 id="agreements-to-sign-heading" className="text-lg font-semibold text-secondary mb-3">
+            Agreements to Sign
+          </h2>
+          {agreements.length === 0 ? (
+            <p className="text-gray-500 text-sm">No agreements to sign</p>
+          ) : (
+            <ul className="space-y-2">
+              {agreements.map((a) => (
+                <li key={a.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3">
+                  <div>
+                    <p className="font-medium text-text-dark">{a.agreement.title}</p>
+                    <p className="text-sm text-gray-500">{a.agreement.type}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      a.status === 'Signed' ? 'bg-green-100 text-green-800' : a.status === 'Overdue' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {a.status}
+                  </span>
+                  {a.status !== 'Signed' && (
+                    <button
+                      type="button"
+                      onClick={() => setSignModal(a)}
+                      className="rounded-lg bg-primary px-3 py-1.5 text-sm text-white hover:opacity-90"
+                    >
+                      Read & Sign
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
       {!loading && project && (
         <>
           {/* Overview — progress bar */}
@@ -408,41 +447,6 @@ export default function ClientDashboardPage() {
             >
               View tasks
             </Link>
-          </div>
-
-          {/* Agreements to Sign */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 mt-6">
-            <h2 className="text-lg font-semibold text-secondary mb-3">Agreements to Sign</h2>
-            {agreements.length === 0 ? (
-              <p className="text-gray-500 text-sm">No agreements assigned to you.</p>
-            ) : (
-              <ul className="space-y-2">
-                {agreements.map((a) => (
-                  <li key={a.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3">
-                    <div>
-                      <p className="font-medium text-text-dark">{a.agreement.title}</p>
-                      <p className="text-sm text-gray-500">{a.agreement.type}</p>
-                    </div>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        a.status === 'Signed' ? 'bg-green-100 text-green-800' : a.status === 'Overdue' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {a.status}
-                    </span>
-                    {a.status !== 'Signed' && (
-                      <button
-                        type="button"
-                        onClick={() => setSignModal(a)}
-                        className="rounded-lg bg-primary px-3 py-1.5 text-sm text-white hover:opacity-90"
-                      >
-                        Read & Sign
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         </>
       )}
