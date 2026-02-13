@@ -9,12 +9,14 @@ const inter = Inter({
   variable: '--font-sans',
 });
 
-// Ensure URL has a scheme (https://) so new URL() never throws (e.g. Railway env without https://)
-const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const APP_URL =
-  rawAppUrl.startsWith('http://') || rawAppUrl.startsWith('https://')
-    ? rawAppUrl
-    : `https://${rawAppUrl.replace(/^\/+/, '')}`;
+// Normalize env URL: trim, strip leading =/whitespace (Railway sometimes injects these), ensure scheme so new URL() never throws
+function normalizeEnvUrl(value: string | undefined, fallback: string): string {
+  const raw = (value ?? '').trim().replace(/^[\s=]+/, '');
+  const s = raw || fallback;
+  if (s.startsWith('http://') || s.startsWith('https://')) return s;
+  return `https://${s.replace(/^\/+/, '')}`;
+}
+const APP_URL = normalizeEnvUrl(process.env.NEXT_PUBLIC_APP_URL, 'http://localhost:3000');
 const SITE_NAME = 'RiseFlow Hub';
 const SITE_DESCRIPTION =
   'RiseFlow Hub is a global startup growth and venture enablement platform. We guide, structure, build, connect, and scale ideas from concept to company.';
