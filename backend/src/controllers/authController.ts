@@ -120,49 +120,49 @@ export async function login(req: Request, res: Response): Promise<void> {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await comparePassword(password, user.passwordHash))) {
-    const ip = getClientIp(req);
-    const ua = getUserAgent(req);
-    await recordFailedLoginAttempt({
-      email,
-      ip,
-      userAgent: ua ?? null,
-      userId: user?.id ?? null,
+      const ip = getClientIp(req);
+      const ua = getUserAgent(req);
+      await recordFailedLoginAttempt({
+        email,
+        ip,
+        userAgent: ua ?? null,
+        userId: user?.id ?? null,
+      }).catch(() => {});
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
     }).catch(() => {});
-    res.status(401).json({ error: 'Invalid email or password' });
-    return;
-  }
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { lastLoginAt: new Date() },
-  }).catch(() => {});
-  const token = signToken({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    tenantId: user.tenantId ?? undefined,
-  });
-  createAuditLog(prisma, {
-    adminId: user.id,
-    actionType: 'login',
-    entityType: 'user',
-    entityId: user.id,
-    details: { email: user.email },
-  }).catch(() => {});
-  const setupPaid = user.setupPaid ?? false;
-  const setupReason = user.setupReason ?? null;
-  setAuthCookie(res, token);
-  res.json({
-    user: {
-      id: user.id,
-      name: user.name,
+    const token = signToken({
+      userId: user.id,
       email: user.email,
       role: user.role,
       tenantId: user.tenantId ?? undefined,
-      setupPaid,
-      setupReason,
-    },
-    token,
-  });
+    });
+    createAuditLog(prisma, {
+      adminId: user.id,
+      actionType: 'login',
+      entityType: 'user',
+      entityId: user.id,
+      details: { email: user.email },
+    }).catch(() => {});
+    const setupPaid = user.setupPaid ?? false;
+    const setupReason = user.setupReason ?? null;
+    setAuthCookie(res, token);
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        tenantId: user.tenantId ?? undefined,
+        setupPaid,
+        setupReason,
+      },
+      token,
+    });
   } catch (e) {
     if (isPrismaInitError(e)) {
       console.error('[Auth] Login failed: database config error.', (e as Error).message);
