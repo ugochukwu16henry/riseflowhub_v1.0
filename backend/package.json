@@ -16,7 +16,8 @@
     "db:push:local": "node scripts/load-env-and-push.js",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:migrate:resolve-rollback": "prisma migrate resolve --rolled-back \"20250203120000_add_security_and_support_tables\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
