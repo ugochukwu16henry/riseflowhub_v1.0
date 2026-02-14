@@ -47,12 +47,14 @@ useEffect(() => {
 1. User successfully logs in and is redirected to `/dashboard`
 2. Dashboard layout mounts and `loading=true`, `user=null`
 3. First useEffect starts fetching user profile with `api.auth.me(token)`
-4. `finally(() => setLoading(false))` executes **before** the `.then(setUser)` completes
-5. Component re-renders with `loading=false`, `user=null`
-6. Second useEffect runs and sees `loading=false` and `user=null`
-7. Second useEffect redirects to `/login` **even though authentication is still in progress!**
+4. Promise resolves with `.then(setUser)` which queues a state update
+5. `finally(() => setLoading(false))` executes after the promise chain completes, also queuing a state update
+6. React batches the state updates but the component re-renders
+7. During re-render, `loading=false` is set but `user` might still be `null` if the batched state updates haven't fully propagated
+8. Second useEffect runs and sees `loading=false` and `user=null`
+9. Second useEffect redirects to `/login` **even though authentication succeeded!**
 
-This created a race condition where tests would sometimes pass (if `api.auth.me` was fast enough) and sometimes fail (if it was slow).
+The core issue: The second useEffect creates a race where it can execute between `setLoading(false)` and `setUser(userData)` being applied, or before React has finished the batched updates.
 
 ## The Fix
 
