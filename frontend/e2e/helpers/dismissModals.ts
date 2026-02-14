@@ -21,9 +21,6 @@ export async function dismissSetupModal(page: Page): Promise<void> {
   try {
     if (!(await dialog.isVisible({ timeout: 2000 }))) return;
     
-    // Wait for modal to fully render
-    await page.waitForTimeout(300);
-    
     const skipBtn = page.getByRole('button', { name: 'Skip for Now' });
     if (await skipBtn.isVisible({ timeout: 1000 })) {
       await skipBtn.click();
@@ -55,6 +52,5 @@ export async function dismissSetupModal(page: Page): Promise<void> {
 /** Dismiss both modals so dashboard nav is clickable. Call after landing on /dashboard or /dashboard/admin. */
 export async function dismissDashboardModals(page: Page): Promise<void> {
   await dismissWelcome(page);
-  await page.waitForTimeout(300);
   await dismissSetupModal(page);
 }

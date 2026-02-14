@@ -72,7 +72,6 @@ test.describe('Auth', () => {
     await page.getByRole('button', { name: /Sign in/i }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await dismissDashboardModals(page);
-    await page.waitForTimeout(400);
     const logoutButton = page.getByRole('button', { name: /Log out/i });
     await expect(logoutButton).toBeVisible({ timeout: 5000 });
     await logoutButton.click();
