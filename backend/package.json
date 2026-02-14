@@ -17,7 +17,9 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:migrate:resolve-rollback": "prisma migrate resolve --rolled-back \"20250203120000_add_security_and_support_tables\""
+    "db:migrate:resolve-rollback": "prisma migrate resolve --rolled-back \"20250203120000_add_security_and_support_tables\"",
+    "db:migrate:resolve-rollback-revenue": "prisma migrate resolve --rolled-back \"20250203180200_revenue_system_versions\"",
+    "db:migrate:resolve-applied-revenue": "prisma migrate resolve --applied \"20250203180200_revenue_system_versions\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
