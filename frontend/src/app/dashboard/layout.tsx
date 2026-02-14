@@ -233,6 +233,7 @@ function DashboardLayoutInner({
   useEffect(() => {
     const token = getStoredToken();
     if (!token) {
+      setLoading(false);
       router.replace('/login');
       return;
     }
