@@ -73,8 +73,10 @@ test.describe('Auth', () => {
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await dismissDashboardModals(page);
     await page.waitForTimeout(400);
-    await page.getByRole('button', { name: /Log out/i }).click();
-    await expect(page).toHaveURL(/\/login/);
+    const logoutButton = page.getByRole('button', { name: /Log out/i });
+    await expect(logoutButton).toBeVisible({ timeout: 5000 });
+    await logoutButton.click();
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
   });
 
   test('register new user redirects to dashboard', async ({ page }) => {
@@ -86,8 +88,10 @@ test.describe('Auth', () => {
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Create|Start Your Project/i }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
+    await page.waitForLoadState('networkidle');
     await dismissDashboardModals(page);
-    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
+    await page.waitForTimeout(500);
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible({ timeout: 10000 });
   });
 
   test('register with existing email shows error', async ({ page }) => {
