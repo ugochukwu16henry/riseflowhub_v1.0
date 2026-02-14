@@ -348,3 +348,93 @@ In each service → **Settings** → **Networking** → **Custom Domain**, add y
 - **DB connection failed:** Confirm backend has `DATABASE_URL` (reference from Postgres). Use pooled URL if your Postgres provides one (e.g. port 6543).
 - **Upload fails:** If using Railway bucket, ensure all of `BUCKET`, `ACCESS_KEY_ID`, `SECRET_ACCESS_KEY`, `ENDPOINT` are set (and referenced from bucket). Check backend logs.
 - **CORS errors:** `FRONTEND_URL` must exactly match the frontend origin (scheme + host, no trailing slash).
+- **P3009 migration errors:** See [Railway P3009 Migration Error Resolution](#11-railway-p3009-migration-error-resolution) below.
+
+---
+
+## 11. Railway P3009 Migration Error Resolution
+
+If your Railway deployment fails with:
+
+```text
+Error: P3009
+migrate found failed migrations in the target database
+The migration `20250203180200_revenue_system_versions` (or another migration) failed
+```
+
+This error indicates that a Prisma migration failed midway during a previous deployment, leaving your database in a "dirty" state. Prisma blocks all new migrations until the failed migration entry is resolved in the `_prisma_migrations` table.
+
+### Quick Resolution Steps
+
+**Step 1: Identify the Database State**
+
+First, check if the migration's changes were actually applied to the database:
+
+```bash
+# From your local terminal (with Railway CLI installed and linked)
+cd backend
+railway run psql $DATABASE_URL -c "\d revenue_system_versions"
+```
+
+Or check via Railway Dashboard → PostgreSQL service → Query tab.
+
+**Decision:**
+- **If the table/columns DON'T exist** → Migration rolled back → Use `--rolled-back`
+- **If the table/columns DO exist** → Migration applied → Use `--applied`
+
+**Step 2: Resolve the Migration**
+
+**Scenario A: Changes were NOT applied (most common)**
+
+```bash
+cd backend
+railway run pnpm run db:migrate:resolve-rollback-revenue
+```
+
+This marks the migration as "rolled back" in `_prisma_migrations`, allowing Prisma to retry it on the next deployment.
+
+**Scenario B: Changes WERE applied**
+
+```bash
+cd backend
+railway run pnpm run db:migrate:resolve-applied-revenue
+```
+
+This marks the migration as "applied" in `_prisma_migrations`, telling Prisma the changes are already in place.
+
+**Step 3: Redeploy**
+
+```bash
+git push origin main
+# Or use Railway CLI
+railway up
+```
+
+**Step 4: Verify**
+
+```bash
+# Check migration status
+railway run npx prisma migrate status
+
+# Verify the table exists
+railway run psql $DATABASE_URL -c "\d revenue_system_versions"
+```
+
+### Why This Happens
+
+Migrations can fail midway due to:
+- Database timeouts or temporary connection issues
+- Insufficient permissions
+- Conflicts with existing database objects
+- Network interruptions during deployment
+
+All migrations in this project are now **idempotent** (using `IF NOT EXISTS`, `DO $$ BEGIN ... EXCEPTION`), so they can safely be retried without errors even if partially applied.
+
+### Additional Resources
+
+- See `backend/BUILD.md` for detailed P3009 resolution instructions
+- See `backend/prisma/migrations/MIGRATION_RECOVERY.md` for technical details
+- Available npm scripts:
+  - `db:migrate:resolve-rollback-revenue` - For revenue_system_versions migration
+  - `db:migrate:resolve-applied-revenue` - Alternative for applied state
+  - `db:migrate:resolve-rollback` - For older security tables migration

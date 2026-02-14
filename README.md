@@ -103,3 +103,19 @@ See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for:
 - Frontend (Vercel) and backend (Railway/Render) deployment steps
 - Environment variables for production
 - Optional CI/CD (GitHub Actions + Playwright)
+
+## Troubleshooting
+
+### Prisma Migration P3009 Error
+
+If you encounter a P3009 error during Railway deployment (failed migration), see:
+
+- **Quick Fix Guide:** [docs/PRISMA_MIGRATION_P3009_FIX.md](./docs/PRISMA_MIGRATION_P3009_FIX.md) - Step-by-step resolution
+- **Detailed Guide:** [backend/BUILD.md](./backend/BUILD.md#railway-p3009-failed-migration) - Complete instructions
+- **Technical Details:** [backend/prisma/migrations/MIGRATION_RECOVERY.md](./backend/prisma/migrations/MIGRATION_RECOVERY.md)
+
+### Other Common Issues
+
+- **Backend build fails on Windows:** See [backend/BUILD.md](./backend/BUILD.md#windows-eperm-on-prisma-generate)
+- **CORS errors:** Check `FRONTEND_URL` in backend matches frontend origin exactly (no trailing slash)
+- **Database connection issues:** Verify `DATABASE_URL` is set correctly and database is accessible

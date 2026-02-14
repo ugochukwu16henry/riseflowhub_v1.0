@@ -27,6 +27,13 @@ If the migration is still showing as failed in your production database, you hav
 #### Option 1: Mark as Resolved (if objects already exist)
 If the table and its objects were successfully created but the migration was marked as failed:
 
+**For Railway:**
+```bash
+cd backend
+railway run pnpm run db:migrate:resolve-applied-revenue
+```
+
+**For other environments:**
 ```bash
 # Connect to production database
 export DATABASE_URL="your_production_database_url"
@@ -35,7 +42,25 @@ export DATABASE_URL="your_production_database_url"
 npx prisma migrate resolve --applied "20250203180200_revenue_system_versions"
 ```
 
-#### Option 2: Let it retry (recommended with the fix)
+#### Option 2: Mark as Rolled Back (if objects do NOT exist)
+If the migration failed before creating any objects:
+
+**For Railway:**
+```bash
+cd backend
+railway run pnpm run db:migrate:resolve-rollback-revenue
+```
+
+**For other environments:**
+```bash
+# Connect to production database
+export DATABASE_URL="your_production_database_url"
+
+# Mark the migration as rolled back
+npx prisma migrate resolve --rolled-back "20250203180200_revenue_system_versions"
+```
+
+#### Option 3: Let it retry (recommended with the fix)
 With the idempotent migration in place, simply deploy again:
 
 ```bash
@@ -74,6 +99,19 @@ END $$;
 ### Verification
 After applying the fix, verify the migration succeeded:
 
+**For Railway:**
+```bash
+# Check migration status
+railway run npx prisma migrate status
+
+# Verify table exists
+railway run psql $DATABASE_URL -c "\d revenue_system_versions"
+
+# Verify RLS is enabled
+railway run psql $DATABASE_URL -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'revenue_system_versions';"
+```
+
+**For other environments:**
 ```bash
 # Check migration status
 npx prisma migrate status
