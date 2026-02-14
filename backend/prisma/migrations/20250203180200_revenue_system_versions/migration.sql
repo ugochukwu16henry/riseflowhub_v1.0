@@ -10,11 +10,7 @@ CREATE TABLE IF NOT EXISTS "revenue_system_versions" (
 );
 
 -- CreateIndex (idempotent)
-DO $$ BEGIN
-    CREATE INDEX IF NOT EXISTS "revenue_system_versions_edited_at_idx" ON "revenue_system_versions"("edited_at");
-EXCEPTION
-    WHEN duplicate_table THEN NULL;
-END $$;
+CREATE INDEX IF NOT EXISTS "revenue_system_versions_edited_at_idx" ON "revenue_system_versions"("edited_at");
 
 -- AddForeignKey (idempotent)
 DO $$ BEGIN

@@ -52,11 +52,7 @@ All future migrations should follow the idempotent pattern:
 CREATE TABLE IF NOT EXISTS "table_name" (...);
 
 -- For indexes
-DO $$ BEGIN
-    CREATE INDEX IF NOT EXISTS "index_name" ON "table_name"("column");
-EXCEPTION
-    WHEN duplicate_table THEN NULL;
-END $$;
+CREATE INDEX IF NOT EXISTS "index_name" ON "table_name"("column");
 
 -- For foreign keys
 DO $$ BEGIN
