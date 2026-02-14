@@ -5,6 +5,7 @@ test.describe('Tasks Kanban', () => {
   test('client sees Tasks page with Kanban columns', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
@@ -22,6 +23,7 @@ test.describe('Tasks Kanban', () => {
   test('team user sees My tasks / By project toggle', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     await page.getByLabel(/Email/i).fill('test-developer@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();

@@ -5,6 +5,7 @@ test.describe('Client Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
