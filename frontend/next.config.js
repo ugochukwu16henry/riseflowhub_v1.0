@@ -12,7 +12,11 @@ const nextConfig = {
   },
   // Proxy /api/v1/* to the backend. Set NEXT_PUBLIC_API_URL to your backend URL (e.g. https://your-api.railway.app).
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    apiUrl = apiUrl.trim();
+    if (apiUrl && !/^https?:\/\//i.test(apiUrl)) {
+      apiUrl = `https://${apiUrl}`;
+    }
     return [
       { source: '/api/v1/:path*', destination: `${apiUrl}/api/v1/:path*` },
     ];
