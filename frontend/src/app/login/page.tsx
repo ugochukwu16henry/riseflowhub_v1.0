@@ -57,36 +57,34 @@ export default function LoginPage() {
         return '';
       };
 
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
       const redirectTo = (base: string, path: string) => {
-        const cleanBase = base || (typeof window !== 'undefined' ? window.location.origin : '');
+        const cleanBase = base || origin;
         const url = `${cleanBase.replace(/\/+$/, '')}${path}`;
         if (typeof window !== 'undefined') {
-          window.location.href = url;
+          if (url.startsWith(origin)) {
+            router.push(path);
+          } else {
+            window.location.href = url;
+          }
         } else {
           router.push(path);
         }
       };
 
       if (role === 'super_admin' || role === 'project_manager' || role === 'finance_admin' || role === 'cofounder') {
-        // Super admin & internal leadership → admin subdomain
         redirectTo(getBase(ADMIN_URL || MAIN_SITE), '/dashboard/admin');
       } else if (role === 'investor') {
-        // Investors → investor portal
         redirectTo(getBase(INVESTOR_URL || MAIN_SITE), '/dashboard/investor');
       } else if (role === 'talent') {
-        // Talent → app dashboard (same app project)
         redirectTo(getBase(APP_URL || MAIN_SITE), '/dashboard/talent');
       } else if (role === 'hirer' || role === 'hiring_company') {
-        // Hiring side → app dashboard
         redirectTo(getBase(APP_URL || MAIN_SITE), '/dashboard/hirer');
       } else if (role === 'hr_manager') {
-        // HR → admin area
         redirectTo(getBase(ADMIN_URL || MAIN_SITE), '/dashboard/admin/hr');
       } else if (role === 'legal_team') {
-        // Legal → admin/legal area
         redirectTo(getBase(ADMIN_URL || MAIN_SITE), '/dashboard/legal');
       } else {
-        // Default: founders / general users → main app dashboard
         redirectTo(getBase(APP_URL || MAIN_SITE), '/dashboard');
       }
     } catch (err) {

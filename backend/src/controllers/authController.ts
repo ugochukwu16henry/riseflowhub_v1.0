@@ -12,6 +12,24 @@ import { recordSignupReferral } from '../services/referralService';
 
 const prisma = new PrismaClient();
 
+const COOKIE_NAME = 'token';
+const COOKIE_MAX_AGE_DAYS = 7;
+
+function setAuthCookie(res: Response, token: string): void {
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: COOKIE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000,
+  });
+}
+
+export function clearAuthCookie(res: Response): void {
+  res.clearCookie(COOKIE_NAME, { path: '/', httpOnly: true, sameSite: 'lax' });
+}
+
 /** Resolve tenant id from request: X-Tenant-Domain header, or Host, or default first tenant */
 export async function resolveTenantIdFromRequest(req: Request): Promise<string | null> {
   const domain =
@@ -74,6 +92,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
     link: '/dashboard',
   }).catch(() => {});
 
+  setAuthCookie(res, token);
   res.status(201).json({
     user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId, setupPaid: user.setupPaid, setupReason: user.setupReason },
     token,
@@ -131,6 +150,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   }).catch(() => {});
   const setupPaid = user.setupPaid ?? false;
   const setupReason = user.setupReason ?? null;
+  setAuthCookie(res, token);
   res.json({
     user: {
       id: user.id,
@@ -206,5 +226,6 @@ export async function me(req: Request, res: Response): Promise<void> {
 }
 
 export function logout(_req: Request, res: Response): void {
+  clearAuthCookie(res);
   res.json({ message: 'Logged out' });
 }

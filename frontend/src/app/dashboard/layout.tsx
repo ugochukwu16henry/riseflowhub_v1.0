@@ -242,8 +242,11 @@ function DashboardLayoutInner({
     }).finally(() => setLoading(false));
   }, [router]);
 
+  // Only redirect when we have no token (avoid redirecting before setUser resolves after successful me())
   useEffect(() => {
-    if (!loading && !user) router.replace('/login');
+    if (loading || user) return;
+    const token = getStoredToken();
+    if (!token) router.replace('/login');
   }, [loading, user, router]);
 
   // After payment redirect: verify and refresh user
