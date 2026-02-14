@@ -275,7 +275,7 @@ function DashboardLayoutInner({
     const token = getStoredToken();
     if (token) api.auth.logout(token).catch(() => {});
     clearStoredToken();
-    router.replace('/login');
+    window.location.href = '/login';
   }
 
   if (loading) {
