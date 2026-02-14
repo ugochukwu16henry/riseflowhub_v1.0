@@ -10,7 +10,7 @@ if (fs.existsSync(envLocal)) {
 // Fail fast if DATABASE_URL is missing or not a Postgres URL (e.g. on Render)
 const dbUrl = process.env.DATABASE_URL?.trim() || '';
 if (!dbUrl || !/^postgres(ql)?:\/\//i.test(dbUrl)) {
-  console.error('FATAL: DATABASE_URL must be set and start with postgresql:// or postgres://. Check Render Environment.');
+  console.error('FATAL: DATABASE_URL must be set and start with postgresql:// or postgres://. Check your platform (Railway/Render) Variables and link the PostgreSQL service.');
   process.exit(1);
 }
 

@@ -36,8 +36,8 @@ Use this order when you see the Railway create menu (e.g. after **New Project** 
 4. Railway creates a **new service** from that repo. Configure it as the **backend**:
    - Open this service → **Settings** (or the gear icon).
    - **Root Directory:** set to `backend` (so only the `backend` folder is used).
-   - **Build Command:** leave default or set to `pnpm install && pnpm run build:deploy` (the repo’s `backend/railway.toml` may already set this).
-   - **Start Command:** `pnpm start` or `node dist/index.js` (again, `railway.toml` may set it).
+   - **Build Command:** `pnpm install && pnpm run build` (no migrations at build — Railway gives `DATABASE_URL` only at runtime; see `backend/railway.toml`).
+   - **Start Command:** `pnpm run start:deploy` or `pnpm start` (start:deploy runs migrations then starts the server; use it so migrations run when `DATABASE_URL` is available).
    - **Watch Paths:** `backend/**` (so pushes to `frontend/` don’t redeploy the backend).
 5. **Variables** for the backend:
    - **New Variable** → **Add Variable Reference** (or **Reference**):
@@ -111,8 +111,8 @@ When you’re on a service **Settings** page (Source, Root Directory, Build, Dep
 | **Branch** | `main` (or your production branch) | Same |
 | **Add Root Directory** | `backend` | `frontend` |
 | **Watch Paths** | Add pattern: `backend/**` | Add pattern: `frontend/**` |
-| **Custom Build Command** | `pnpm install && pnpm run build:deploy` | `pnpm install && pnpm run build` |
-| **Custom Start Command** | `pnpm start` | `pnpm start` |
+| **Custom Build Command** | `pnpm install && pnpm run build` (migrations run at start via `start:deploy`) | `pnpm install && pnpm run build` |
+| **Custom Start Command** | `pnpm run start:deploy` (runs migrations then server) or `pnpm start` | `pnpm start` |
 | **Railway Config File** (optional) | `railway.toml` (file lives in `backend/railway.toml` in repo; with Root Directory = `backend`, path is `railway.toml`) | `railway.toml` (file in `frontend/railway.toml`; with Root Directory = `frontend`, path is `railway.toml`) |
 | **Healthcheck Path** (optional) | `/api/v1/health` | `/` or leave empty |
 | **Restart Policy** | On Failure (default) | On Failure (default) |
@@ -291,7 +291,7 @@ The backend uses these for uploads when present (see [Storage](#storage-options)
 
 ## 5. Database migrations and seed
 
-- **First deploy:** Use build command that runs migrations, e.g. `pnpm run build:deploy` (see `backend/package.json`: `prisma generate && prisma migrate deploy && tsc`). That applies migrations at build time.
+- **First deploy:** The repo’s `railway.toml` uses **build** = `pnpm run build` (no DB) and **start** = `pnpm run start:deploy` (runs `prisma migrate deploy` then `node dist/index.js`). Migrations run at **start** because Railway injects `DATABASE_URL` only at runtime.
 - **Seed (once):** In Railway backend service → **Settings** → run a one-off command, or use CLI:
   ```bash
   railway run pnpm run db:seed
