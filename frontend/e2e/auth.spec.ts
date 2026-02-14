@@ -90,7 +90,6 @@ test.describe('Auth', () => {
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20000 });
     await page.waitForLoadState('networkidle');
     await dismissDashboardModals(page);
-    await page.waitForTimeout(500);
     await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible({ timeout: 10000 });
   });
 
