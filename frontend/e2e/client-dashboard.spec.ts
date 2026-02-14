@@ -5,6 +5,9 @@ test.describe('Client Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
+    // Wait for network idle to ensure page is fully loaded before interacting
+    // Catch timeout errors as this is optional - tests should still work if network is active
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     await page.getByLabel(/Email/i).fill('test-client@example.com');
     await page.getByLabel(/Password/i).fill('Password123');
     await page.getByRole('button', { name: /Sign in/i }).click();
@@ -25,7 +28,7 @@ test.describe('Client Dashboard', () => {
     await expect(page.getByRole('link', { name: 'Files' }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Messages' }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Payments' }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /Reports/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Reports/i }).first()).toBeVisible();
   });
 
   test('navigate to Project page', async ({ page }) => {

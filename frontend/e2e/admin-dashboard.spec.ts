@@ -20,8 +20,8 @@ test.describe('Admin Dashboard', () => {
     await expect(page.getByRole('link', { name: /Ideas & Projects|Projects/i }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Users', exact: true }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Agreements', exact: true }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /Reports/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Settings/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Reports/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Settings/i }).first()).toBeVisible();
   });
 
   test('navigate to Projects page', async ({ page }) => {
@@ -69,12 +69,12 @@ test.describe('Admin Dashboard', () => {
   });
 
   test('navigate to Reports page', async ({ page }) => {
-    await page.getByRole('link', { name: /Reports/i }).click();
+    await page.getByRole('link', { name: /Reports/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/reports/);
   });
 
   test('navigate to Settings page', async ({ page }) => {
-    await page.getByRole('link', { name: /Settings/i }).click();
+    await page.getByRole('link', { name: /Settings/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard\/admin\/settings/);
   });
 
