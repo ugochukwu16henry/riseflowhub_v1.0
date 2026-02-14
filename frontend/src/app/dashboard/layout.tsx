@@ -233,21 +233,21 @@ function DashboardLayoutInner({
   useEffect(() => {
     const token = getStoredToken();
     if (!token) {
+      setLoading(false);
       router.replace('/login');
       return;
     }
-    api.auth.me(token).then(setUser).catch(() => {
-      clearStoredToken();
-      router.replace('/login');
-    }).finally(() => setLoading(false));
+    api.auth.me(token)
+      .then((userData) => {
+        setUser(userData);
+        setLoading(false);
+      })
+      .catch(() => {
+        clearStoredToken();
+        setLoading(false);
+        router.replace('/login');
+      });
   }, [router]);
-
-  // Only redirect when we have no token (avoid redirecting before setUser resolves after successful me())
-  useEffect(() => {
-    if (loading || user) return;
-    const token = getStoredToken();
-    if (!token) router.replace('/login');
-  }, [loading, user, router]);
 
   // After payment redirect: verify and refresh user
   useEffect(() => {
