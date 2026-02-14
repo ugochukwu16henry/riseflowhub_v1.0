@@ -43,7 +43,9 @@ jobs:
       - name: Setup backend database
         run: |
           pnpm run db:push
+          if [ $? -ne 0 ]; then echo "Database push failed"; exit 1; fi
           pnpm run db:seed
+          if [ $? -ne 0 ]; then echo "Database seed failed"; exit 1; fi
         working-directory: backend
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/railway
@@ -64,13 +66,20 @@ jobs:
 
       - name: Start backend and run Playwright tests
         run: |
-          (cd backend && NODE_ENV=test PORT=4000 FRONTEND_URL=http://localhost:3000 JWT_SECRET=ci-secret-min-32-characters-long DATABASE_URL=postgresql://postgres:postgres@localhost:5432/railway pnpm start) &
+          (cd backend && NODE_ENV=test PORT=4000 FRONTEND_URL=http://localhost:3000 JWT_SECRET=ci-secret-min-32-characters-long DATABASE_URL=postgresql://postgres:postgres@localhost:5432/railway pnpm start > ../backend.log 2>&1) &
+          BACKEND_PID=$!
           echo "Waiting for backend..."
-          for i in $(seq 1 30); do
+          for i in $(seq 1 60); do
             curl -sf http://localhost:4000/api/v1/health >/dev/null && break
-            sleep 2
+            sleep 1
           done
-          curl -sf http://localhost:4000/api/v1/health || (echo "Backend failed to start"; exit 1)
+          if ! curl -sf http://localhost:4000/api/v1/health; then
+            echo "Backend health check failed"
+            kill $BACKEND_PID 2>/dev/null || true
+            echo "--- Last 100 lines of backend.log ---"
+            tail -n 100 backend.log
+            exit 1
+          fi
           echo "Backend is up. Running Playwright (Chromium only in CI)..."
           cd frontend && pnpm exec playwright test
         env:
