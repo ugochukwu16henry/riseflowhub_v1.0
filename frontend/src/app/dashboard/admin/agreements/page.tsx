@@ -68,7 +68,10 @@ export default function AdminAgreementsPage() {
     Promise.all([
       api.agreements.listAssignments(token, {}).then(setAssignments).catch(() => setAssignments([])),
       api.agreements.list(token).then(setTemplates).catch(() => setTemplates([])),
-      fetch('/api/v1/users', { headers: { Authorization: `Bearer ${token}` } }).then((r) => (r.ok ? r.json() : [])).catch(() => []).then(setUsers),
+      fetch('/api/v1/users', { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => [])
+        .then(setUsers),
     ]).finally(() => setLoading(false));
   }, [token]);
 
