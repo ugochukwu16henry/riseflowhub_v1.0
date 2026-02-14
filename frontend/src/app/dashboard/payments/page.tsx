@@ -61,7 +61,7 @@ export default function PaymentsPage() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not submit payment. Please try again.';
       if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('502') || msg.includes('NetworkError')) {
-        setError('Unable to connect to the server. Ensure the backend is running and NEXT_PUBLIC_API_URL is set (e.g. to your Render URL on Vercel).');
+        setError('Unable to connect to the server. Ensure the backend is running and NEXT_PUBLIC_API_URL is set to your Railway backend URL.');
       } else {
         setError(msg);
       }

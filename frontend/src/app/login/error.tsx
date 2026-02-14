@@ -19,7 +19,7 @@ export default function LoginError({
       <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm text-center">
         <h1 className="text-xl font-bold text-red-600 mb-2">Something went wrong</h1>
         <p className="text-gray-600 text-sm mb-4">
-          Sign-in hit an error. This is often due to the backend being unreachable (e.g. sleeping on Render) or a CORS/network issue.
+          Sign-in hit an error. This is often due to the backend being unreachable (e.g. backend sleeping on Railway) or a CORS/network issue.
         </p>
         <p className="text-gray-500 text-xs mb-6">
           Check the browser console (F12 → Console) for details.

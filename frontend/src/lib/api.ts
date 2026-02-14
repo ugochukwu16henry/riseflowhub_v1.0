@@ -1,4 +1,4 @@
-// Use NEXT_PUBLIC_API_URL when set (Vercel + Render). Browser calls backend directly; CORS must allow your frontend origin (set FRONTEND_URL on Render).
+// Use NEXT_PUBLIC_API_URL when set (e.g. Railway). Browser calls backend directly; CORS must allow your frontend origin (set FRONTEND_URL on the backend).
 // When empty, relative URLs are used (Next.js rewrite proxies to backend; requires rewrite to be configured at build time).
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 

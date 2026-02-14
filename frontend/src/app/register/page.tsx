@@ -33,11 +33,11 @@ export default function RegisterPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Registration failed';
       if (msg === 'Failed to fetch' || msg.includes('502') || msg.includes('Bad Gateway')) {
-        setError('Backend not responding. Set NEXT_PUBLIC_API_URL on Vercel and ensure the backend is running.');
+        setError('Backend not responding. Set NEXT_PUBLIC_API_URL to your Railway backend URL and ensure the backend is running.');
       } else if (msg.includes('Email already registered')) {
         setError('This email is already registered. Try logging in or use a different email.');
       } else if (msg.includes('CORS') || msg.includes('Access-Control')) {
-        setError('Request blocked (CORS). Set FRONTEND_URL on Render to your Vercel URL, then redeploy.');
+        setError('Request blocked (CORS). Set FRONTEND_URL on the backend (Railway) to this site\'s URL, then redeploy.');
       } else {
         setError(msg);
       }

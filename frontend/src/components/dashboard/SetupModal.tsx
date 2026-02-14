@@ -60,7 +60,7 @@ export function SetupModal({ user, onComplete, primaryColor }: SetupModalProps) 
       console.error('Setup fee payment error:', e);
       if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('NetworkError') || msg.includes('502')) {
         setError(
-          'Unable to connect to the payment server. Ensure NEXT_PUBLIC_API_URL on Vercel points to your Render backend URL and the backend service is running in the Render dashboard.'
+          'Unable to connect to the payment server. Ensure NEXT_PUBLIC_API_URL points to your Railway backend URL and the backend service is running.'
         );
       } else {
         setError(msg);
