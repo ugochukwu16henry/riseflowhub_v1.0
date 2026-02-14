@@ -15,7 +15,7 @@ test.describe('Tasks Kanban', () => {
     await expect(page).toHaveURL(/\/dashboard\/tasks/);
     await expect(page.getByText(/Tasks/i).first()).toBeVisible();
     await expect(
-      page.getByTestId('kanban-column-todo').or(page.getByTestId('kanban-column-done')).or(page.getByText(/No project yet/i))
+      page.getByTestId('kanban-column-todo').or(page.getByTestId('kanban-column-done')).or(page.getByText(/No project yet/i)).first()
     ).toBeVisible();
   });
 

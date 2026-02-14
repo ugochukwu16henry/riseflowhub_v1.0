@@ -25,7 +25,7 @@ test.describe('Client Dashboard', () => {
     await expect(page.getByRole('link', { name: 'Files' }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Messages' }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Payments' }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /Reports/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Reports/i }).first()).toBeVisible();
   });
 
   test('navigate to Project page', async ({ page }) => {
